@@ -500,9 +500,31 @@ AdShield = function()
         );
     }
 
-    self.Init = function(UserKey)
+    self.FillValue = function(key, value)
     {
-        self.UserKey = UserKey;
+        switch(key)
+        {
+            case 'key' : self.UserKey = value; break;
+        }
+    }
+
+    self.Init = function()
+    {
+        for(var i in _adshield)
+        {
+            for(var k in _adshield[i])
+            {
+                self.FillValue(k, _adshield[i][k]);
+            }
+        }
+
+        if (self.UserKey == null) 
+        {
+            throw {
+                name : "Credential required",
+                message : "Can't find your UserKey. Please follow the instruction on integration from our doc page."
+            }
+        }
         self.AdShieldType = 3; //not used yet
         self.CheckIframed();
         self.CheckReferrerUrl();
