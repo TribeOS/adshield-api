@@ -32,6 +32,8 @@ class AdshieldController extends BaseController
     	];
 
 		$jsContent .= "\nAdShield.urls = " . json_encode($urls) . ';';
+		$jsContent .= "AdShield.Init();";
+		
 		return $jsContent;
 	}
 
