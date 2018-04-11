@@ -125,6 +125,7 @@ class ApiStatController extends BaseController
 
 	/**
 	 * get stats for the given userKey. (pass blank userkey to get all stat)
+	 * number of traffic per status for the given period
 	 */
 	public static function GetStats($dateFrom, $dateTo, $userKey='')
 	{
@@ -156,6 +157,27 @@ class ApiStatController extends BaseController
 		}
 
 		return $result;
+	}
+
+	/**
+	 * get count of all stats that were saved for the past x seconds
+	 */
+	public function GetTotalTransactionsSince($timeElapsed="2 seconds ago")
+	{
+		$params = [
+			gmdate("Y-m-d H:i:s", strtotime($timeElapsed)),
+			gmdate("Y-m-d H:i:s", strtotime("today")),
+		];
+		$data = DB::table("asStat")
+			->whereBetween("date_added", $params)
+			->select(DB::raw("COUNT(*) AS total"));
+
+		if (!empty($userKey)) $data->where("userKey", $userKey);
+
+		$data = $data->first();
+		if (empty($data)) return 0;
+		return $data->total;
+
 	}
 
 
