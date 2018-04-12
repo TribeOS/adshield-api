@@ -31,7 +31,8 @@ class ApiController extends BaseController
 
 	public function GetAdshieldTransactionSince()
 	{
-		$totalSince = ApiStatController::GetTotalTransactionsSince();
+		$timeAgo = Input::get("elapsed", "2 seconds ago");
+		$totalSince = ApiStatController::GetTotalTransactionsSince($timeAgo);
 		return response()->json(['success'=>true, 'data' => $totalSince]);
 	}
 
