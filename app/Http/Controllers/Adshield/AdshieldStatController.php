@@ -19,7 +19,8 @@ class AdshieldStatController extends BaseController
 	{
 		if (Input::has('checkip'))
 		{
-			return response()->json($this->CheckIP());
+			$result = $this->CheckIP();
+			return response()->json($result);
 		}
 		else if (Input::has('lgadclk'))
 		{
