@@ -241,6 +241,7 @@ class AdshieldStatController extends BaseController
 	/**
 	 * perform checking of ip from our IP list
 	 * check if IP is whitelisted, greylisted, blacklisted
+	 * 0:blacklist,1:whitelist,2:greylist
 	 * otherwise return true
 	 */
 	private function CheckIP()
