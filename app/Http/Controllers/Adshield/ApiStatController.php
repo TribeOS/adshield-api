@@ -27,7 +27,7 @@ class ApiStatController extends BaseController
 	/**
 	 * get user's IP and convert to varbinary for storage
 	 */
-	public static function GetIPBinary()
+	public static function GetIPBinary($raw=false)
 	{
 	    $headers = apache_request_headers();
 	    if (empty($headers['X-Forwarded-For']))
@@ -51,6 +51,7 @@ class ApiStatController extends BaseController
 	    	list($userIP) = preg_split("/,/", $fwdIPs);
 	    }
 	    $ip = inet_pton($userIP);
+	    if ($raw) return [$ip, $userIP];
 	    return $ip;
 	}
 

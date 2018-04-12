@@ -245,9 +245,9 @@ class AdshieldStatController extends BaseController
 	 */
 	private function CheckIP()
 	{
-		$ip = ApiStatController::GetIPBinary();
+		$ip = ApiStatController::GetIPBinary(true);
 		$data = DB::table("asListIp")
-			->where("ip", $ip)
+			->where("ip", $ip[0])
 			->first();
 
 		$status = -1;
@@ -257,7 +257,7 @@ class AdshieldStatController extends BaseController
 			$status = $data->status;
 		}
 
-		return ['ip'=>$ip, 'result'=>false, 'status'=>$status];
+		return ['ip'=>$ip[1], 'result'=>false, 'status'=>$status];
 
 	}
 
