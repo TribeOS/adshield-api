@@ -27,8 +27,7 @@ class AdshieldController extends BaseController
 		$urls = [
 			'statlog' => route('AdshieldLogstat'),
     		'checkReferrer' => route('AdshieldCheckUrl'),
-    		'ipChecker' => '',
-    		'adShieldHandler' => ''
+    		'adShieldHandler' => route('AdshieldHandler')
     	];
 
 		$jsContent .= "\nAdShield.urls = " . json_encode($urls) . ';';

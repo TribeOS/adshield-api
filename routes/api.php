@@ -19,7 +19,7 @@ Route::get('/failed', ['as' => 'ApiError', 'uses' => 'Adshield\ApiController@Req
  * route for frontend
  */
 //get stats
-Route::get('/adshield/getstats', ['uses' => 'Adshield\ApiController@GetAdshieldStats'])
+Route::get('/front/getstats', ['uses' => 'Adshield\ApiController@GetAdshieldStats'])
 	->middleware('authapi');
 
 /**
@@ -27,21 +27,27 @@ Route::get('/adshield/getstats', ['uses' => 'Adshield\ApiController@GetAdshieldS
  */
 
 //main route to load adshield
-Route::get('/adshield', ['uses' => 'Adshield\AdshieldController@ImportAdshield'])
-	->middleware('authapi');
+Route::get('/adshieldjs', ['uses' => 'Adshield\AdshieldController@ImportAdshield'])
+	->middleware('api.access');
 
 /**
  * route for adshield api calls from Third Party
  */
 
 /**
+ * adshield stat and checker
+ */
+Route::post('/ashandler', ['as' => 'AdshieldHandler', 'uses' => 'Adshield\AdshieldStatController@adShield'])
+	->middleware('api.access');
+
+/**
  * stat logging for iframed or direct
  */
-Route::post('/adshield/logstat', ['as' => 'AdshieldLogstat', 'uses' => 'Adshield\ApiStatController@DoLog'])
+Route::post('/logstat', ['as' => 'AdshieldLogstat', 'uses' => 'Adshield\ApiStatController@DoLog'])
 	->middleware('api.access');
 
 /**
  * logging and checking for safe/unsafe referrer
  */
-Route::post('/adshield/checkurl', ['as' => 'AdshieldCheckUrl', 'uses' => 'Adshield\ApiReferrerController@Check'])
+Route::post('/checkurl', ['as' => 'AdshieldCheckUrl', 'uses' => 'Adshield\ApiReferrerController@Check'])
 	->middleware('api.access');
