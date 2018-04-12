@@ -31,7 +31,7 @@ AdShield = function()
     {
         //send stat log for iframe
         var refererUrl = document.referrer;
-        var fullUrl = encodeURIComponent(document.referrer);
+        var fullUrl = encodeURIComponent(refererUrl);
         if (refererUrl.indexOf("://") > -1) { domain = refererUrl.split('/')[2]; }
         else { domain = refererUrl.split('/')[0]; }
         domain = domain.split(':')[0];
