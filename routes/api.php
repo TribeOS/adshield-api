@@ -19,12 +19,8 @@ Route::get('/failed', ['as' => 'ApiError', 'uses' => 'Adshield\ApiController@Req
  * route for frontend
  */
 	//get stats
-	Route::get('/front/GetStats', ['uses' => 'Adshield\ApiController@GetAdshieldStats'])
+	Route::get('/front/getstats', ['uses' => 'Adshield\ApiController@GetAdshieldStats'])
 		->middleware('authapi');
-
-	Route::get('/front/GetTransactionSince', ['uses' => 'Adshield\ApiController@GetAdshieldTransactionSince'])
-		->middleware('authapi');
-
 
 
 /**

@@ -21,19 +21,40 @@ class ApiController extends BaseController
 	 */
 	public function GetAdshieldStats()
 	{
+		$requestedStat = Input::get("type", "stat");
+		$result = null;
+		$success = true;
+		switch($requestedStat)
+		{
+			case 'stat':
+				$result = $this->GetStats();
+				break;
+			case 'transactionSince':
+				$result = $this->GetAdshieldTransactionSince();
+				break;
+			default:
+				//none
+				$success = false;
+		}
+
+		return response()->json(['success'=>$success, 'data' => $result]);
+	}
+
+	private function GetStats()
+	{
 		$dateFrom = Input::get("dateFrom", gmdate("Y-m-d 00:00:00", strtotime("today")));
 		$dateTo = Input::get("dateTo", gmdate("Y-m-d H:i:s"));
 		$userKey = Input::get("userKey", "");
 		$stats = ApiStatController::GetStats($dateFrom, $dateTo, $userKey);
 
-		return response()->json(['success'=>true, 'data'=>$stats]);
+		return $stats;
 	}
 
 	public function GetAdshieldTransactionSince()
 	{
 		$timeAgo = Input::get("elapsed", "2 seconds ago");
 		$totalSince = ApiStatController::GetTotalTransactionsSince($timeAgo);
-		return response()->json(['success'=>true, 'data' => $totalSince]);
+		return $totalSince;
 	}
 
 }
