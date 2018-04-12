@@ -16,12 +16,14 @@ class ApiAuth
      */
     public function handle($request, Closure $next)
     {
-        //check if userkey is valid?
-        // $userKey = $request->route('UserKey');
-        // $record = DB::table("userWebsites")->where("userKey", $userKey)->first();
-        // if (empty($record)) return redirect()->route('ApiError');
+        $key = $request->input("key");
+        if (empty($key)) return redirect()->route('ApiError');
 
-        $key = $request->input("key", "");
+        $auth = DB::table("asConfig")->where("name", "main")->first();
+        if (empty($auth)) return redirect()->route('ApiError');
+
+        $auth = json_decode($auth->value);
+        if ($key !== $auth->frontAccessKey) return redirect()->route('ApiError');
         //we can validate "key"
 
         return $next($request)

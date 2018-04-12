@@ -27,7 +27,7 @@ class ApiStatController extends BaseController
 	/**
 	 * get user's IP and convert to varbinary for storage
 	 */
-	private function GetIPBinary()
+	public static function GetIPBinary()
 	{
 	    $headers = apache_request_headers();
 	    if (empty($headers['X-Forwarded-For']))
@@ -79,7 +79,7 @@ class ApiStatController extends BaseController
 		$visitUrl='', $userKey=''
 	)
 	{
-		$ip = $this->GetIPBinary();
+		$ip = self::GetIPBinary();
 		$id = $this->LogStatInfo([
 			'full_url' => $fullUrl,
 			'source' => $source,
@@ -162,7 +162,7 @@ class ApiStatController extends BaseController
 	/**
 	 * get count of all stats that were saved for the past x seconds
 	 */
-	public function GetTotalTransactionsSince($timeElapsed="2 seconds ago")
+	public static function GetTotalTransactionsSince($timeElapsed="2 seconds ago")
 	{
 		$params = [
 			gmdate("Y-m-d H:i:s", strtotime($timeElapsed)),

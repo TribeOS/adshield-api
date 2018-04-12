@@ -29,4 +29,10 @@ class ApiController extends BaseController
 		return response()->json(['success'=>true, 'data'=>$stats]);
 	}
 
+	public function GetAdshieldTransactionSince()
+	{
+		$totalSince = ApiStatController::GetTotalTransactionsSince();
+		return response()->json(['success'=>true, 'data' => $totalSince]);
+	}
+
 }

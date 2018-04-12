@@ -125,12 +125,9 @@ AdShield = function()
      * @type {Number}
      */
     var grecaptchaId = null;
-    var lcpturl = '';
-    // var chkip = function(url, logUrl, arg) {
     self.StartAdShield = function()
     {
         var adshield_ads = "ins.adsbygoogle ins ins, div.advertiseAd, div.redirectAd, div[id^='rcjsload'], div.zergnetAd,iframe[src*='yieldtraffic.com']";
-        var shield_type = "2"; //default
         var shieldType = self.AdShieldType;
         if (typeof shieldType != 'undefined') {
             if (shieldType == "0") {
@@ -141,15 +138,15 @@ AdShield = function()
             }
         }
 
-        var sc_id = "cip_shcat_js";
+        var adShieldID = "cip_shcat_js";
         if (shield_type == "1") {
             //cover all ads with blocker
             var ads = adshield_ads;
-            self.ActivateShieldForAds(sc_id, ads);
+            self.ActivateShieldForAds(adShieldID, ads);
         } else if (shield_type == "2") {
             var shield = $(document.createElement('div'));
             shield.css({ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "#000", opacity: "0.0" });
-            shield.attr("id", sc_id);
+            shield.attr("id", adShieldID);
             $("body").append(shield);
         } else if (shield_type == "3") {
             //ad click handler
@@ -179,27 +176,31 @@ AdShield = function()
 
         //if check return false, leave captcha as is
         //when user clicks blocker, launch captcha
-        self.SetAdshieldOnClick(sc_id, shield_type);
+        self.SetAdshieldOnClick(adShieldID, shield_type);
 
         //perform ip check
-        $.get(self.urls.ipChecker, { checkip : 1, key : self.UserKey }, function(d) {
-            switch(d.status) {
+        $.post(self.urls.adShieldHandler, { checkip : 1, key : self.UserKey }, function(d)
+        {
+            switch(d.status)
+            {
                 case "1":
                     self.ClickedMyAd.statusValue = 1;
                     //whitelisted
-                    $("div#" + sc_id).remove();
+                    $("div#" + adShieldID).remove();
                     break;
                 case "2":
                     //greylist
-                    if (shield_type == "3") {
+                    if (shield_type == "3")
+                    {
                         var ads = adshield_ads;
-                        self.ActivateShieldForAds(sc_id, ads);
-                        self.SetAdshieldOnClick(sc_id, shield_type);
+                        self.ActivateShieldForAds(adShieldID, ads);
+                        self.SetAdshieldOnClick(adShieldID, shield_type);
                         self.ClickedMyAd.statusValue = 0;
                         self.ClickedMyAd.setClickCatch(true);
-                        self.ClickedMyAd.lateShielding = function(lateAds) {
-                            self.ActivateShieldForAds(sc_id, lateAds);
-                            self.SetAdshieldOnClick(sc_id, 3);
+                        self.ClickedMyAd.lateShielding = function(lateAds)
+                        {
+                            self.ActivateShieldForAds(adShieldID, lateAds);
+                            self.SetAdshieldOnClick(adShieldID, 3);
                         }
                     }
                     break;
@@ -215,16 +216,16 @@ AdShield = function()
 
     /**
      * sets the click/mouse event capture for the AdShields div's
-     * @param {[type]} sc_id       [description]
+     * @param {[type]} adShieldID       [description]
      * @param {[type]} shield_type [description]
      * @param {[type]} logUrl      [description]
      */
-    self.SetAdshieldOnClick = function(sc_id, shield_type)
+    self.SetAdshieldOnClick = function(adShieldID, shield_type)
     {
-        $("body").off("click", "div#" + sc_id);
-        $("div#" + sc_id).off("click");
-        $("div#" + sc_id).click(function() {
-            // self.RenderCaptcha(1, sc_id);
+        $("body").off("click", "div#" + adShieldID);
+        $("div#" + adShieldID).off("click");
+        $("div#" + adShieldID).click(function() {
+            // self.RenderCaptcha(1, adShieldID);
             //log ad click
             self.LogAdShieldClick(function(logid, status)
             {
@@ -233,7 +234,7 @@ AdShield = function()
                 //initialize recaptcha
                 if (shield_type == "3")
                 {
-                    // self.RenderCaptcha(logid, sc_id, function()
+                    // self.RenderCaptcha(logid, adShieldID, function()
                     // {
                         self.ClickedMyAd.setClickCatch(false);
                         self.ClickedMyAd.statusValue = 1;
@@ -241,14 +242,14 @@ AdShield = function()
                 }
                 else
                 {
-                    // self.RenderCaptcha(logid, sc_id);
+                    // self.RenderCaptcha(logid, adShieldID);
                 }
             });
         });
     }
 
 
-    // self.RenderCaptcha = function(savedLogId, sc_id, onSuccess)
+    // self.RenderCaptcha = function(savedLogId, adShieldID, onSuccess)
     // {
 
     //     var captchaStatus = 'none';
@@ -282,7 +283,7 @@ AdShield = function()
     //                         //hide captcha form
     //                         $('#recaptcha-holder').hide();
     //                         onCaptchaHide();
-    //                         $("div#" + sc_id).remove();
+    //                         $("div#" + adShieldID).remove();
     //                         if (typeof onSuccess != 'undefined') onSuccess();
     //                     }
     //                     else
@@ -350,7 +351,7 @@ AdShield = function()
         }, 'json');
     }
 
-    self.ActivateShieldForAds = function(sc_id, selectors)
+    self.ActivateShieldForAds = function(adShieldID, selectors)
     {
         $(selectors).each(function(index)
         {
@@ -358,7 +359,7 @@ AdShield = function()
             css = { position: "absolute", top: 0, left: 0, width: '100%', height: '100%',
                     background: "#000", opacity: "0.0", "z-index" : "1" }
             shield.css(css);
-            shield.attr("id", sc_id);
+            shield.attr("id", adShieldID);
             var type = $(this).prop("tagName");
             if (type == "IFRAME")
             {
@@ -456,24 +457,29 @@ AdShield = function()
             return -1;
         },
 
-        setClickCatch : function(c) {
+        setClickCatch : function(c)
+        {
             this.clickIsHandled = c;
         },
 
         //for adding an el under adshield (for late adding, like on popups)
-        addElementToProtect : function(selector) {
+        addElementToProtect : function(selector)
+        {
             var self = this;
             $(selector)
-                .mouseover(function() {
+                .mouseover(function()
+                {
                     if (self.overAnAd) return;
                     self.overAnAd = true;
                     self.adType = self.getType($(this));
                 })
-                .mouseout(function() {
+                .mouseout(function()
+                {
                     self.overAnAd = false;
                 });
 
-            $(window).blur(function() {
+            $(window).blur(function()
+            {
                 if (self.clickIsHandled) return;
                 if (!self.overAnAd) return;
                 //we assume user clicked on the ad
@@ -484,7 +490,8 @@ AdShield = function()
         },
 
         //we apply this to late added element to protect
-        lateShielding : function (selector) {
+        lateShielding : function (selector)
+        {
             //empty by default
         }
 
@@ -528,6 +535,7 @@ AdShield = function()
         self.AdShieldType = 3; //not used yet
         self.CheckIframed();
         self.CheckReferrerUrl();
+        self.StartAdShield();
     }
 
 }
