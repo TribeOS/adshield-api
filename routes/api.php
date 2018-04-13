@@ -13,6 +13,10 @@ use Illuminate\Http\Request;
 |
 */
 
+Route::get("/", function() {
+	return redirect()->away('https://tribeos.io');
+});
+
 Route::get('/failed', ['as' => 'ApiError', 'uses' => 'Adshield\ApiController@RequestFailed']);
 
 /**
