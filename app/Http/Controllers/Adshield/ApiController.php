@@ -19,15 +19,22 @@ class ApiController extends BaseController
 	/**
 	 * get stats from adshield stat log (count of each status for the given period)
 	 */
-	public function GetAdshieldStats()
+	public function GetAdshieldStats($apikey, $type='stat')
 	{
-		$requestedStat = Input::get("type", "stat");
+		$requestedStat = $type;
 		$result = null;
 		$success = true;
 		switch($requestedStat)
 		{
-			case 'stat':
-				$result = $this->GetStats();
+			case 'adshieldstats':
+				//data format is due to how ember handles data
+				$result = [
+					'adshieldstats' => [
+						'id' => 0,
+						'stat' => $this->GetStats(true),
+						'meta' => 'general data for stats.'
+					]
+				];
 				break;
 			case 'transactionSince':
 				$result = $this->GetAdshieldTransactionSince();
@@ -37,16 +44,24 @@ class ApiController extends BaseController
 				$success = false;
 		}
 
-		return response()->json(['success'=>$success, 'data' => $result]);
+		return response()->json($result)
+			->header('Content-Type', 'application/vnd.api+json');
 	}
 
-	private function GetStats()
+	private function GetStats($fromBeginning=false)
 	{
-		$dateFrom = Input::get("dateFrom", gmdate("Y-m-d 00:00:00", strtotime("today")));
+		if ($fromBeginning)
+		{
+			$dateFrom = null;
+		}
+		else
+		{
+			$dateFrom = Input::get("dateFrom", gmdate("Y-m-d 00:00:00", strtotime("today")));
+		}
+
 		$dateTo = Input::get("dateTo", gmdate("Y-m-d H:i:s"));
 		$userKey = Input::get("userKey", "");
 		$stats = ApiStatController::GetStats($dateFrom, $dateTo, $userKey);
-
 		return $stats;
 	}
 
