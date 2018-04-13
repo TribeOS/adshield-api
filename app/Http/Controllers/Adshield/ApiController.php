@@ -31,7 +31,7 @@ class ApiController extends BaseController
 				$result = [
 					'adshieldstats' => [
 						'id' => 0,
-						'stat' => $this->GetStats(true),
+						'stat' => $this->GetAllStatsVisualizer(),
 						'meta' => 'general data for stats.'
 					]
 				];
@@ -46,6 +46,14 @@ class ApiController extends BaseController
 
 		return response()->json($result)
 			->header('Content-Type', 'application/vnd.api+json');
+	}
+
+	private function GetAllStatsVisualizer()
+	{
+		$data = [];
+		$data['stat'] = $this->GetStats(true);
+		$data['transactions'] = $this->GetAdshieldTransactionSince();
+		return $data;
 	}
 
 	private function GetStats($fromBeginning=false)
