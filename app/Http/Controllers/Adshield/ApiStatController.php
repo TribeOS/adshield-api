@@ -135,26 +135,41 @@ class ApiStatController extends BaseController
 			gmdate("Y-m-d H:i:s", strtotime($dateTo))
 		];
 		$data = DB::table("asStat")
-			->whereBetween("date_added", $params)
 			->select(DB::raw("filter_result, COUNT(*) AS total"))
 			->groupBy("filter_result")
 			->orderBy("filter_result");
+
+		if (empty($dateFrom))
+		{
+			$data->where("date_added", "<=", $params[1]);
+		}
+		else
+		{
+			$data->whereBetween("date_added", $params);
+		}
 
 		if (!empty($userKey)) $data->where("userKey", $userKey);
 
 		$data = $data->get();
 
-		$result = array(
-			0 => 0, //unsafe
-			1 => 0, //safe
-			5 => 0,	//iframe
-			6 => 0,	//bot
-			7 => 0  //direct access (no referrer)
-		);
+		$result = [
+			['status' => 0, 'title' => 'Unsafe', 'count' => 0], //unsafe
+			['status' => 1, 'title' => 'Safe', 'count' => 0], //safe
+			['status' => 5, 'title' => 'IFramed', 'count' => 0],	//iframe
+			['status' => 6, 'title' => 'Bot', 'count' => 0],	//bot
+			['status' => 7, 'title' => 'Direct Access', 'count' => 0]  //direct access (no referrer)
+		];
 
 		foreach($data as $d)
 		{
-			$result[$d->filter_result] = $d->total;
+			foreach($result as $i => $res)
+			{
+				if ($res['status'] == $d->filter_result)
+				{
+					$result[$i]['count'] = $d->total;
+					break;
+				}
+			}
 		}
 
 		return $result;

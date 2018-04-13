@@ -19,7 +19,9 @@ Route::get('/failed', ['as' => 'ApiError', 'uses' => 'Adshield\ApiController@Req
  * route for frontend
  */
 	//get stats
-	Route::get('/front/getstats', ['uses' => 'Adshield\ApiController@GetAdshieldStats'])
+	Route::get('/{apikey}/getstats/{type?}', ['uses' => 'Adshield\ApiController@GetAdshieldStats'])
+		->where('apikey', '[a-zA-Z0-9]{2,8}')
+		->where('type', '[a-zA-Z_]+')
 		->middleware('authapi');
 
 

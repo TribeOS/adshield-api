@@ -16,7 +16,7 @@ class ApiAuth
      */
     public function handle($request, Closure $next)
     {
-        $key = $request->input("key");
+        $key = $request->route('apikey');
         if (empty($key)) return redirect()->route('ApiError');
 
         $auth = DB::table("asConfig")->where("name", "main")->first();
