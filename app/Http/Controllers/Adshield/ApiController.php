@@ -36,9 +36,6 @@ class ApiController extends BaseController
 					]
 				];
 				break;
-			case 'transactionSince':
-				$result = $this->GetAdshieldTransactionSince();
-				break;
 			default:
 				//none
 				$success = false;
