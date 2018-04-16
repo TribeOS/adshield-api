@@ -22,6 +22,33 @@ AdShield = function()
         return decodeURIComponent(results[2].replace(/\+/g, " "));
     }
 
+    var httpGet = function(url, arg, callback)
+    {
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                callback(this.responseText.toJSON());
+            }
+        };
+        xhttp.open("GET", url, true);
+        var data = JSON.stringify(arg);
+        xhttp.send(data);
+    }
+
+    var httpPost = function(url, arg, callback)
+    {
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                callback(this.responseText.toJSON());
+            }
+        };
+        xhttp.setRequestHeader("Content-Type", "application/json");
+        xhttp.open("POST", url, true);
+        var data = JSON.stringify(arg);
+        xhttp.send(data);
+    }
+
     /**
      * sends stat of user to tribeos
      * @param {[type]} status [description]
