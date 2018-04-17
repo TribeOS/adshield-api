@@ -192,9 +192,8 @@ class ApiStatController extends BaseController
 
 		if ($returnData)
 		{
-			$data->select(DB::RAW("COUNT(*) AS total, UNIX_TIMESTAMP(date_added) DIV $interval AS d, MAX(date_added) AS dOn"))
-				->groupBy(DB::RAW("d"))
-				->orderBy("d");
+			$data->select(DB::RAW("COUNT(*) AS total, UNIX_TIMESTAMP(date_added) DIV $interval AS d, TIME(date_added) AS dOn"))
+				->groupBy(DB::RAW("d"));
 		}
 
 		if (!empty($userKey)) $data->where("userKey", $userKey);

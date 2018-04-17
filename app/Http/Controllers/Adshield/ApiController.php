@@ -49,8 +49,13 @@ class ApiController extends BaseController
 	{
 		$data = [];
 		$data['stat'] = $this->GetStats(true);
-		$data['transactions'] = $this->GetAdshieldTransactionSince();
-		// $data['transactionsInterval'] = $this->GetAdshieldTransactionForPastTime();
+
+		$data['transactions'] = [
+			'today' => $this->GetAdshieldTransactionSince('today'),
+			'week' => $this->GetAdshieldTransactionSince('midnight this week')
+		];
+
+		$data['transactionsInterval'] = $this->GetAdshieldTransactionForPastTime();
 		return $data;
 	}
 
@@ -71,46 +76,47 @@ class ApiController extends BaseController
 		return $stats;
 	}
 
-	private function GetAdshieldTransactionSince()
+	private function GetAdshieldTransactionSince($timeAgo)
 	{
-		$timeAgo = Input::get("elapsed", "today");
 		$totalSince = ApiStatController::GetTotalTransactionsSince($timeAgo);
 		return $totalSince;
 	}
 
-	public function GetAdshieldTransactionForPastTime()
+	/**
+	 * gets the transactions count for each $interval seconds on a $steps steps
+	 * use to populate chartJS graph
+	 */
+	public function GetAdshieldTransactionForPastTime($interval=2, $steps=7)
 	{
-		$interval = 2; //interval of each data points
-		$steps = 7; //how many datapoints
-		$timeSince = ($interval * $steps) . ' seconds ago';
-		$transactions = ApiStatController::GetTotalTransactionsSince($timeSince, true, $interval);
+		// $timeSince = ($interval * $steps) . ' seconds ago';
+		$timeSince = $interval . ' seconds ago';
+		$total = ApiStatController::GetTotalTransactionsSince($timeSince);
 
+		// $temporaryTransactions = [];
+		// foreach($transactions as $transaction) $temporaryTransactions[] = $transaction;
+		// $transactions = $temporaryTransactions;
 
-		$data = [];
-		date_default_timezone_set("UTC");
-		$time = strtotime($timeSince);
-		for($a=0; $a<$steps; $a++)
-		{
-			$total = 0;
-			$time += $interval;
-			foreach($transactions as $transaction)
-			{
-				$currentTime = strtotime($transaction->dOn);
-				print_r($currentTime); echo " : ";
-				print_r($time);
-				echo "-=------";
-				if ($currentTime >= $time)
-				{
-					$total = $transaction->total;
-					break;
-				}
-			}
-			$data[] = ['total' => $total, 'time' => $time];
-		}
+		// $count = 0;
+		// $data = [];
+		// date_default_timezone_set("UTC");
+		// $time = strtotime($timeSince);
+		// for($a=0; $a<$steps; $a++)
+		// {
+		// 	$total = 0;
+		// 	$time += $interval;
+		// 	if (isset($transactions[$count]))
+		// 	{
+		// 		$currentTime = strtotime($transactions[$count]->dOn);
+		// 		if ($currentTime < $time)
+		// 		{
+		// 			$total = $transactions[$count]->total;
+		// 			$count ++;
+		// 		}
+		// 	}
+		// 	$data[] = $total;
+		// }
 
-		print_r($data);
-
-		return $transactions;
+		return $total;
 	}
 
 }
