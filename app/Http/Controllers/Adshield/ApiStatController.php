@@ -210,6 +210,4 @@ class ApiStatController extends BaseController
 		return $data->total;
 	}
 
-
-
 }
