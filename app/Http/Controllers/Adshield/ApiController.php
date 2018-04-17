@@ -50,6 +50,7 @@ class ApiController extends BaseController
 		$data = [];
 		$data['stat'] = $this->GetStats(true);
 		$data['transactions'] = $this->GetAdshieldTransactionSince();
+		// $data['transactionsInterval'] = $this->GetAdshieldTransactionForPastTime();
 		return $data;
 	}
 
@@ -70,11 +71,46 @@ class ApiController extends BaseController
 		return $stats;
 	}
 
-	public function GetAdshieldTransactionSince()
+	private function GetAdshieldTransactionSince()
 	{
-		$timeAgo = Input::get("elapsed", "2 seconds ago");
+		$timeAgo = Input::get("elapsed", "today");
 		$totalSince = ApiStatController::GetTotalTransactionsSince($timeAgo);
 		return $totalSince;
+	}
+
+	public function GetAdshieldTransactionForPastTime()
+	{
+		$interval = 2; //interval of each data points
+		$steps = 7; //how many datapoints
+		$timeSince = ($interval * $steps) . ' seconds ago';
+		$transactions = ApiStatController::GetTotalTransactionsSince($timeSince, true, $interval);
+
+
+		$data = [];
+		date_default_timezone_set("UTC");
+		$time = strtotime($timeSince);
+		for($a=0; $a<$steps; $a++)
+		{
+			$total = 0;
+			$time += $interval;
+			foreach($transactions as $transaction)
+			{
+				$currentTime = strtotime($transaction->dOn);
+				print_r($currentTime); echo " : ";
+				print_r($time);
+				echo "-=------";
+				if ($currentTime >= $time)
+				{
+					$total = $transaction->total;
+					break;
+				}
+			}
+			$data[] = ['total' => $total, 'time' => $time];
+		}
+
+		print_r($data);
+
+		return $transactions;
 	}
 
 }

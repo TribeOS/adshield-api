@@ -13,6 +13,8 @@ use Illuminate\Http\Request;
 |
 */
 
+Route::get('test', ['uses' => 'Adshield\ApiController@GetAdshieldTransactionForPastTime']);
+
 Route::get("/", function() {
 	return redirect()->away('https://tribeos.io');
 });

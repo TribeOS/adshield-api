@@ -176,25 +176,40 @@ class ApiStatController extends BaseController
 	}
 
 	/**
-	 * get count of all stats that were saved for the past x seconds
+	 * 1. get count of all stats that were saved for the past x seconds
+	 * 2. get transactions count for every given interval (total every 2 seconds)
 	 */
-	public static function GetTotalTransactionsSince($timeElapsed="2 seconds ago")
+	public static function GetTotalTransactionsSince(
+		$timeElapsed="2 seconds ago", $returnData=false, $interval=2
+	)
 	{
 		$params = [
 			gmdate("Y-m-d H:i:s", strtotime($timeElapsed)),
-			gmdate("Y-m-d H:i:s", strtotime("today")),
+			gmdate("Y-m-d H:i:s", strtotime("now")),
 		];
-		$data = DB::table("asStat")
-			->whereBetween("date_added", $params)
+		$data = DB::table("asStat")->whereBetween("date_added", $params)
 			->select(DB::raw("COUNT(*) AS total"));
 
+		if ($returnData)
+		{
+			$data->select(DB::RAW("COUNT(*) AS total, UNIX_TIMESTAMP(date_added) DIV $interval AS d, MAX(date_added) AS dOn"))
+				->groupBy(DB::RAW("d"))
+				->orderBy("d");
+		}
+
 		if (!empty($userKey)) $data->where("userKey", $userKey);
+
+		if ($returnData)
+		{
+			$data = $data->get();
+			return $data;
+		}
 
 		$data = $data->first();
 		if (empty($data)) return 0;
 		return $data->total;
-
 	}
+
 
 
 }
