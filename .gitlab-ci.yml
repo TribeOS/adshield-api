@@ -6,8 +6,8 @@ build_laravel:
   script:
     - rsync -av -e "ssh -p 62953" ./ mirror@node-tor1-05.tr.be:/var/www/adshield-api/
     - ssh -p 62953 mirror@node-tor1-05.tr.be composer install --working-dir=/var/www/adshield-api/
-    - ssh -p 62953 mirror@node-tor1-05.tr.be chmod -R 777 /var/www/adshield-api/storage
-    - ssh -p 62953 mirror@node-tor1-05.tr.be chmod -R 777 /var/www/adshield-api/bootstrap/cache
+    - ssh -p 62953 mirror@node-tor1-05.tr.be chmod 777 /var/www/adshield-api/storage
+    - ssh -p 62953 mirror@node-tor1-05.tr.be chmod 777 /var/www/adshield-api/bootstrap/cache
 #  only:
 #    - tags
 
