@@ -13,6 +13,8 @@ use Illuminate\Http\Request;
 |
 */
 
+if (env('APP_ENV') === 'production') URL::forceSchema('https');
+
 Route::get('test', ['uses' => 'Adshield\ApiController@GetAdshieldTransactionForPastTime']);
 
 Route::get("/", function() {
@@ -36,7 +38,7 @@ Route::get('/failed', ['as' => 'ApiError', 'uses' => 'Adshield\ApiController@Req
  */
 
 //main route to load adshield
-Route::get('/adshieldjs', ['uses' => 'Adshield\AdshieldController@ImportAdshield'])
+Route::get('adshieldjs', ['uses' => 'Adshield\AdshieldController@ImportAdshield'])
 	->middleware('api.access');
 
 /**
