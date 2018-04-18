@@ -128,7 +128,7 @@ class ApiStatController extends BaseController
 	 * get stats for the given userKey. (pass blank userkey to get all stat)
 	 * number of traffic per status for the given period
 	 */
-	public static function GetStats($dateFrom, $dateTo, $userKey='')
+	public static function GetStats($userKey=null, $dateFrom, $dateTo)
 	{
 		$params = [
 			gmdate("Y-m-d H:i:s", strtotime($dateFrom)),
@@ -180,7 +180,7 @@ class ApiStatController extends BaseController
 	 * 2. get transactions count for every given interval (total every 2 seconds)
 	 */
 	public static function GetTotalTransactionsSince(
-		$timeElapsed="2 seconds ago", $returnData=false, $interval=2
+		$userKey=null,$timeElapsed="2 seconds ago", $returnData=false, $interval=2
 	)
 	{
 		$params = [
