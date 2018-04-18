@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
 |
 */
 
-if (env('APP_ENV') === 'production') URL::forceSchema('https');
+if (env('APP_ENV') === 'production') URL::forceScheme('https');
 
 Route::get('test', ['uses' => 'Adshield\ApiController@GetAdshieldTransactionForPastTime']);
 
