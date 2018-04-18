@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
 |
 */
 
-if (env('APP_ENV') === 'production') URL::forceScheme('https');
+if (env('APP_ENV') !== 'local') URL::forceScheme('https');
 
 Route::get('test', ['uses' => 'Adshield\ApiController@GetAdshieldTransactionForPastTime']);
 
@@ -48,17 +48,17 @@ Route::get('adshieldjs', ['uses' => 'Adshield\AdshieldController@ImportAdshield'
 /**
  * adshield stat and checker
  */
-Route::post('/ashandler', ['as' => 'AdshieldHandler', 'uses' => 'Adshield\AdshieldStatController@adShield'])
+Route::post('ashandler', ['as' => 'AdshieldHandler', 'uses' => 'Adshield\AdshieldStatController@adShield'])
 	->middleware('api.access');
 
 /**
  * stat logging for iframed or direct
  */
-Route::post('/logstat', ['as' => 'AdshieldLogstat', 'uses' => 'Adshield\ApiStatController@DoLog'])
+Route::post('logstat', ['as' => 'AdshieldLogstat', 'uses' => 'Adshield\ApiStatController@DoLog'])
 	->middleware('api.access');
 
 /**
  * logging and checking for safe/unsafe referrer
  */
-Route::post('/checkurl', ['as' => 'AdshieldCheckUrl', 'uses' => 'Adshield\ApiReferrerController@Check'])
+Route::post('checkurl', ['as' => 'AdshieldCheckUrl', 'uses' => 'Adshield\ApiReferrerController@Check'])
 	->middleware('api.access');
