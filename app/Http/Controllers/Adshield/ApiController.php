@@ -51,7 +51,9 @@ class ApiController extends BaseController
 	private function GetAllStatsVisualizer($userKey=null)
 	{
 		$data = [];
-		$data['stat'] = $this->GetStats($userKey, true);
+		$data['stat'] = $this->GetStats($userKey, 
+			gmdate("Y-m-1 H:i:s", strtotime("midnight this month")), 
+			gmdate("Y-m-d H:i:s"));
 
 		$data['transactions'] = [
 			'today' => $this->GetAdshieldTransactionSince($userKey, gmdate("Y-m-d H:i:s", strtotime('midnight today'))),
@@ -68,18 +70,8 @@ class ApiController extends BaseController
 		return $data;
 	}
 
-	private function GetStats($userKey, $fromBeginning=false)
+	private function GetStats($userKey, $dateFrom, $dateTo)
 	{
-		if ($fromBeginning)
-		{
-			$dateFrom = null;
-		}
-		else
-		{
-			$dateFrom = Input::get("dateFrom", gmdate("Y-m-d 00:00:00", strtotime("today")));
-		}
-
-		$dateTo = Input::get("dateTo", gmdate("Y-m-d H:i:s"));
 		$stats = ApiStatController::GetStats($userKey, $dateFrom, $dateTo);
 		return $stats;
 	}
