@@ -51,8 +51,8 @@ class ApiController extends BaseController
 	private function GetAllStatsVisualizer($userKey=null)
 	{
 		$data = [];
-		$data['stat'] = $this->GetStats($userKey, 
-			gmdate("Y-m-1 H:i:s", strtotime("midnight this month")), 
+		$data['stat'] = $this->GetStats($userKey,
+			gmdate("Y-m-1 H:i:s", strtotime("midnight this month")),
 			gmdate("Y-m-d H:i:s"));
 
 		$data['transactions'] = [
