@@ -67,9 +67,10 @@ class ApiStatController extends BaseController
 		$source = Input::get('source', '');
 		$subSource = Input::get('sub_source', '');
 		$userAgent = Input::get('user_agent', '');
-		$visitUrl = Input::get('visitUrl', '');
+		$visitUrl = urldecode(Input::get('visitUrl', ''));
 		$userKey = Input::get('key', '');
-		$this->LogStat($url, $fullUrl, $status, $source, $subSource, $userAgent, $visitUrl, $userKey);
+		$ip = Input::get('ip', null);
+		$this->LogStat($url, $fullUrl, $status, $source, $subSource, $userAgent, $visitUrl, $userKey, $ip);
 	}
 
 	/**
@@ -77,10 +78,17 @@ class ApiStatController extends BaseController
 	 */
 	public function LogStat(
 		$url, $fullUrl, $status, $source='', $subSource='', $userAgent='',
-		$visitUrl='', $userKey=''
+		$visitUrl='', $userKey='', $userIp=null
 	)
 	{
-		$ip = self::GetIPBinary();
+		if ($userIp == null)
+		{
+			$ip = self::GetIPBinary();
+		}
+		else
+		{
+			$ip = inet_pton($userIp);
+		}
 		$id = $this->LogStatInfo([
 			'full_url' => $fullUrl,
 			'source' => $source,
