@@ -1,13 +1,21 @@
 stages:
   - build
+  - mirror
 
 build_laravel:
   stage: build
   script:
     - rsync -av -e "ssh -p 62953" ./ mirror@node-tor1-05.tr.be:/var/www/adshield-api/
     - ssh -p 62953 mirror@node-tor1-05.tr.be composer install --working-dir=/var/www/adshield-api/
-    - ssh -p 62953 mirror@node-tor1-05.tr.be chmod -R 777 /var/www/adshield-api/storage
-    - ssh -p 62953 mirror@node-tor1-05.tr.be chmod -R 777 /var/www/adshield-api/bootstrap/cache
+    - ssh -p 62953 mirror@node-tor1-05.tr.be chmod 777 /var/www/adshield-api/storage
+    - ssh -p 62953 mirror@node-tor1-05.tr.be chmod 777 /var/www/adshield-api/bootstrap/cache
 #  only:
 #    - tags
 
+push_to_github:
+  stage: mirror
+  script:
+    - git config --global push.default simple
+    - git checkout ${CI_COMMIT_REF_NAME}
+    - git pull
+    - git push -q https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GITHUB_REPO}.git ${CI_COMMIT_REF_NAME}
