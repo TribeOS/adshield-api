@@ -92,30 +92,6 @@ class ApiController extends BaseController
 		$timeSince = $interval . ' seconds ago';
 		$total = ApiStatController::GetTotalTransactionsSince($userKey, $timeSince);
 
-		// $temporaryTransactions = [];
-		// foreach($transactions as $transaction) $temporaryTransactions[] = $transaction;
-		// $transactions = $temporaryTransactions;
-
-		// $count = 0;
-		// $data = [];
-		// date_default_timezone_set("UTC");
-		// $time = strtotime($timeSince);
-		// for($a=0; $a<$steps; $a++)
-		// {
-		// 	$total = 0;
-		// 	$time += $interval;
-		// 	if (isset($transactions[$count]))
-		// 	{
-		// 		$currentTime = strtotime($transactions[$count]->dOn);
-		// 		if ($currentTime < $time)
-		// 		{
-		// 			$total = $transactions[$count]->total;
-		// 			$count ++;
-		// 		}
-		// 	}
-		// 	$data[] = $total;
-		// }
-
 		return $total;
 	}
 

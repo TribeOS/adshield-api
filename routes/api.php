@@ -23,15 +23,6 @@ Route::get("/", function() {
 
 Route::get('/failed', ['as' => 'ApiError', 'uses' => 'Adshield\ApiController@RequestFailed']);
 
-/**
- * route for frontend
- */
-	//get stats
-	Route::get('/{apikey}/{type?}', ['uses' => 'Adshield\ApiController@GetAdshieldStats'])
-		->where('apikey', '[a-zA-Z0-9]{2,8}')
-		->where('type', '[a-zA-Z_]+')
-		->middleware('authapi');
-
 
 /**
  * routes for third party websites
@@ -62,3 +53,22 @@ Route::post('logstat', ['as' => 'AdshieldLogstat', 'uses' => 'Adshield\ApiStatCo
  */
 Route::post('checkurl', ['as' => 'AdshieldCheckUrl', 'uses' => 'Adshield\ApiReferrerController@Check'])
 	->middleware('api.access');
+
+
+
+/**
+ * route for frontend
+ */
+
+	//ip access list
+	Route::get('/{apikey}/ipaccesslist', ['uses' => 'Adshield\IpAccessListController@getList'])
+		->where('apikey', '[a-zA-Z0-9]{2,8}')
+		->middleware('authapi');
+
+
+	//get stats
+	Route::get('/{apikey}/{type?}', ['uses' => 'Adshield\ApiController@GetAdshieldStats'])
+		->where('apikey', '[a-zA-Z0-9]{2,8}')
+		->where('type', '[a-zA-Z_]+')
+		->middleware('authapi');
+
