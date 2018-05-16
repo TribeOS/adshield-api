@@ -20,17 +20,16 @@ class IpAccessListController extends BaseController
 		$sortBy = Input::get('sortBy', 'date_added');
 		$sortDir = Input::get('sortDir', 'DESC');
 
-		$filter = [];
-		if (Input::get('dateFrom')) $filter['dateFrom'] = Input::get('dateFrom');
-		if (Input::get('dateTo')) $filter['dateTo'] = Input::get('dateTo');
-		if (Input::get('userKey')) $filter['userKey'] = Input::get('userKey');
+		$filter = Input::get('filter', []);
 
 		$data = DB::table("asStat")
 			->join("asStatInfo", "asStatInfo.id", "=", "asStat.info_id")
+			->leftJoin("asUrlFilter", "asUrlFilter.hash", "=", "asStat.referer_url")
+			->select(DB::raw("ip, date_added, visitUrl"))
 			->take($limit)->skip($page * $limit)
 			->orderBy($sortBy, $sortDir);
 
-		if (!empty($filter['dateFrom']) && !empty($filte['dateTo']))
+		if (!empty($filter['dateFrom']) && !empty($filter['dateTo']))
 			$data->whereBetween("asStat.date_added", [$filter['dateFrom'], $filter['dateTo']]);
 
 		if (!empty($filter['userKey'])) $data->where('userKey', $filter['userKey']);
@@ -47,7 +46,7 @@ class IpAccessListController extends BaseController
 			'limit' => $limit
 		]);
 
-		return response()->json($data)
+		return response()->json(['id' => 0, 'listData' => $data])
 			->header('Content-Type', 'application/vnd.api+json');
 	}
 	
