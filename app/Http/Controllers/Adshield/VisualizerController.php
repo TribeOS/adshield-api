@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Input;
 date_default_timezone_set("America/New_York");
 
 
-class ApiController extends BaseController
+class VisualizerController extends BaseController
 {
 
 	public function RequestFailed()
