@@ -23,8 +23,11 @@ class IpViolatorListController extends BaseController
 		$filter = Input::get('filter', []);
 
 		$data = DB::table("asListIp")
-			->select(DB::raw("ip, status, last_updated"))
+			->join('asStatInfo', 'asListIp.ip', '=', 'asStatInfo.ip')
+			->join('asStat', 'asStat.info_id', '=', 'asStatInfo.id')
+			->select(DB::raw("asListIp.ip, status, last_updated"))
 			->take($limit)->skip($page * $limit)
+			->groupBy('asListIp.ip')
 			->orderBy($sortBy, $sortDir);
 
 		if (!empty($filter['dateFrom']) && !empty($filter['dateTo']))
@@ -34,7 +37,7 @@ class IpViolatorListController extends BaseController
 		if (!empty($filter['ip'])) {
 			try {
 				$ip = inet_pton($filter['ip']);
-				$data->where("ip", inet_pton($filter['ip']));
+				$data->where("asListIp.ip", inet_pton($filter['ip']));
 			} catch (Exception $e) {}
 		}
 
@@ -62,7 +65,7 @@ class IpViolatorListController extends BaseController
 			->join('asStatInfo', 'asStat.info_id', '=', 'asStatInfo.id')
 			->join('asListIp', function($join) use($filter) {
 				$join->on('asListIp.ip', '=', 'asStatInfo.ip');
-				if (!empty($filter['ip'])) $join->where('asListIp.ip', '=', $filter['ip']);
+				if (!empty($filter['ip'])) $join->where('asListIp.ip', '=', inet_pton($filter['ip']));
 			})
 			->select(DB::raw('COUNT(*) AS total, DATE(asStat.date_added) AS added_on'))
 			->groupBy(['asListIp.ip', 'added_on'])
@@ -75,6 +78,7 @@ class IpViolatorListController extends BaseController
 		}
 
 		if (!empty($filter['ip'])) $data->where('asListIp.ip', inet_pton($filter['ip']));
+		if (!empty($filter['status'])) $data->where('asListIp.status', $filter['status']);
 
 		$data = $data->get();
 		$graphData = ['dates' => [], 'totals' => []];
