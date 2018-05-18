@@ -27,7 +27,7 @@ class IpViolatorListController extends BaseController
 			->join('asStat', 'asStat.info_id', '=', 'asStatInfo.id')
 			->select(DB::raw("asListIp.ip, status, last_updated"))
 			->take($limit)->skip($page * $limit)
-			->groupBy('asListIp.ip')
+			->groupBy('asListIp.ip', 'status')
 			->orderBy($sortBy, $sortDir);
 
 		if (!empty($filter['dateFrom']) && !empty($filter['dateTo']))
