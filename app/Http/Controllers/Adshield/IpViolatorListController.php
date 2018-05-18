@@ -25,7 +25,7 @@ class IpViolatorListController extends BaseController
 		$data = DB::table("asListIp")
 			->join('asStatInfo', 'asListIp.ip', '=', 'asStatInfo.ip')
 			->join('asStat', 'asStat.info_id', '=', 'asStatInfo.id')
-			->select(DB::raw("asListIp.ip, status, last_updated"))
+			->select(DB::raw("asListIp.ip, status, MAX(last_updated)"))
 			->take($limit)->skip($page * $limit)
 			->groupBy('asListIp.ip', 'status')
 			->orderBy($sortBy, $sortDir);
