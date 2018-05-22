@@ -60,17 +60,17 @@ Route::post('checkurl', ['as' => 'AdshieldCheckUrl', 'uses' => 'Adshield\ApiRefe
  */
 
 	//ip access list
-	Route::get('/{apikey}/ipaccesslist', ['uses' => 'Adshield\IpAccessListController@getList'])
+	Route::get('/{apikey}/ipaccesslists', ['uses' => 'Adshield\IpAccessListController@getList'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
 	//ip violators list
-	Route::get('/{apikey}/ipviolatorslist', ['uses' => 'Adshield\IpViolatorListController@getList'])
+	Route::get('/{apikey}/ipviolatorslists', ['uses' => 'Adshield\IpViolatorListController@getList'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
 	//ip violators graph
-	Route::get('/{apikey}/ipviolatorgraph', ['uses' => 'Adshield\IpViolatorListController@getGraphData'])
+	Route::get('/{apikey}/ipviolatorgraphs', ['uses' => 'Adshield\IpViolatorListController@getGraphData'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
