@@ -65,12 +65,12 @@ Route::post('checkurl', ['as' => 'AdshieldCheckUrl', 'uses' => 'Adshield\ApiRefe
 		->middleware('authapi');
 
 	//ip violators list
-	Route::get('/{apikey}/ipviolatorslists', ['uses' => 'Adshield\IpViolatorListController@getList'])
+	Route::get('/{apikey}/knownViolators', ['uses' => 'Adshield\IpViolatorListController@getList'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
 	//ip violators graph
-	Route::get('/{apikey}/ipviolatorgraphs', ['uses' => 'Adshield\IpViolatorListController@getGraphData'])
+	Route::get('/{apikey}/ipViolatorGraphs', ['uses' => 'Adshield\IpViolatorListController@getGraphData'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 

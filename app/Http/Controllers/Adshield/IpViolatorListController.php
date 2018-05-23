@@ -24,7 +24,14 @@ class IpViolatorListController extends BaseController
 
 		$data = DB::table("asListIp")
 			->join('asStatInfo', 'asListIp.ip', '=', 'asStatInfo.ip')
-			->join('asStat', 'asStat.info_id', '=', 'asStatInfo.id')
+			->leftJoin('asStat', function($join) use($filter) {
+				$join->on('asStat.info_id', '=', 'asStatInfo.id');
+				if (!empty($filter['duration']) && $filter['duration'] > 0)
+				{
+					$duration = $filter['duration'];
+					$join->where("asStat.date_added", ">=", "DATE_SUB(NOW(), INTERVAL $duration DAY)");
+				}
+			})
 			->select(DB::raw("asListIp.ip, COUNT(*) as total"))
 			->take($limit)->skip($page * $limit)
 			->groupBy('asListIp.ip')
@@ -34,7 +41,8 @@ class IpViolatorListController extends BaseController
 			$data->whereBetween("last_updated", [$filter['dateFrom'], $filter['dateTo']]);
 
 		if ($filter['status'] !== null) $data->where("status", $filter['status']);
-		if (!empty($filter['ip'])) {
+		if (!empty($filter['ip']))
+		{
 			try {
 				$ip = inet_pton($filter['ip']);
 				$data->where("asListIp.ip", inet_pton($filter['ip']));
@@ -60,32 +68,48 @@ class IpViolatorListController extends BaseController
 	public function getGraphData()
 	{
 		$filter = Input::get("filter", []);
+		$ip = $filter['ip'];
 		//get stat access with the given ip.
-		$data = DB::table('asStat')
-			->join('asStatInfo', 'asStat.info_id', '=', 'asStatInfo.id')
-			->join('asListIp', function($join) use($filter) {
-				$join->on('asListIp.ip', '=', 'asStatInfo.ip');
-				if (!empty($filter['ip'])) $join->where('asListIp.ip', '=', inet_pton($filter['ip']));
-			})
-			->select(DB::raw('COUNT(*) AS total, DATE(asStat.date_added) AS added_on'))
-			->groupBy(['asListIp.ip', 'added_on'])
-			->orderBy('added_on', 'asc')
-			->take(30);
+		// $data = DB::table('asStat')
+		// 	->join('asStatInfo', 'asStat.info_id', '=', 'asStatInfo.id')
+		// 	->join('asListIp', function($join) use($filter) {
+		// 		$join->on('asListIp.ip', '=', 'asStatInfo.ip');
+		// 		if (!empty($filter['ip'])) $join->where('asListIp.ip', '=', inet_pton($filter['ip']));
+		// 	})
+		// 	->select(DB::raw('COUNT(*) AS total'))
+		// 	->groupBy(['asListIp.ip'])
+		// 	// ->orderBy('added_on', 'asc')
+		// 	->take(30);
 
-		if (!empty($filter['dateFrom']) && !empty($filter['dateTo']))
-		{
-			$data->whereBetween("asStat.date_added", [$filter['dateFrom'], $filter['dateTo']]);
-		}
+		// if (!empty($filter['dateFrom']) && !empty($filter['dateTo']))
+		// {
+		// 	$data->whereBetween("asStat.date_added", [$filter['dateFrom'], $filter['dateTo']]);
+		// }
 
-		if (!empty($filter['ip'])) $data->where('asListIp.ip', inet_pton($filter['ip']));
-		if (!empty($filter['status'])) $data->where('asListIp.status', $filter['status']);
+		// if (!empty($filter['ip'])) $data->where('asListIp.ip', inet_pton($filter['ip']));
+		// if (!empty($filter['status'])) $data->where('asListIp.status', $filter['status']);
 
-		$data = $data->get();
-		$graphData = ['dates' => [], 'totals' => []];
-		foreach($data as $d) {
-			$graphData['dates'][] = $d->added_on;
-			$graphData['totals'][] = $d->total;
-		}
+		// $data = $data->get();
+		// $graphData = ['dates' => [], 'totals' => []];
+		// foreach($data as $d) {
+		// 	// $graphData['dates'][] = $d->added_on;
+		// 	$graphData['totals'][] = $d->total;
+		// };
+		
+
+		//generate dummy data by random
+		
+		$graphData = [
+			'data' => [rand(4, 1000), rand(4, 1000), rand(4, 1000)],
+			'label' => ['Violation Type 1', 'Violation Type 2', 'Violation Type 3'],
+			'info' => [
+				'ip' => $ip,
+				'loc' => 'San Jose, United States',
+				'org' => 'Zscaler',
+				'isp' => 'Zscaler'
+			]
+		];
+
 
 		return response()->json(['id'=>0, 'graphData' => $graphData])
 			->header('Content-Type', 'application/vnd.api+json');
