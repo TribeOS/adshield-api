@@ -84,6 +84,46 @@ Route::post('checkurl', ['as' => 'AdshieldCheckUrl', 'uses' => 'Adshield\ApiRefe
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
+	//js not loaded list
+	Route::get('/{apikey}/jsNotLoadeds', ['uses' => 'Adshield\JsNotLoadedController@getList'])
+		->where('apikey', '[a-zA-Z0-9]{2,8}')
+		->middleware('authapi');
+
+	//js not loaded graph
+	Route::get('/{apikey}/jsNotLoadedGraphs', ['uses' => 'Adshield\JsNotLoadedController@getGraphData'])
+		->where('apikey', '[a-zA-Z0-9]{2,8}')
+		->middleware('authapi');
+
+	//known violator user agent list
+	Route::get('/{apikey}/knownViolatorUserAgents', ['uses' => 'Adshield\KnownViolatorUserAgentController@getList'])
+		->where('apikey', '[a-zA-Z0-9]{2,8}')
+		->middleware('authapi');
+
+	//known violator user agent graph
+	Route::get('/{apikey}/knownViolatorUserAgentGraphs', ['uses' => 'Adshield\KnownViolatorUserAgentController@getGraphData'])
+		->where('apikey', '[a-zA-Z0-9]{2,8}')
+		->middleware('authapi');
+
+	//browser integrity check list
+	Route::get('/{apikey}/browserIntegrityChecks', ['uses' => 'Adshield\BrowserIntegrityCheckController@getList'])
+		->where('apikey', '[a-zA-Z0-9]{2,8}')
+		->middleware('authapi');
+
+	//browser integrity check graph
+	Route::get('/{apikey}/browserIntegrityCheckGraphs', ['uses' => 'Adshield\BrowserIntegrityCheckController@getGraphData'])
+		->where('apikey', '[a-zA-Z0-9]{2,8}')
+		->middleware('authapi');
+
+	//suspicious user agent list
+	Route::get('/{apikey}/suspUserAgents', ['uses' => 'Adshield\SuspUserAgentController@getList'])
+		->where('apikey', '[a-zA-Z0-9]{2,8}')
+		->middleware('authapi');
+
+	//suspicious user agent graph
+	Route::get('/{apikey}/suspUserAgentGraphs', ['uses' => 'Adshield\SuspUserAgentController@getGraphData'])
+		->where('apikey', '[a-zA-Z0-9]{2,8}')
+		->middleware('authapi');
+
 
 	//get stats
 	Route::get('/{apikey}/{type?}', ['uses' => 'Adshield\VisualizerController@GetAdshieldStats'])
