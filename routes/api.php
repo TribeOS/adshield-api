@@ -174,6 +174,16 @@ Route::post('checkurl', ['as' => 'AdshieldCheckUrl', 'uses' => 'Adshield\ApiRefe
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
+	//known violator automation tool list
+	Route::get('/{apikey}/knownViolatorAutoTools', ['uses' => 'Adshield\KnownViolatorToolController@getList'])
+		->where('apikey', '[a-zA-Z0-9]{2,8}')
+		->middleware('authapi');
+
+	//known violator automation tool graph
+	Route::get('/{apikey}/knownViolatorAutoToolGraphs', ['uses' => 'Adshield\KnownViolatorToolController@getGraphData'])
+		->where('apikey', '[a-zA-Z0-9]{2,8}')
+		->middleware('authapi');
+
 	//protection summary overview graph
 	Route::get('/{apikey}/protectionOverviewGraphs', ['uses' => 'Adshield\ProtectionOverviewController@getGraphData'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
