@@ -189,6 +189,21 @@ Route::post('checkurl', ['as' => 'AdshieldCheckUrl', 'uses' => 'Adshield\ApiRefe
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
+	//threats summary graph
+	Route::get('/{apikey}/threatGraphs', ['uses' => 'Adshield\Threats\ThreatsController@getGraphData'])
+		->where('apikey', '[a-zA-Z0-9]{2,8}')
+		->middleware('authapi');
+
+	//automated traffic threats
+	Route::get('/{apikey}/automatedTraffics', ['uses' => 'Adshield\Threats\ThreatsController@getAutomatedTraffic'])
+		->where('apikey', '[a-zA-Z0-9]{2,8}')
+		->middleware('authapi');
+
+	//traffic by organization list
+	Route::get('/{apikey}/trafficByOrgs', ['uses' => 'Adshield\Threats\ThreatsController@getTrafficByOrganization'])
+		->where('apikey', '[a-zA-Z0-9]{2,8}')
+		->middleware('authapi');
+
 
 	//get stats
 	Route::get('/{apikey}/{type?}', ['uses' => 'Adshield\VisualizerController@GetAdshieldStats'])
