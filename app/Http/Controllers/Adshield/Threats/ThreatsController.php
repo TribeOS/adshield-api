@@ -114,5 +114,24 @@ class ThreatsController extends BaseController
 			->header('Content-Type', 'application/vnd.api+json');		
 	}
 
+
+	public function getSuspiciousCountries()
+	{
+		function generateData($country, $noRequests) {
+			return ['country' => $country, 'noRequests' => $noRequests];
+		}
+		$data = [
+			generateData('United States', 4983),
+			generateData('France', 1342),
+			generateData('China', 8732),
+			generateData('Germany', 4723),
+			generateData('Australia', 3417),
+			generateData('Mexico', 1832)
+		];
+
+		return response()->json(['id'=>0, 'pageData' => $data])
+			->header('Content-Type', 'application/vnd.api+json');			
+	}
+
 	
 }
