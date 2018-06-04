@@ -1,4 +1,4 @@
-<?php
+ <?php
 
 use Illuminate\Http\Request;
 
@@ -206,6 +206,29 @@ Route::post('checkurl', ['as' => 'AdshieldCheckUrl', 'uses' => 'Adshield\ApiRefe
 
 	//susipicious countries
 	Route::get('/{apikey}/suspiciousCountries', ['uses' => 'Adshield\Threats\ThreatsController@getSuspiciousCountries'])
+		->where('apikey', '[a-zA-Z0-9]{2,8}')
+		->middleware('authapi');
+
+
+	//Summary Reports
+	
+	//click fraud
+	Route::get('/{apikey}/clickFraudReports', ['uses' => 'Adshield\SummaryReports\ClickFraudController@getData'])
+		->where('apikey', '[a-zA-Z0-9]{2,8}')
+		->middleware('authapi');
+
+	//captcha requests
+	Route::get('/{apikey}/captchaRequests', ['uses' => 'Adshield\SummaryReports\CaptchaRequestController@getData'])
+		->where('apikey', '[a-zA-Z0-9]{2,8}')
+		->middleware('authapi');
+
+	//desirable automated traffic
+	Route::get('/{apikey}/desirableAutomatedTraffics', ['uses' => 'Adshield\SummaryReports\DesirableAutomatedTrafficController@getData'])
+		->where('apikey', '[a-zA-Z0-9]{2,8}')
+		->middleware('authapi');
+
+	//targeted content
+	Route::get('/{apikey}/targetedContents', ['uses' => 'Adshield\SummaryReports\TargetedContentController@getData'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
