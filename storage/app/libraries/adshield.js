@@ -22,6 +22,33 @@ AdShield = function()
         return decodeURIComponent(results[2].replace(/\+/g, " "));
     }
 
+    var httpGet = function(url, arg, callback)
+    {
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                callback(this.responseText.toJSON());
+            }
+        };
+        xhttp.open("GET", url, true);
+        var data = JSON.stringify(arg);
+        xhttp.send(data);
+    }
+
+    var httpPost = function(url, arg, callback)
+    {
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                callback(this.responseText.toJSON());
+            }
+        };
+        xhttp.setRequestHeader("Content-Type", "application/json");
+        xhttp.open("POST", url, true);
+        var data = JSON.stringify(arg);
+        xhttp.send(data);
+    }
+
     /**
      * sends stat of user to tribeos
      * @param {[type]} status [description]
@@ -138,7 +165,7 @@ AdShield = function()
             }
         }
 
-        var adShieldID = "cip_shcat_js";
+        var adShieldID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
         if (shield_type == "1") {
             //cover all ads with blocker
             var ads = adshield_ads;
@@ -392,6 +419,7 @@ AdShield = function()
         statusValue : 0,
         adType : 0, //1=native, 0=display
         selectors : "ins.adsbygoogle ins ins",
+        isMouseMoving : false,
         onClick : function() {},
         init : function(options) 
         {
@@ -406,7 +434,7 @@ AdShield = function()
                     self.adType = self.getType($(this));
                 })
                 .mouseout(function() {
-                    self.overAnAd = false;
+                    if (self.isMouseMoving) self.overAnAd = false;
                 });
 
             $(window).blur(function() {
@@ -416,11 +444,20 @@ AdShield = function()
                 self.onClick();
                 self.overAnAd = false;
             }).focus();
+
+            var timeout;
+            $(document).mousemove(function() {
+                self.isMouseMoving = true;
+                clearTimeout(timeout);
+                timeout = setTimeout(function() {
+                    self.isMouseMoving = false;
+                }, 500);
+            });
         },
         getType : function(dom) {
             //determine which element/dom is being hovered over
             var tag = dom.prop("tagName");
-            var id = dom.attr("id");
+            var id = typeof dom.attr("id") == 'undefined' ? '' : dom.attr("id");
             var cls = typeof dom.attr("class") == 'undefined' ? '' : dom.attr("class");
             if (tag == "INS") 
             { //adsense

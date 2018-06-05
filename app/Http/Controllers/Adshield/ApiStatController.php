@@ -67,9 +67,10 @@ class ApiStatController extends BaseController
 		$source = Input::get('source', '');
 		$subSource = Input::get('sub_source', '');
 		$userAgent = Input::get('user_agent', '');
-		$visitUrl = Input::get('visitUrl', '');
+		$visitUrl = urldecode(Input::get('visitUrl', ''));
 		$userKey = Input::get('key', '');
-		$this->LogStat($url, $fullUrl, $status, $source, $subSource, $userAgent, $visitUrl, $userKey);
+		$ip = Input::get('ip', null);
+		$this->LogStat($url, $fullUrl, $status, $source, $subSource, $userAgent, $visitUrl, $userKey, $ip);
 	}
 
 	/**
@@ -77,10 +78,17 @@ class ApiStatController extends BaseController
 	 */
 	public function LogStat(
 		$url, $fullUrl, $status, $source='', $subSource='', $userAgent='',
-		$visitUrl='', $userKey=''
+		$visitUrl='', $userKey='', $userIp=null
 	)
 	{
-		$ip = self::GetIPBinary();
+		if ($userIp == null)
+		{
+			$ip = self::GetIPBinary();
+		}
+		else
+		{
+			$ip = inet_pton($userIp);
+		}
 		$id = $this->LogStatInfo([
 			'full_url' => $fullUrl,
 			'source' => $source,
@@ -128,58 +136,85 @@ class ApiStatController extends BaseController
 	 * get stats for the given userKey. (pass blank userkey to get all stat)
 	 * number of traffic per status for the given period
 	 */
-	public static function GetStats($dateFrom, $dateTo, $userKey='')
+	public static function GetStats($userKey=null, $dateFrom, $dateTo)
 	{
 		$params = [
 			gmdate("Y-m-d H:i:s", strtotime($dateFrom)),
 			gmdate("Y-m-d H:i:s", strtotime($dateTo))
 		];
 		$data = DB::table("asStat")
-			->whereBetween("date_added", $params)
 			->select(DB::raw("filter_result, COUNT(*) AS total"))
 			->groupBy("filter_result")
 			->orderBy("filter_result");
+
+		if (empty($dateFrom))
+		{
+			$data->where("date_added", "<=", $params[1]);
+		}
+		else
+		{
+			$data->whereBetween("date_added", $params);
+		}
 
 		if (!empty($userKey)) $data->where("userKey", $userKey);
 
 		$data = $data->get();
 
-		$result = array(
-			0 => 0, //unsafe
-			1 => 0, //safe
-			5 => 0,	//iframe
-			6 => 0,	//bot
-			7 => 0  //direct access (no referrer)
-		);
+		$result = [
+			['status' => 0, 'title' => 'Unsafe', 'count' => 0], //unsafe
+			['status' => 1, 'title' => 'Safe', 'count' => 0], //safe
+			['status' => 5, 'title' => 'IFramed', 'count' => 0],	//iframe
+			['status' => 6, 'title' => 'Bot', 'count' => 0],	//bot
+			['status' => 7, 'title' => 'Direct Access', 'count' => 0]  //direct access (no referrer)
+		];
 
 		foreach($data as $d)
 		{
-			$result[$d->filter_result] = $d->total;
+			foreach($result as $i => $res)
+			{
+				if ($res['status'] == $d->filter_result)
+				{
+					$result[$i]['count'] = $d->total;
+					break;
+				}
+			}
 		}
 
 		return $result;
 	}
 
 	/**
-	 * get count of all stats that were saved for the past x seconds
+	 * 1. get count of all stats that were saved for the past x seconds
+	 * 2. get transactions count for every given interval (total every 2 seconds)
 	 */
-	public static function GetTotalTransactionsSince($timeElapsed="2 seconds ago")
+	public static function GetTotalTransactionsSince(
+		$userKey=null,$timeElapsed="2 seconds ago", $returnData=false, $interval=2
+	)
 	{
 		$params = [
 			gmdate("Y-m-d H:i:s", strtotime($timeElapsed)),
-			gmdate("Y-m-d H:i:s", strtotime("today")),
+			gmdate("Y-m-d H:i:s", strtotime("now")),
 		];
-		$data = DB::table("asStat")
-			->whereBetween("date_added", $params)
+		$data = DB::table("asStat")->whereBetween("date_added", $params)
 			->select(DB::raw("COUNT(*) AS total"));
 
+		if ($returnData)
+		{
+			$data->select(DB::RAW("COUNT(*) AS total, UNIX_TIMESTAMP(date_added) DIV $interval AS d, TIME(date_added) AS dOn"))
+				->groupBy(DB::RAW("d"));
+		}
+
 		if (!empty($userKey)) $data->where("userKey", $userKey);
+
+		if ($returnData)
+		{
+			$data = $data->get();
+			return $data;
+		}
 
 		$data = $data->first();
 		if (empty($data)) return 0;
 		return $data->total;
-
 	}
-
 
 }
