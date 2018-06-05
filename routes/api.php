@@ -59,10 +59,13 @@ Route::post('checkurl', ['as' => 'AdshieldCheckUrl', 'uses' => 'Adshield\ApiRefe
  * route for frontend
  */
 
-	//ip access list
-	Route::get('/{apikey}/ipaccesslists', ['uses' => 'Adshield\IpAccessListController@getList'])
-		->where('apikey', '[a-zA-Z0-9]{2,8}')
-		->middleware('authapi');
+
+	
+	//==========================================================================================
+
+
+
+	//Protection Summary
 
 	//ip violators list
 	Route::get('/{apikey}/knownViolators', ['uses' => 'Adshield\IpViolatorListController@getList'])
@@ -209,6 +212,8 @@ Route::post('checkurl', ['as' => 'AdshieldCheckUrl', 'uses' => 'Adshield\ApiRefe
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
+	//==========================================================================================
+
 
 	//Summary Reports
 	
@@ -231,6 +236,37 @@ Route::post('checkurl', ['as' => 'AdshieldCheckUrl', 'uses' => 'Adshield\ApiRefe
 	Route::get('/{apikey}/targetedContents', ['uses' => 'Adshield\SummaryReports\TargetedContentController@getData'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
+
+	//==========================================================================================
+	
+
+	//SETTINGS
+
+	//Settings Page
+	Route::any('/{apikey}/contentProtections/{id?}', ['uses' => 'Adshield\Settings\ContentProtectionController@handleSettings'])
+		->where('apikey', '[a-zA-Z0-9]{2,8}')
+		->middleware('authapi');
+	
+	//custom pages
+	Route::any('/{apikey}/customPages/{id?}', ['uses' => 'Adshield\Settings\CustomPagesController@handleSettings'])
+		->where('apikey', '[a-zA-Z0-9]{2,8}')
+		->middleware('authapi');
+
+	//custom pages
+	Route::any('/{apikey}/countryBlockLists/{id?}', ['uses' => 'Adshield\Settings\CountryBlockListController@handleSettings'])
+		->where('apikey', '[a-zA-Z0-9]{2,8}')
+		->middleware('authapi');
+
+
+	//ip access list
+	Route::get('/{apikey}/ipaccesslists', ['uses' => 'Adshield\IpAccessListController@getList'])
+		->where('apikey', '[a-zA-Z0-9]{2,8}')
+		->middleware('authapi');
+
+
+
+	//==========================================================================================
+
 
 
 	//get stats
