@@ -51,10 +51,11 @@ class VisualizerController extends BaseController
 
 	public static function BroadcastStats()
 	{
+		$self = new VisualizerController();
 		$result = [
 			'adshieldstats' => [
 				'id' => 0,
-				'stat' => $this->GetAllStatsVisualizer($userKey),
+				'stat' => $self->GetAllStatsVisualizer(),
 				'meta' => 'general data for stats.'
 			]
 		];
