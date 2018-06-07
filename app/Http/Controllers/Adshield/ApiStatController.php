@@ -71,6 +71,7 @@ class ApiStatController extends BaseController
 		$userKey = Input::get('key', '');
 		$ip = Input::get('ip', null);
 		$this->LogStat($url, $fullUrl, $status, $source, $subSource, $userAgent, $visitUrl, $userKey, $ip);
+		VisualizerController::BroadcastStats();
 	}
 
 	/**

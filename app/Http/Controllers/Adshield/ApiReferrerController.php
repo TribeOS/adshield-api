@@ -52,6 +52,7 @@ class ApiReferrerController extends BaseController
 		else if ($result == self::STATUS_SAFE)
 		{}
 		echo json_encode(array('result'=>"$result"));
+		VisualizerController::BroadcastStats();
 	}
 
 	/**

@@ -6,6 +6,7 @@ use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
+use App\Events\AdShieldUpdated;
 
 date_default_timezone_set("America/New_York");
 
@@ -46,6 +47,18 @@ class VisualizerController extends BaseController
 
 		return response()->json($result)
 			->header('Content-Type', 'application/vnd.api+json');
+	}
+
+	public static function BroadcastStats()
+	{
+		$result = [
+			'adshieldstats' => [
+				'id' => 0,
+				'stat' => $this->GetAllStatsVisualizer($userKey),
+				'meta' => 'general data for stats.'
+			]
+		];
+		event(new AdShieldUpdated($result));
 	}
 
 	private function GetAllStatsVisualizer($userKey=null)
