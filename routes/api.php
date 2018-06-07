@@ -148,12 +148,12 @@ Route::post('checkurl', ['as' => 'AdshieldCheckUrl', 'uses' => 'Adshield\ApiRefe
 		->middleware('authapi');
 
 	//pages per minute exceeded list
-	Route::get('/{apikey}/pagesPerSessionExceeds', ['uses' => 'Adshield\PagesPerMinuteExceedController@getList'])
+	Route::get('/{apikey}/pagesPerSessionExceeds', ['uses' => 'Adshield\PagesPerSessionExceedController@getList'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
 	//pages per minute exceeded  graph
-	Route::get('/{apikey}/pagesPerSessionExceedGraphs', ['uses' => 'Adshield\PagesPerMinuteExceedController@getGraphData'])
+	Route::get('/{apikey}/pagesPerSessionExceedGraphs', ['uses' => 'Adshield\PagesPerSessionExceedController@getGraphData'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
@@ -269,8 +269,14 @@ Route::post('checkurl', ['as' => 'AdshieldCheckUrl', 'uses' => 'Adshield\ApiRefe
 
 
 
+	//MISC. calls
+	Route::get('/apikey}/countries/{id?}', ['uses' => 'Adshield\Misc\CountryController@handle'])
+		->where('apikey', '[a-zA-Z0-9]{2,8}')
+		->middleware('authapi');
+	//==========================================================================================
+
 	//get stats
-	Route::get('/{apikey}/{type?}', ['uses' => 'Adshield\VisualizerController@GetAdshieldStats'])
+	Route::get('/{apikey}/{type?}', ['uses' => 'Adshield\Misc\CountryController@handle'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->where('type', '[a-zA-Z_]+')
 		->middleware('authapi');
