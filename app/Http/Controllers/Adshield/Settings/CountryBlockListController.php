@@ -8,46 +8,69 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Http\Request;
 
-
+use App\Country;
 
 class CountryBlockListController extends BaseController
 {
 
-	public function handleSettings(Request $request)
+	public function handle(Request $request, $apiKey, $id=null)
 	{
 		if ($request->isMethod('get'))
 		{
-			return $this->getBlockedCountries();
+			if (empty($id)) {
+				$data = $this->getBlockedCountries();
+			} else {
+				$data = $this->getBlockedCountry($id);
+			}
+			return response()->json($data)
+				->header('Content-Type', 'application/vnd.api+json');
 		}
-		else
+		else if ($request->isMethod('post'))
 		{
 			return $this->addCountry();
 		}
+		else if ($request->isMethod('delete'))
+		{
+			return $this->remove($id);
+		}
+	}
+
+	private function getBlockedCountry($id)
+	{
+		$data = DB::table("asBlockedCountries")->where("id", $id)->first();
+		return $data;
 	}
 
 	private function getBlockedCountries()
 	{
-
-		$data = [
-			['id' => 1, 'name' => 'Philippines', 'code' => 'PH'],
-		];
-
-		return response()->json($data)
-			->header('Content-Type', 'application/vnd.api+json');
-
+		$data = DB::table("asBlockedCountries")->get();
+		return $data;
 	}
 
 	private function addCountry()
 	{
-		$settings = Input::get('customPage', []);
+		$id = Input::get("countryBlockList")['country'];
 		//save settings to database here
-		// DB::table("settings")
-		// 	->update([
-		// 		'settings' => json_encode($settings),
-		// 		'updatedOn' => gmdate('Y-m-d H:i:s')
-		// 	]);
-		//only one record in the database for this
-		return response()->json(['id'=>1, 'pageData' => $settings])
+		$insertId = DB::table("asBlockedCountries")
+			->insertGetId([
+				'country' => $id,
+				'addedOn' => gmdate('Y-m-d H:i:s')
+			]);
+
+		$data = [
+			'id' => $insertId,
+			'addedOn' => gmdate("Y-m-d H:i:s"),
+			'countryBlockList' => ['country' => $id]
+		];
+		return response()->json($data)
+			->header('Content-Type', 'application/vnd.api+json')
+			->header('Access-Control-Allow-Headers', 'Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With');
+	}
+
+	private function remove($id)
+	{
+		DB::table("asBlockedCountries")->where("id", $id)->delete();
+		return response()->json([])
 			->header('Content-Type', 'application/vnd.api+json')
 			->header('Access-Control-Allow-Headers', 'Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With');
 	}

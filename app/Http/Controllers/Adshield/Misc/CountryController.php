@@ -15,23 +15,32 @@ use App\Country;
 class CountryController extends BaseController
 {
 
-	public function handle(Request $request, $id=null)
+	public function handle(Request $request, $apikey=null, $id=null)
 	{
 		if ($request->isMethod('get'))
-		{
-			$filter = [];
-			$code  = Input::get('code', []);
-			if (!empty($code)) $filter['code'] = $code;
-			$data = $this->getCountries($filter);
+		{	
+			if(empty($id)) {
+				$data = $this->getCountries();
+			} else {
+				$data = Country::find($id);
+			}
 			return response()->json($data)
 				->header('Content-Type', 'application/vnd.api+json');
 		}
 	}
 
-	private function getCountries($filter=[])
+	private function getCountries()
 	{
-		$data = Country::where($filter)->orderBy('countryName')->get();
-		return $data;
+		$filter = [];
+		$name = Input::get('countryName', '');
+		$data = DB::table("countries")
+			->leftJoin("asBlockedCountries", "asBlockedCountries.country", "=", "countries.id")
+			->select(DB::raw("countries.countryCode, countries.id, countries.countryName"))
+			->whereNull("asBlockedCountries.country")
+			->orderBy('countryName')->take(10);
+		if (!empty($name)) $data->where('countryName', 'like', '%' . $name . '%');
+
+		return $data->get();
 	}
 	
 }
