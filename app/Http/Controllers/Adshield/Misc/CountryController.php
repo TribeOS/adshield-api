@@ -15,14 +15,14 @@ use App\Country;
 class CountryController extends BaseController
 {
 
-	public function handle($id=null)
+	public function handle(Request $request, $id=null)
 	{
 		if ($request->isMethod('get'))
 		{
 			$filter = [];
 			$code  = Input::get('code', []);
 			if (!empty($code)) $filter['code'] = $code;
-			$data = getCountries($filter);
+			$data = $this->getCountries($filter);
 			return response()->json($data)
 				->header('Content-Type', 'application/vnd.api+json');
 		}
