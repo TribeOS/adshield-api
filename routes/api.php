@@ -252,16 +252,26 @@ Route::post('checkurl', ['as' => 'AdshieldCheckUrl', 'uses' => 'Adshield\ApiRefe
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
-	//custom pages
-	Route::any('/{apikey}/countryBlockLists/{id?}', ['uses' => 'Adshield\Settings\CountryBlockListController@handle'])
-		->where('apikey', '[a-zA-Z0-9]{2,8}')
-		->middleware('authapi');
-
-
 	//ip access list
 	Route::get('/{apikey}/ipaccesslists', ['uses' => 'Adshield\IpAccessListController@getList'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
+
+	//country block list
+	Route::any('/{apikey}/countryBlockLists/{id?}', ['uses' => 'Adshield\Settings\CountryBlockListController@handle'])
+		->where('apikey', '[a-zA-Z0-9]{2,8}')
+		->middleware('authapi');
+
+	//content distribution
+	Route::any('/{apikey}/contentDistributions/{id?}', ['uses' => 'Adshield\Settings\ContentDistributionController@handle'])
+		->where('apikey', '[a-zA-Z0-9]{2,8}')
+		->middleware('authapi');
+
+	//account management
+	Route::any('/{apikey}/accountManagements/{id?}', ['uses' => 'Adshield\Settings\AccountManagementController@handle'])
+		->where('apikey', '[a-zA-Z0-9]{2,8}')
+		->middleware('authapi');
+
 
 
 
