@@ -273,8 +273,15 @@ Route::post('checkurl', ['as' => 'AdshieldCheckUrl', 'uses' => 'Adshield\ApiRefe
 		->middleware('authapi');
 
 
+	//==========================================================================================
 
 
+	// COMPLETE LOG
+	
+	//log
+	Route::any('/{apikey}/completeLogs/{id?}', ['uses' => 'Adshield\LogController@handle'])
+		->where('apikey', '[a-zA-Z0-9]{2,8}')
+		->middleware('authapi');
 	//==========================================================================================
 
 
