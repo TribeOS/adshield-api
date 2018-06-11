@@ -285,6 +285,26 @@ Route::post('checkurl', ['as' => 'AdshieldCheckUrl', 'uses' => 'Adshield\ApiRefe
 	//==========================================================================================
 
 
+	// SUMMARY 
+	
+	//traffic summary
+	Route::any('/{apikey}/trafficSummaries', ['uses' => 'Adshield\TrafficSummary\TrafficSummaryController@getData'])
+		->where('apikey', '[a-zA-Z0-9]{2,8}')
+		->middleware('authapi');
+
+	//cache analysis
+	Route::any('/{apikey}/cacheAnalyses', ['uses' => 'Adshield\TrafficSummary\CacheAnalysisController@getData'])
+		->where('apikey', '[a-zA-Z0-9]{2,8}')
+		->middleware('authapi');
+
+	//upstream http errors
+	Route::any('/{apikey}/upstreamHttpErrors', ['uses' => 'Adshield\TrafficSummary\UpstreamHttpErrorsController@getData'])
+		->where('apikey', '[a-zA-Z0-9]{2,8}')
+		->middleware('authapi');
+
+
+	//==========================================================================================
+
 
 	//MISC. calls
 	Route::get('/{apikey}/countries/{id?}', ['uses' => 'Adshield\Misc\CountryController@handle'])
