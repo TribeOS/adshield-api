@@ -6,11 +6,12 @@ use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
+use App\Events\AdShieldUpdated;
 
 date_default_timezone_set("America/New_York");
 
 
-class ApiController extends BaseController
+class VisualizerController extends BaseController
 {
 
 	public function RequestFailed()
@@ -46,6 +47,19 @@ class ApiController extends BaseController
 
 		return response()->json($result)
 			->header('Content-Type', 'application/vnd.api+json');
+	}
+
+	public static function BroadcastStats()
+	{
+		$self = new VisualizerController();
+		$result = [
+			'adshieldstats' => [
+				'id' => 0,
+				'stat' => $self->GetAllStatsVisualizer(),
+				'meta' => 'general data for stats.'
+			]
+		];
+		event(new AdShieldUpdated($result));
 	}
 
 	private function GetAllStatsVisualizer($userKey=null)
@@ -91,30 +105,6 @@ class ApiController extends BaseController
 		// $timeSince = ($interval * $steps) . ' seconds ago';
 		$timeSince = $interval . ' seconds ago';
 		$total = ApiStatController::GetTotalTransactionsSince($userKey, $timeSince);
-
-		// $temporaryTransactions = [];
-		// foreach($transactions as $transaction) $temporaryTransactions[] = $transaction;
-		// $transactions = $temporaryTransactions;
-
-		// $count = 0;
-		// $data = [];
-		// date_default_timezone_set("UTC");
-		// $time = strtotime($timeSince);
-		// for($a=0; $a<$steps; $a++)
-		// {
-		// 	$total = 0;
-		// 	$time += $interval;
-		// 	if (isset($transactions[$count]))
-		// 	{
-		// 		$currentTime = strtotime($transactions[$count]->dOn);
-		// 		if ($currentTime < $time)
-		// 		{
-		// 			$total = $transactions[$count]->total;
-		// 			$count ++;
-		// 		}
-		// 	}
-		// 	$data[] = $total;
-		// }
 
 		return $total;
 	}
