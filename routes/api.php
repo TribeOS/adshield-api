@@ -321,7 +321,7 @@ Route::post('checkurl', ['as' => 'AdshieldCheckUrl', 'uses' => 'Adshield\ApiRefe
 
 
 	//get stats
-	Route::get('/{type?}', ['uses' => 'Adshield\VisualizerController@GetAdshieldStats'])
+	Route::get('/adshieldstats', ['uses' => 'Adshield\VisualizerController@GetAdshieldStats'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->where('type', '[a-zA-Z_]+')
 		->middleware('authapi');
