@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
 |
 */
 
-// URL::forceScheme('https');
+URL::forceScheme('https');
 
 
 Route::get("/", function() {
