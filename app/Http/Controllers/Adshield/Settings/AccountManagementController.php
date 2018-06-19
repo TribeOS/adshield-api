@@ -19,7 +19,7 @@ class AccountManagementController extends BaseController
 		{
 			return $this->getSettings();
 		}
-		else if ($request->isMethod('post'))
+		else if ($request->isMethod('put'))
 		{
 			return $this->saveSettings();
 		}
