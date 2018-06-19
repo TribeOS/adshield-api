@@ -44,7 +44,7 @@ class AccountManagementController extends BaseController
 			],
 			'emailNotifications' => [
 				['email' => 'is@tr.be', 'coverage' => 'all'],
-				['jw' => 'is@tr.be', 'coverage' => 'all'],
+				['email' => 'jw@tr.be', 'coverage' => 'all'],
 			],
 			'password' => [
 			]
