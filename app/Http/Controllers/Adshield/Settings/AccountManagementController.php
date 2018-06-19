@@ -59,6 +59,7 @@ class AccountManagementController extends BaseController
 	private function saveSettings()
 	{
 		$settings = Input::get('accountManagement', []);
+		$settings = $settings['pageData'];
 		//save settings to database here
 		// DB::table("settings")
 		// 	->update([
