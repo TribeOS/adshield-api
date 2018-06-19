@@ -58,7 +58,7 @@ class AccountManagementController extends BaseController
 
 	private function saveSettings()
 	{
-		$settings = Input::get('contentDistribution', []);
+		$settings = Input::get('accountManagement', []);
 		//save settings to database here
 		// DB::table("settings")
 		// 	->update([
