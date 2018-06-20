@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * handles adshield dashboard logins
+ */
+
 namespace App\Http\Controllers\Adshield;
 
 use App\Http\Controllers\Controller;
@@ -10,6 +14,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 
 use App\User;
+
 
 class LoginController extends Controller
 {
@@ -37,6 +42,9 @@ class LoginController extends Controller
         $response['username'] = $user->username;
         $response['id'] = $user->id;
         $this->saveToken($token, $user->id);
+
+        $response['websites'] = UserWebsitesController::getUserWebsites($user->id);
+
 
         return response()->json($response)
             ->header('Content-Type', 'application/vnd.api+json');
@@ -86,5 +94,10 @@ class LoginController extends Controller
         return true;
     }
 
+    public static function getUserIdFromToken($token)
+    {
+        $result = DB::table("accessTokens")->where("accessToken", $token)->first();
+        return $result->userId;
+    }
 
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Adshield;
+namespace App\Http\Controllers\Adshield\Protection;
 
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Input;
 date_default_timezone_set("America/New_York");
 
 
-class IpViolatorListController extends BaseController
+class BlockedCountryController extends BaseController
 {
 
 	public function getList()
@@ -62,6 +62,7 @@ class IpViolatorListController extends BaseController
 		// ]);
 		
 		$data = [];
+		$data['total'] = 10;
 		$data['data'] = [
 			['ip' => '67.197.148.127', 'total' => 12],
 			['ip' => '24.107.198.190', 'total' => 2],
@@ -123,23 +124,23 @@ class IpViolatorListController extends BaseController
 
 		//sample data
 		$data = [
-			'67.197.148.127' =>  generateData('67.197.148.127', [53, 65, 34]),
-			'24.107.198.190' =>  generateData('24.107.198.190', [31, 51, 34]),
-			'69.76.60.76' =>  generateData('69.76.60.76', [72, 12, 34]),
-			'50.37.77.29' =>  generateData('50.37.77.29', [91, 51, 34]),
-			'68.98.121.115' =>  generateData('68.98.121.115', [51, 73, 34]),
+			'67.197.148.127' =>  generateData('67.197.148.127', [53, 65]),
+			'24.107.198.190' =>  generateData('24.107.198.190', [31, 51]),
+			'69.76.60.76' =>  generateData('69.76.60.76', [72, 12]),
+			'50.37.77.29' =>  generateData('50.37.77.29', [91, 51]),
+			'68.98.121.115' =>  generateData('68.98.121.115', [51, 73]),
 			'68.53.8.86' =>  generateData('68.53.8.86', [34, 97]),
-			'45.19.109.15' =>  generateData('45.19.109.15', [22, 154, 34]),
-			'68.115.3.49' =>  generateData('68.115.3.49', [25, 61, 34]),
-			'68.13.116.36' =>  generateData('68.13.116.36', [54, 52, 34]),
-			'69.123.62.30' =>  generateData('69.123.62.30', [37, 26, 34])
+			'45.19.109.15' =>  generateData('45.19.109.15', [22, 154]),
+			'68.115.3.49' =>  generateData('68.115.3.49', [25, 61]),
+			'68.13.116.36' =>  generateData('68.13.116.36', [54, 52]),
+			'69.123.62.30' =>  generateData('69.123.62.30', [37, 26])
 		];
 		
 
 		$info = IpInfoController::GetIpInfo($ip);
 		$graphData = [
 			'data' => $data[$ip]['violations'],
-			'label' => ['Identities', 'Known Signatures', 'Session Length Exceed'],
+			'label' => ['Customer Specified', 'Known Signatures'],
 			'info' => [
 				'ip' => $ip,
 				'loc' => $info['city'] . ', ' . $info['country'],

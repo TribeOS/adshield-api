@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Adshield;
+namespace App\Http\Controllers\Adshield\Protection;
 
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Input;
 date_default_timezone_set("America/New_York");
 
 
-class SuspUserAgentController extends BaseController
+class BrowserIntegrityCheckController extends BaseController
 {
 
 	public function getList()

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Adshield;
+namespace App\Http\Controllers\Adshield\Protection;
 
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Input;
 date_default_timezone_set("America/New_York");
 
 
-class PagesPerSessionExceedController extends BaseController
+class KnownViolatorUserAgentController extends BaseController
 {
 
 	public function getList()
@@ -62,7 +62,6 @@ class PagesPerSessionExceedController extends BaseController
 		// ]);
 		
 		$data = [];
-		$data['total'] = 10;
 		$data['data'] = [
 			['ip' => '67.197.148.127', 'total' => 12],
 			['ip' => '24.107.198.190', 'total' => 2],
@@ -84,33 +83,6 @@ class PagesPerSessionExceedController extends BaseController
 	{
 		$filter = Input::get("filter", []);
 		$ip = $filter['ip'];
-		//get stat access with the given ip.
-		// $data = DB::table('asStat')
-		// 	->join('asStatInfo', 'asStat.info_id', '=', 'asStatInfo.id')
-		// 	->join('asListIp', function($join) use($filter) {
-		// 		$join->on('asListIp.ip', '=', 'asStatInfo.ip');
-		// 		if (!empty($filter['ip'])) $join->where('asListIp.ip', '=', inet_pton($filter['ip']));
-		// 	})
-		// 	->select(DB::raw('COUNT(*) AS total'))
-		// 	->groupBy(['asListIp.ip'])
-		// 	// ->orderBy('added_on', 'asc')
-		// 	->take(30);
-
-		// if (!empty($filter['dateFrom']) && !empty($filter['dateTo']))
-		// {
-		// 	$data->whereBetween("asStat.date_added", [$filter['dateFrom'], $filter['dateTo']]);
-		// }
-
-		// if (!empty($filter['ip'])) $data->where('asListIp.ip', inet_pton($filter['ip']));
-		// if (!empty($filter['status'])) $data->where('asListIp.status', $filter['status']);
-
-		// $data = $data->get();
-		// $graphData = ['dates' => [], 'totals' => []];
-		// foreach($data as $d) {
-		// 	// $graphData['dates'][] = $d->added_on;
-		// 	$graphData['totals'][] = $d->total;
-		// };
-		
 
 		//generate dummy data by random
 		
@@ -124,23 +96,23 @@ class PagesPerSessionExceedController extends BaseController
 
 		//sample data
 		$data = [
-			'67.197.148.127' =>  generateData('67.197.148.127', [53, 65, 34]),
-			'24.107.198.190' =>  generateData('24.107.198.190', [31, 51, 34]),
-			'69.76.60.76' =>  generateData('69.76.60.76', [72, 12, 34]),
-			'50.37.77.29' =>  generateData('50.37.77.29', [91, 51, 34]),
-			'68.98.121.115' =>  generateData('68.98.121.115', [51, 73, 34]),
-			'68.53.8.86' =>  generateData('68.53.8.86', [34, 97, 89]),
-			'45.19.109.15' =>  generateData('45.19.109.15', [22, 154, 34]),
-			'68.115.3.49' =>  generateData('68.115.3.49', [25, 61, 34]),
-			'68.13.116.36' =>  generateData('68.13.116.36', [54, 52, 34]),
-			'69.123.62.30' =>  generateData('69.123.62.30', [37, 26, 34])
+			'67.197.148.127' =>  generateData('67.197.148.127', [80]),
+			'24.107.198.190' =>  generateData('24.107.198.190', [43]),
+			'69.76.60.76' =>  generateData('69.76.60.76', [71]),
+			'50.37.77.29' =>  generateData('50.37.77.29', [99]),
+			'68.98.121.115' =>  generateData('68.98.121.115', [190]),
+			'68.53.8.86' =>  generateData('68.53.8.86', [210]),
+			'45.19.109.15' =>  generateData('45.19.109.15', [77]),
+			'68.115.3.49' =>  generateData('68.115.3.49', [90]),
+			'68.13.116.36' =>  generateData('68.13.116.36', [22]),
+			'69.123.62.30' =>  generateData('69.123.62.30', [36])
 		];
 		
 
 		$info = IpInfoController::GetIpInfo($ip);
 		$graphData = [
 			'data' => $data[$ip]['violations'],
-			'label' => ['Identities', 'Known Signatures', 'Session Length Exceeded'],
+			'label' => ['Known Signatures'],
 			'info' => [
 				'ip' => $ip,
 				'loc' => $info['city'] . ', ' . $info['country'],
@@ -153,6 +125,5 @@ class PagesPerSessionExceedController extends BaseController
 		return response()->json(['id'=>0, 'graphData' => $graphData])
 			->header('Content-Type', 'application/vnd.api+json');
 	}
-
 	
 }

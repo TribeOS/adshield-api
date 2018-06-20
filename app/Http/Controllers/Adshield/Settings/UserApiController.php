@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 
 
 
-class AccountManagementController extends BaseController
+class UserApiController extends BaseController
 {
 
 	public function handle(Request $request)

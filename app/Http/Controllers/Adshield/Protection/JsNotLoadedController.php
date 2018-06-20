@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Adshield;
+namespace App\Http\Controllers\Adshield\Protection;
 
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Input;
 date_default_timezone_set("America/New_York");
 
 
-class KnownViolatorUserAgentController extends BaseController
+class JsNotLoadedController extends BaseController
 {
 
 	public function getList()
@@ -96,23 +96,23 @@ class KnownViolatorUserAgentController extends BaseController
 
 		//sample data
 		$data = [
-			'67.197.148.127' =>  generateData('67.197.148.127', [80]),
-			'24.107.198.190' =>  generateData('24.107.198.190', [43]),
-			'69.76.60.76' =>  generateData('69.76.60.76', [71]),
-			'50.37.77.29' =>  generateData('50.37.77.29', [99]),
-			'68.98.121.115' =>  generateData('68.98.121.115', [190]),
-			'68.53.8.86' =>  generateData('68.53.8.86', [210]),
-			'45.19.109.15' =>  generateData('45.19.109.15', [77]),
-			'68.115.3.49' =>  generateData('68.115.3.49', [90]),
-			'68.13.116.36' =>  generateData('68.13.116.36', [22]),
-			'69.123.62.30' =>  generateData('69.123.62.30', [36])
+			'67.197.148.127' =>  generateData('67.197.148.127', [25,80]),
+			'24.107.198.190' =>  generateData('24.107.198.190', [32, 43]),
+			'69.76.60.76' =>  generateData('69.76.60.76', [71, 32]),
+			'50.37.77.29' =>  generateData('50.37.77.29', [28, 99]),
+			'68.98.121.115' =>  generateData('68.98.121.115', [190, 20]),
+			'68.53.8.86' =>  generateData('68.53.8.86', [210, 90]),
+			'45.19.109.15' =>  generateData('45.19.109.15', [10, 77]),
+			'68.115.3.49' =>  generateData('68.115.3.49', [88, 90]),
+			'68.13.116.36' =>  generateData('68.13.116.36', [22, 32]),
+			'69.123.62.30' =>  generateData('69.123.62.30', [36, 12])
 		];
 		
 
 		$info = IpInfoController::GetIpInfo($ip);
 		$graphData = [
 			'data' => $data[$ip]['violations'],
-			'label' => ['Known Signatures'],
+			'label' => ['Automated Browsers', 'Rate Unlimited'],
 			'info' => [
 				'ip' => $ip,
 				'loc' => $info['city'] . ', ' . $info['country'],
