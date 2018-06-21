@@ -29,7 +29,7 @@ class UserWebsitesController extends Controller
         {
             return $this->getWebsites($userId);
         }
-        else if ($request->isMethod('put'))
+        else if ($request->isMethod('post'))
         {
             $website = Input::get("userWebsite");
             return $this->create($userId, $website['domain'], $website['userKey']);
@@ -74,7 +74,8 @@ class UserWebsitesController extends Controller
             ->insert([
                 'userId' => $userId,
                 'domain' => $domain,
-                'userKey' => $userKey
+                'userKey' => $userKey,
+                'createdOn' => gmdate("Y-m-d H:i:s")
             ]);
     }
 
