@@ -69,6 +69,14 @@ class UserWebsitesController extends Controller
     private function create($userId, $domain, $userKey)
     {
         //check if user key is unique FIRST
+        $record = DB::table("userWebsites")
+            ->where("userKey", $userKey)
+            ->first();
+
+        if (!empty($record)) {
+            return response()->json(['error' => 'userkey exists'])
+                ->header('Content-Type', 'application/vnd.api+json');
+        }
 
         DB::table("userWebsites")
             ->insert([

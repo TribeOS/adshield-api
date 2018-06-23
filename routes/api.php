@@ -67,6 +67,10 @@ Route::post('checkurl', ['as' => 'AdshieldCheckUrl', 'uses' => 'Adshield\ApiRefe
 	Route::post('login', ['uses' => 'Adshield\LoginController@login'])
 		->middleware('api.access');
 
+	//verify token
+	Route::get('tokens', ['uses' => 'Adshield\LoginController@verifyToken'])
+		->middleware('api.access');
+
 	//log out
 	Route::any('logout', ['uses' => 'Adshield\LoginController@logout'])
 		->middleware('api.access');

@@ -100,4 +100,20 @@ class LoginController extends Controller
         return $result->userId;
     }
 
+    public function verifyToken(Request $request)
+    {
+        $token = $request->bearerToken();
+        $result = DB::table("accessTokens")
+            ->join("users", "users.id", "=", "accessTokens.userId")
+            ->where("accessTokens.accessToken", $token)
+            ->where("accessTokens.expiresOn", ">", date("Y-m-d H:i:s", strtotime("24 hours ago")))
+            ->first();
+
+        $valid = true;
+        if (empty($result)) $valid = false;
+        
+        return response()->json(['id' => 0, 'valid' => $valid])
+            ->header('Content-Type', 'application/vnd.api+json');        
+    }
+
 }
