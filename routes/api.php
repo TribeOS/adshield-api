@@ -63,152 +63,167 @@ Route::post('checkurl', ['as' => 'AdshieldCheckUrl', 'uses' => 'Adshield\ApiRefe
 	
 	//==========================================================================================
 
+	//User authentication/login
+	Route::post('login', ['uses' => 'Adshield\LoginController@login'])
+		->middleware('api.access');
+
+	//verify token
+	Route::get('tokens', ['uses' => 'Adshield\LoginController@verifyToken'])
+		->middleware('api.access');
+
+	//log out
+	Route::any('logout', ['uses' => 'Adshield\LoginController@logout'])
+		->middleware('api.access');
 
 
 	//Protection Summary
 
 	//ip violators list
-	Route::get('/{apikey}/knownViolators', ['uses' => 'Adshield\IpViolatorListController@getList'])
+	Route::get('/knownViolators', ['uses' => 'Adshield\Protection\IpViolatorListController@getList'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
 	//ip violators graph
-	Route::get('/{apikey}/ipViolatorGraphs', ['uses' => 'Adshield\IpViolatorListController@getGraphData'])
+	Route::get('/ipViolatorGraphs', ['uses' => 'Adshield\Protection\IpViolatorListController@getGraphData'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
 	//ip js check failed list
-	Route::get('/{apikey}/jsCheckFails', ['uses' => 'Adshield\IpJsCheckFailedController@getList'])
+	Route::get('/jsCheckFails', ['uses' => 'Adshield\Protection\IpJsCheckFailedController@getList'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
 	//ip js check failed graph
-	Route::get('/{apikey}/jsCheckFailGraphs', ['uses' => 'Adshield\IpJsCheckFailedController@getGraphData'])
+	Route::get('/jsCheckFailGraphs', ['uses' => 'Adshield\Protection\IpJsCheckFailedController@getGraphData'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
 	//js not loaded list
-	Route::get('/{apikey}/jsNotLoadeds', ['uses' => 'Adshield\JsNotLoadedController@getList'])
+	Route::get('/jsNotLoadeds', ['uses' => 'Adshield\Protection\JsNotLoadedController@getList'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
 	//js not loaded graph
-	Route::get('/{apikey}/jsNotLoadedGraphs', ['uses' => 'Adshield\JsNotLoadedController@getGraphData'])
+	Route::get('/jsNotLoadedGraphs', ['uses' => 'Adshield\Protection\JsNotLoadedController@getGraphData'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
 	//known violator user agent list
-	Route::get('/{apikey}/knownViolatorUserAgents', ['uses' => 'Adshield\KnownViolatorUserAgentController@getList'])
+	Route::get('/knownViolatorUserAgents', ['uses' => 'Adshield\Protection\KnownViolatorUserAgentController@getList'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
 	//known violator user agent graph
-	Route::get('/{apikey}/knownViolatorUserAgentGraphs', ['uses' => 'Adshield\KnownViolatorUserAgentController@getGraphData'])
+	Route::get('/knownViolatorUserAgentGraphs', ['uses' => 'Adshield\Protection\KnownViolatorUserAgentController@getGraphData'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
 	//browser integrity check list
-	Route::get('/{apikey}/browserIntegrityChecks', ['uses' => 'Adshield\BrowserIntegrityCheckController@getList'])
+	Route::get('/browserIntegrityChecks', ['uses' => 'Adshield\Protection\BrowserIntegrityCheckController@getList'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
 	//browser integrity check graph
-	Route::get('/{apikey}/browserIntegrityCheckGraphs', ['uses' => 'Adshield\BrowserIntegrityCheckController@getGraphData'])
+	Route::get('/browserIntegrityCheckGraphs', ['uses' => 'Adshield\Protection\BrowserIntegrityCheckController@getGraphData'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
 	//suspicious user agent list
-	Route::get('/{apikey}/suspUserAgents', ['uses' => 'Adshield\SuspUserAgentController@getList'])
+	Route::get('/suspUserAgents', ['uses' => 'Adshield\Protection\SuspUserAgentController@getList'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
 	//suspicious user agent graph
-	Route::get('/{apikey}/suspUserAgentGraphs', ['uses' => 'Adshield\SuspUserAgentController@getGraphData'])
+	Route::get('/suspUserAgentGraphs', ['uses' => 'Adshield\Protection\SuspUserAgentController@getGraphData'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
 	//known violator data center list
-	Route::get('/{apikey}/knownViolatorDataCenters', ['uses' => 'Adshield\KnownViolatorDataCenterController@getList'])
+	Route::get('/knownViolatorDataCenters', ['uses' => 'Adshield\Protection\KnownViolatorDataCenterController@getList'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
 	//known violator data center graph
-	Route::get('/{apikey}/knownViolatorDataCenterGraphs', ['uses' => 'Adshield\KnownViolatorDataCenterController@getGraphData'])
+	Route::get('/knownViolatorDataCenterGraphs', ['uses' => 'Adshield\Protection\KnownViolatorDataCenterController@getGraphData'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
 	//pages per minute exceeded list
-	Route::get('/{apikey}/pagesPerMinuteExceeds', ['uses' => 'Adshield\PagesPerMinuteExceedController@getList'])
+	Route::get('/pagesPerMinuteExceeds', ['uses' => 'Adshield\Protection\PagesPerMinuteExceedController@getList'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
 	//pages per minute exceeded  graph
-	Route::get('/{apikey}/pagesPerMinuteExceedGraphs', ['uses' => 'Adshield\PagesPerMinuteExceedController@getGraphData'])
+	Route::get('/pagesPerMinuteExceedGraphs', ['uses' => 'Adshield\Protection\PagesPerMinuteExceedController@getGraphData'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
 	//pages per minute exceeded list
-	Route::get('/{apikey}/pagesPerSessionExceeds', ['uses' => 'Adshield\PagesPerSessionExceedController@getList'])
+	Route::get('/pagesPerSessionExceeds', ['uses' => 'Adshield\Protection\PagesPerSessionExceedController@getList'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
 	//pages per minute exceeded  graph
-	Route::get('/{apikey}/pagesPerSessionExceedGraphs', ['uses' => 'Adshield\PagesPerSessionExceedController@getGraphData'])
+	Route::get('/pagesPerSessionExceedGraphs', ['uses' => 'Adshield\Protection\PagesPerSessionExceedController@getGraphData'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
 	//blocked country list
-	Route::get('/{apikey}/blockedCountries', ['uses' => 'Adshield\BlockedCountryController@getList'])
+	Route::get('/blockedCountries', ['uses' => 'Adshield\Protection\BlockedCountryController@getList'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
 	//blocked country graph
-	Route::get('/{apikey}/blockedCountryGraphs', ['uses' => 'Adshield\BlockedCountryController@getGraphData'])
+	Route::get('/blockedCountryGraphs', ['uses' => 'Adshield\Protection\BlockedCountryController@getGraphData'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
 	//aggregator user agent list
-	Route::get('/{apikey}/aggregatorUserAgents', ['uses' => 'Adshield\AggregatorUserAgentController@getList'])
+	Route::get('/aggregatorUserAgents', ['uses' => 'Adshield\Protection\AggregatorUserAgentController@getList'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
 	//aggregator user agent graph
-	Route::get('/{apikey}/aggregatorUserAgentGraphs', ['uses' => 'Adshield\AggregatorUserAgentController@getGraphData'])
+	Route::get('/aggregatorUserAgentGraphs', ['uses' => 'Adshield\Protection\AggregatorUserAgentController@getGraphData'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
 	//known violator automation tool list
-	Route::get('/{apikey}/knownViolatorAutoTools', ['uses' => 'Adshield\KnownViolatorToolController@getList'])
+	Route::get('/knownViolatorAutoTools', ['uses' => 'Adshield\Protection\KnownViolatorToolController@getList'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
 	//known violator automation tool graph
-	Route::get('/{apikey}/knownViolatorAutoToolGraphs', ['uses' => 'Adshield\KnownViolatorToolController@getGraphData'])
+	Route::get('/knownViolatorAutoToolGraphs', ['uses' => 'Adshield\Protection\KnownViolatorToolController@getGraphData'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
 	//protection summary overview graph
-	Route::get('/{apikey}/protectionOverviewGraphs', ['uses' => 'Adshield\ProtectionOverviewController@getGraphData'])
+	Route::get('/protectionOverviewGraphs', ['uses' => 'Adshield\Protection\ProtectionOverviewController@getGraphData'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
+
+
+	//THREATS SUMMARY =======================
+
 	//threats summary graph
-	Route::get('/{apikey}/threatGraphs', ['uses' => 'Adshield\Threats\ThreatsController@getGraphData'])
+	Route::get('/threatGraphs', ['uses' => 'Adshield\Threats\ThreatsController@getGraphData'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
 	//automated traffic threats
-	Route::get('/{apikey}/automatedTraffics', ['uses' => 'Adshield\Threats\ThreatsController@getAutomatedTraffic'])
+	Route::get('/automatedTraffics', ['uses' => 'Adshield\Threats\ThreatsController@getAutomatedTraffic'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
 	//traffic by organization list
-	Route::get('/{apikey}/trafficByOrgs', ['uses' => 'Adshield\Threats\ThreatsController@getTrafficByOrganization'])
+	Route::get('/trafficByOrgs', ['uses' => 'Adshield\Threats\ThreatsController@getTrafficByOrganization'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
 	//susipicious countries
-	Route::get('/{apikey}/suspiciousCountries', ['uses' => 'Adshield\Threats\ThreatsController@getSuspiciousCountries'])
+	Route::get('/suspiciousCountries', ['uses' => 'Adshield\Threats\ThreatsController@getSuspiciousCountries'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
@@ -218,22 +233,22 @@ Route::post('checkurl', ['as' => 'AdshieldCheckUrl', 'uses' => 'Adshield\ApiRefe
 	//Summary Reports
 	
 	//click fraud
-	Route::get('/{apikey}/clickFraudReports', ['uses' => 'Adshield\SummaryReports\ClickFraudController@getData'])
+	Route::get('/clickFraudReports', ['uses' => 'Adshield\SummaryReports\ClickFraudController@getData'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
 	//captcha requests
-	Route::get('/{apikey}/captchaRequests', ['uses' => 'Adshield\SummaryReports\CaptchaRequestController@getData'])
+	Route::get('/captchaRequests', ['uses' => 'Adshield\SummaryReports\CaptchaRequestController@getData'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
 	//desirable automated traffic
-	Route::get('/{apikey}/desirableAutomatedTraffics', ['uses' => 'Adshield\SummaryReports\DesirableAutomatedTrafficController@getData'])
+	Route::get('/desirableAutomatedTraffics', ['uses' => 'Adshield\SummaryReports\DesirableAutomatedTrafficController@getData'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
 	//targeted content
-	Route::get('/{apikey}/targetedContents', ['uses' => 'Adshield\SummaryReports\TargetedContentController@getData'])
+	Route::get('/targetedContents', ['uses' => 'Adshield\SummaryReports\TargetedContentController@getData'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
@@ -243,32 +258,31 @@ Route::post('checkurl', ['as' => 'AdshieldCheckUrl', 'uses' => 'Adshield\ApiRefe
 	//SETTINGS
 
 	//Settings Page
-	Route::any('/{apikey}/contentProtections/{id?}', ['uses' => 'Adshield\Settings\ContentProtectionController@handleSettings'])
+	Route::any('/contentProtections/{id?}', ['uses' => 'Adshield\Settings\ContentProtectionController@handleSettings'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 	
 	//custom pages
-	Route::any('/{apikey}/customPages/{id?}', ['uses' => 'Adshield\Settings\CustomPagesController@handleSettings'])
+	Route::any('/customPages/{id?}', ['uses' => 'Adshield\Settings\CustomPagesController@handleSettings'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
 	//ip access list
-	Route::get('/{apikey}/ipaccesslists', ['uses' => 'Adshield\IpAccessListController@getList'])
+	Route::get('/ipaccesslists', ['uses' => 'Adshield\IpAccessListController@getList'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
 	//country block list
-	Route::any('/{apikey}/countryBlockLists/{id?}', ['uses' => 'Adshield\Settings\CountryBlockListController@handle'])
-		->where('apikey', '[a-zA-Z0-9]{2,8}')
+	Route::any('/countryBlockLists/{id?}', ['uses' => 'Adshield\Settings\CountryBlockListController@handle'])
 		->middleware('authapi');
 
 	//content distribution
-	Route::any('/{apikey}/contentDistributions/{id?}', ['uses' => 'Adshield\Settings\ContentDistributionController@handle'])
+	Route::any('/contentDistributions/{id?}', ['uses' => 'Adshield\Settings\ContentDistributionController@handle'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
 	//account management
-	Route::any('/{apikey}/accountManagements/{id?}', ['uses' => 'Adshield\Settings\AccountManagementController@handle'])
+	Route::any('/accountManagements/{id?}', ['uses' => 'Adshield\Settings\AccountManagementController@handle'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
@@ -279,7 +293,7 @@ Route::post('checkurl', ['as' => 'AdshieldCheckUrl', 'uses' => 'Adshield\ApiRefe
 	// COMPLETE LOG
 	
 	//log
-	Route::any('/{apikey}/completeLogs/{id?}', ['uses' => 'Adshield\LogController@handle'])
+	Route::any('/completeLogs/{id?}', ['uses' => 'Adshield\LogController@handle'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 	//==========================================================================================
@@ -288,34 +302,37 @@ Route::post('checkurl', ['as' => 'AdshieldCheckUrl', 'uses' => 'Adshield\ApiRefe
 	// SUMMARY 
 	
 	//traffic summary
-	Route::any('/{apikey}/trafficSummaries', ['uses' => 'Adshield\TrafficSummary\TrafficSummaryController@getData'])
-		->where('apikey', '[a-zA-Z0-9]{2,8}')
+	Route::any('/trafficSummaries', ['uses' => 'Adshield\TrafficSummary\TrafficSummaryController@getData'])
 		->middleware('authapi');
 
 	//cache analysis
-	Route::any('/{apikey}/cacheAnalyses', ['uses' => 'Adshield\TrafficSummary\CacheAnalysisController@getData'])
-		->where('apikey', '[a-zA-Z0-9]{2,8}')
+	Route::any('/cacheAnalyses', ['uses' => 'Adshield\TrafficSummary\CacheAnalysisController@getData'])
 		->middleware('authapi');
 
 	//upstream http errors
-	Route::any('/{apikey}/upstreamHttpErrors', ['uses' => 'Adshield\TrafficSummary\UpstreamHttpErrorsController@getData'])
-		->where('apikey', '[a-zA-Z0-9]{2,8}')
+	Route::any('/upstreamHttpErrors', ['uses' => 'Adshield\TrafficSummary\UpstreamHttpErrorsController@getData'])
 		->middleware('authapi');
 
+
+	//==========================================================================================
+
+
+	//USER ACCOUNT and USER ASSETS
+	
+	Route::any('/userWebsites', ['uses' => 'Adshield\UserWebsitesController@handle'])
+		->middleware('authapi');
 
 	//==========================================================================================
 
 
 	//MISC. calls
-	Route::get('/{apikey}/countries/{id?}', ['uses' => 'Adshield\Misc\CountryController@handle'])
-		->where('apikey', '[a-zA-Z0-9]{2,8}')
+	Route::get('/countries/{id?}', ['uses' => 'Adshield\Misc\CountryController@handle'])
 		->middleware('authapi');
 	//==========================================================================================
 
 
 	//get stats
-	Route::get('/{apikey}/{type?}', ['uses' => 'Adshield\VisualizerController@GetAdshieldStats'])
-		->where('apikey', '[a-zA-Z0-9]{2,8}')
+	Route::get('/adshieldstats', ['uses' => 'Adshield\VisualizerController@GetAdshieldStats'])
 		->where('type', '[a-zA-Z_]+')
 		->middleware('authapi');
 

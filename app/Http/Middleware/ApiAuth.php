@@ -16,14 +16,28 @@ class ApiAuth
      */
     public function handle($request, Closure $next)
     {
-        $key = $request->route('apikey');
-        if (empty($key)) return redirect()->route('ApiError');
 
-        $auth = DB::table("asConfig")->where("name", "main")->first();
-        if (empty($auth)) return redirect()->route('ApiError');
+        $token = $request->bearerToken();
 
-        $auth = json_decode($auth->value);
-        if ($key !== $auth->frontAccessKey) return redirect()->route('ApiError');
+        $access = DB::table("accessTokens")
+            ->where("accessToken", $token)
+            ->where("expiresOn", ">", gmdate("Y-m-d H:i:s"))
+            ->first();
+
+        if (empty($access)) 
+        {
+            $response = "Invalid acces or session has already expired. Try loggin in again.";
+            return response($response, 401);
+        }
+
+        // $key = $request->route('apikey');
+        // if (empty($key)) return redirect()->route('ApiError');
+
+        // $auth = DB::table("asConfig")->where("name", "main")->first();
+        // if (empty($auth)) return redirect()->route('ApiError');
+
+        // $auth = json_decode($auth->value);
+        // if ($key !== $auth->frontAccessKey) return redirect()->route('ApiError');
         //we can validate "key"
 
         return $next($request)

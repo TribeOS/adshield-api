@@ -13,7 +13,7 @@ use App\Country;
 class CountryBlockListController extends BaseController
 {
 
-	public function handle(Request $request, $apiKey, $id=null)
+	public function handle(Request $request, $id=null)
 	{
 		if ($request->isMethod('get'))
 		{

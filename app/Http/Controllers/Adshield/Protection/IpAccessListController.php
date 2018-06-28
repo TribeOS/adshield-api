@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Adshield;
+namespace App\Http\Controllers\Adshield\Protection;
 
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;

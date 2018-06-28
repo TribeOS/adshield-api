@@ -15,7 +15,7 @@ use App\Country;
 class CountryController extends BaseController
 {
 
-	public function handle(Request $request, $apikey=null, $id=null)
+	public function handle(Request $request, $id=null)
 	{
 		if ($request->isMethod('get'))
 		{	

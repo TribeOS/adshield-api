@@ -22,29 +22,20 @@ class VisualizerController extends BaseController
 	/**
 	 * get stats from adshield stat log (count of each status for the given period)
 	 */
-	public function GetAdshieldStats($apikey, $type='stat')
+	public function GetAdshieldStats()
 	{
 		$userKey = Input::get('userKey', null);
-		$requestedStat = $type;
 		$result = null;
-		$success = true;
-		switch($requestedStat)
-		{
-			case 'adshieldstats':
-				//data format is due to how ember handles data
-				$result = [
-					'adshieldstats' => [
-						'id' => 0,
-						'stat' => $this->GetAllStatsVisualizer($userKey),
-						'meta' => 'general data for stats.'
-					]
-				];
-				break;
-			default:
-				//none
-				$success = false;
-		}
-
+		
+		//data format is due to how ember handles data
+		$result = [
+			'adshieldstats' => [
+				'id' => 0,
+				'stat' => $this->GetAllStatsVisualizer($userKey),
+				'meta' => 'general data for stats.'
+			]
+		];
+	
 		return response()->json($result)
 			->header('Content-Type', 'application/vnd.api+json');
 	}

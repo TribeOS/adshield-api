@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Adshield;
+namespace App\Http\Controllers\Adshield\Protection;
 
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Input;
 date_default_timezone_set("America/New_York");
 
 
-class AggregatorUserAgentController extends BaseController
+class ProtectionOverviewController extends BaseController
 {
 
 	public function getList()
@@ -83,7 +83,6 @@ class AggregatorUserAgentController extends BaseController
 	public function getGraphData()
 	{
 		$filter = Input::get("filter", []);
-		$ip = $filter['ip'];
 		//get stat access with the given ip.
 		// $data = DB::table('asStat')
 		// 	->join('asStatInfo', 'asStat.info_id', '=', 'asStatInfo.id')
@@ -113,40 +112,15 @@ class AggregatorUserAgentController extends BaseController
 		
 
 		//generate dummy data by random
-		
-
-		function generateData($ip, $vs) {
-			return [
-				'violations' => $vs, 
-				'info' => ['ip' => $ip]
-			];
-		}
-
-		//sample data
-		$data = [
-			'67.197.148.127' =>  generateData('67.197.148.127', [53, 65]),
-			'24.107.198.190' =>  generateData('24.107.198.190', [31, 51]),
-			'69.76.60.76' =>  generateData('69.76.60.76', [72, 12]),
-			'50.37.77.29' =>  generateData('50.37.77.29', [91, 51]),
-			'68.98.121.115' =>  generateData('68.98.121.115', [51, 73]),
-			'68.53.8.86' =>  generateData('68.53.8.86', [34, 97]),
-			'45.19.109.15' =>  generateData('45.19.109.15', [22, 154]),
-			'68.115.3.49' =>  generateData('68.115.3.49', [25, 61]),
-			'68.13.116.36' =>  generateData('68.13.116.36', [54, 52]),
-			'69.123.62.30' =>  generateData('69.123.62.30', [37, 26])
-		];
-		
-
-		$info = IpInfoController::GetIpInfo($ip);
 		$graphData = [
-			'data' => $data[$ip]['violations'],
-			'label' => ['Aggregator User Agents', 'Identities'],
-			'info' => [
-				'ip' => $ip,
-				'loc' => $info['city'] . ', ' . $info['country'],
-				'org' => $info['org'],
-				'isp' => $info['isp']
-			]
+			'data' => [8938, 7730, 7600, 7508, 4750],
+			'label' => [
+				'Known Violators',
+				'Javascript Check Failed',
+				'Javascript Not Loaded',
+				'Known Violator User Agent',
+				'Known Violator Data Center'
+			],
 		];
 
 
