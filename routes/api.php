@@ -268,7 +268,7 @@ Route::post('checkurl', ['as' => 'AdshieldCheckUrl', 'uses' => 'Adshield\ApiRefe
 		->middleware('authapi');
 
 	//ip access list
-	Route::get('/ipaccesslists', ['uses' => 'Adshield\IpAccessListController@getList'])
+	Route::get('/ipaccesslists', ['uses' => 'Adshield\Settings\IpAccessListController@getList'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}')
 		->middleware('authapi');
 
