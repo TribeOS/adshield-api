@@ -7,6 +7,7 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 
+use App\Http\Controllers\Adshield\Protection\DummyDataController;
 
 
 class DesirableAutomatedTrafficController extends BaseController
@@ -32,14 +33,14 @@ class DesirableAutomatedTrafficController extends BaseController
 			return ['systemName' => $name, 'noRequests' => $noRequests];
 		}
 		$data = [
-			generateData('Googlebot', 8566),
-			generateData('Yandex Bot', 5510),
-			generateData('Bingbot', 3911),
-			generateData('Baiduspider', 3491),
-			generateData('Googlebot Mobile', 2371),
-			generateData('Twitterbot', 265),
-			generateData('Yahoo! Slurp', 204),
-			generateData('MSNBot Media', 144)
+			generateData('Googlebot', DummyDataController::ApplyDuration(8566)),
+			generateData('Yandex Bot', DummyDataController::ApplyDuration(5510)),
+			generateData('Bingbot', DummyDataController::ApplyDuration(3911)),
+			generateData('Baiduspider', DummyDataController::ApplyDuration(3491)),
+			generateData('Googlebot Mobile', DummyDataController::ApplyDuration(2371)),
+			generateData('Twitterbot', DummyDataController::ApplyDuration(265)),
+			generateData('Yahoo! Slurp', DummyDataController::ApplyDuration(204)),
+			generateData('MSNBot Media', DummyDataController::ApplyDuration(144))
 		];
 		return $data;
 	}
@@ -57,6 +58,10 @@ class DesirableAutomatedTrafficController extends BaseController
 			'label' => 'Yandex Bot'
 		];
 		$data['label'] = ['January', 'February', 'March', 'April', 'May', 'June', 'July'];
+
+		foreach($data['datasets'] as $index=>$ds) {
+			$data['datasets'][$index] = DummyDataController::ApplyDuration($data['datasets'][$index]);
+		}
 
 		return $data;
 	}

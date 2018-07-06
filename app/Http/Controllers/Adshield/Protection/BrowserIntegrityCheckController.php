@@ -62,18 +62,7 @@ class BrowserIntegrityCheckController extends BaseController
 		// ]);
 		
 		$data = [];
-		$data['data'] = [
-			['ip' => '67.197.148.127', 'total' => 12],
-			['ip' => '24.107.198.190', 'total' => 2],
-			['ip' => '69.76.60.76', 'total' => 19],
-			['ip' => '50.37.77.29', 'total' => 2],
-			['ip' => '68.98.121.115', 'total' => 1],
-			['ip' => '68.53.8.86', 'total' => 11],
-			['ip' => '45.19.109.15', 'total' => 16],
-			['ip' => '68.115.3.49', 'total' => 3],
-			['ip' => '68.13.116.36', 'total' => 1],
-			['ip' => '69.123.62.30', 'total' => 5]
-		];
+		$data = DummyDataController::GetIps(Input::get('limit', 10), Input::get('page', 1));
 
 		return response()->json(['id' => 0, 'listData' => $data])
 			->header('Content-Type', 'application/vnd.api+json');
@@ -85,29 +74,7 @@ class BrowserIntegrityCheckController extends BaseController
 		$ip = $filter['ip'];
 
 		//generate dummy data by random
-		
-
-		function generateData($ip, $vs) {
-			return [
-				'violations' => $vs, 
-				'info' => ['ip' => $ip]
-			];
-		}
-
-		//sample data
-		$data = [
-			'67.197.148.127' =>  generateData('67.197.148.127', [80, 80, 50]),
-			'24.107.198.190' =>  generateData('24.107.198.190', [23, 49, 100]),
-			'69.76.60.76' =>  generateData('69.76.60.76', [99, 19, 90]),
-			'50.37.77.29' =>  generateData('50.37.77.29', [34, 23, 67]),
-			'68.98.121.115' =>  generateData('68.98.121.115', [190, 80, 81]),
-			'68.53.8.86' =>  generateData('68.53.8.86', [210, 109, 188]),
-			'45.19.109.15' =>  generateData('45.19.109.15', [77, 19, 90]),
-			'68.115.3.49' =>  generateData('68.115.3.49', [90, 13, 12]),
-			'68.13.116.36' =>  generateData('68.13.116.36', [92, 38, 47]),
-			'69.123.62.30' =>  generateData('69.123.62.30', [36, 11, 98])
-		];
-		
+		$data = DummyDataController::IpGetGraphData(3);
 
 		$info = IpInfoController::GetIpInfo($ip);
 		$graphData = [

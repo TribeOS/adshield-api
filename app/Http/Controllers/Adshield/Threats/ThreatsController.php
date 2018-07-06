@@ -7,12 +7,13 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 
+use App\Http\Controllers\Adshield\Protection\DummyDataController;
+
 date_default_timezone_set("America/New_York");
 
 
 class ThreatsController extends BaseController
 {
-
 
 	public function getGraphData()
 	{
@@ -20,11 +21,13 @@ class ThreatsController extends BaseController
 
 		$graphData = [
 			'automatedTrafficClassification' => $this->getAutomatedTrafficClassification($days),
-			'' => $this->getAutomatedTrafficClassification($days),
 			'topThreatsByCountry' => $this->getTopThreatsByCountry($days),
 			'threatsAverted' => $this->getThreatsAverted($days)
-
 		];
+
+		$graphData['automatedTrafficClassification'] = DummyDataController::ApplyDuration($graphData['automatedTrafficClassification']);
+		$graphData['topThreatsByCountry'] = DummyDataController::ApplyDuration($graphData['topThreatsByCountry']);
+		$graphData['threatsAverted'] = DummyDataController::ApplyDuration($graphData['threatsAverted']);
 
 		return response()->json(['id'=>0, 'graphData' => $graphData])
 			->header('Content-Type', 'application/vnd.api+json');
@@ -61,7 +64,6 @@ class ThreatsController extends BaseController
 
 	public function getAutomatedTraffic()
 	{
-		$days = Input::get("days", 7);
 
 		function createData($name, $class, $noRequests) {
 			return ['name' => $name, 'classification' => $class, 'pageRequests' => $noRequests];
@@ -73,12 +75,12 @@ class ThreatsController extends BaseController
 			'total' => 5
 		];
 		$data['automatedTrafficList']['data'] = [
-			createData('SEMRush', 'Bad User Agent',	'495'),
-			createData('Reporting as Firefox', 'Unclassified User Agent', '495'),
-			createData('Reporting as Chrome', 'Unclassified User Agent', '495'),
-			createData('Reporting as Internet Explorer 9', 'Bad User Agent', '495'),
-			createData('MJ12bot', 'Known Violator User Agent', '495'),
-			createData('cURL', 'Known Violator User Agent', '495')
+			createData('SEMRush', 'Bad User Agent',	DummyDataController::ApplyDuration(335)),
+			createData('Reporting as Firefox', 'Unclassified User Agent', DummyDataController::ApplyDuration(495)),
+			createData('Reporting as Chrome', 'Unclassified User Agent', DummyDataController::ApplyDuration(200)),
+			createData('Reporting as Internet Explorer 9', 'Bad User Agent', DummyDataController::ApplyDuration(198)),
+			createData('MJ12bot', 'Known Violator User Agent', DummyDataController::ApplyDuration(378)),
+			createData('cURL', 'Known Violator User Agent', DummyDataController::ApplyDuration(282))
 		];
 
 		$data['botsByClassification'] = [
@@ -89,6 +91,9 @@ class ThreatsController extends BaseController
 			'data' => [7, 99, 60, 10, 36],
 			'label' => ['Uncategorized Bot', 'SEMRush', 'Reporting as Firefox', 'Reporting as Chrome', 'Reporting as Internets']
 		];
+
+		$data['botsByClassification'] = DummyDataController::ApplyDuration($data['botsByClassification']);
+		$data['mostFrequentBots'] = DummyDataController::ApplyDuration($data['mostFrequentBots']);
 
 		return response()->json(['id'=>0, 'pageData' => $data])
 			->header('Content-Type', 'application/vnd.api+json');
@@ -103,11 +108,11 @@ class ThreatsController extends BaseController
 		$data = [];
 		$data['total'] = 5;
 		$data['data'] = [
-			generateData('OVH SAS', '10643', 'France'),
-			generateData('Advanced Hosters B.V.', '5602', 'Netherlands'),
-			generateData('Zscaler', '3326', 'United States'),
-			generateData('Amazon.com', '1922', 'United States'),
-			generateData('China Telecom Guandong', '1754', 'China'),
+			generateData('OVH SAS', DummyDataController::ApplyDuration(10643), 'France'),
+			generateData('Advanced Hosters B.V.', DummyDataController::ApplyDuration(5602), 'Netherlands'),
+			generateData('Zscaler', DummyDataController::ApplyDuration(3326), 'United States'),
+			generateData('Amazon.com', DummyDataController::ApplyDuration(1922), 'United States'),
+			generateData('China Telecom Guandong', DummyDataController::ApplyDuration(1754), 'China'),
 		];
 
 		return response()->json(['id'=>0, 'listData' => $data])
@@ -121,12 +126,12 @@ class ThreatsController extends BaseController
 			return ['country' => $country, 'noRequests' => $noRequests];
 		}
 		$data = [
-			generateData('United States', 4983),
-			generateData('France', 1342),
-			generateData('China', 8732),
-			generateData('Germany', 4723),
-			generateData('Australia', 3417),
-			generateData('Mexico', 1832)
+			generateData('United States', DummyDataController::ApplyDuration(4983)),
+			generateData('France', DummyDataController::ApplyDuration(1342)),
+			generateData('China', DummyDataController::ApplyDuration(8732)),
+			generateData('Germany', DummyDataController::ApplyDuration(4723)),
+			generateData('Australia', DummyDataController::ApplyDuration(3417)),
+			generateData('Mexico', DummyDataController::ApplyDuration(1832))
 		];
 
 		return response()->json(['id'=>0, 'pageData' => $data])

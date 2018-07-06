@@ -7,6 +7,7 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 
+use App\Http\Controllers\Adshield\Protection\DummyDataController;
 
 
 class TargetedContentController extends BaseController
@@ -21,6 +22,8 @@ class TargetedContentController extends BaseController
 			'responseCodesByTotalPercentage' => $this->getResponseCodesByTotalPercentage($days),
 		];
 
+		$data['responseCodesByTotalPercentage'] = DummyDataController::ApplyDuration($data['responseCodesByTotalPercentage']);
+
 		return response()->json(['id'=>0, 'pageData' => $data])
 			->header('Content-Type', 'application/vnd.api+json');
 	}
@@ -32,10 +35,10 @@ class TargetedContentController extends BaseController
 			return ['path' => $name, 'noRequests' => $noRequests];
 		}
 		$data = [
-			generateData('/', 32),
-			generateData('/blogs.ph', 2),
-			generateData('/the-perfect-image-to-kick-off-the-new-year', 1),
-			generateData('/10-olympic-sports-you-didnt-know-existed/10', 1)
+			generateData('/', DummyDataController::ApplyDuration(32)),
+			generateData('/blogs.ph', DummyDataController::ApplyDuration(12)),
+			generateData('/the-perfect-image-to-kick-off-the-new-year', DummyDataController::ApplyDuration(4)),
+			generateData('/10-olympic-sports-you-didnt-know-existed/10', DummyDataController::ApplyDuration(4))
 		];
 		return $data;
 	}

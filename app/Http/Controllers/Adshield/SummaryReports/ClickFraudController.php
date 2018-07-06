@@ -7,6 +7,7 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 
+use App\Http\Controllers\Adshield\Protection\DummyDataController;
 
 
 class ClickFraudController extends BaseController
@@ -21,6 +22,10 @@ class ClickFraudController extends BaseController
 			'topAgencyByAutomatedClicks' => $this->getTopAgencyByAutomatedClicks($days),
 			'clickFraudActivity' => $this->getClickFraudActivity($days)
 		];
+
+		$data['automatedClicksVsAdClicks'] = DummyDataController::ApplyDuration($data['automatedClicksVsAdClicks']);
+		$data['topAgencyByAutomatedClicks'] = DummyDataController::ApplyDuration($data['topAgencyByAutomatedClicks']);
+		$data['clickFraudActivity'] = DummyDataController::ApplyDuration($data['clickFraudActivity']);
 
 		return response()->json(['id'=>0, 'pageData' => $data])
 			->header('Content-Type', 'application/vnd.api+json');
