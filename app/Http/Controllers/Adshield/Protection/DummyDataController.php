@@ -164,17 +164,22 @@ class DummyDataController extends BaseController
 		return $duration;
 	}
 
-	public static function ApplyDuration($gd)
+	public static function ApplyDuration($gd, $format=true)
 	{
 		$duration = self::GetDurationMultiplier();
 
 		if (is_numeric($gd)) {
 			if ($duration > 0) $gd = ceil($gd * $duration);
-			return number_format($gd);
+			if ($format) {
+				return number_format($gd);
+			} else {
+				return $gd;
+			}
 		}
 		
 		foreach($gd['data'] as $gdKey=>$gdata) {
-			if ($duration > 0) $gd['data'][$gdKey] = number_format(ceil($gd['data'][$gdKey] * $duration));
+			if ($duration > 0) 
+				$gd['data'][$gdKey] = number_format(ceil($gd['data'][$gdKey] * $duration));
 		}
 		return $gd;
 	}

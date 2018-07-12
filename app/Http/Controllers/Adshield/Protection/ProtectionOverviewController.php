@@ -61,20 +61,9 @@ class ProtectionOverviewController extends BaseController
 		// 	'limit' => $limit
 		// ]);
 		
+	
 		$data = [];
-		$data['total'] = 10;
-		$data['data'] = [
-			['ip' => '67.197.148.127', 'total' => 12],
-			['ip' => '24.107.198.190', 'total' => 2],
-			['ip' => '69.76.60.76', 'total' => 19],
-			['ip' => '50.37.77.29', 'total' => 2],
-			['ip' => '68.98.121.115', 'total' => 1],
-			['ip' => '68.53.8.86', 'total' => 11],
-			['ip' => '45.19.109.15', 'total' => 16],
-			['ip' => '68.115.3.49', 'total' => 3],
-			['ip' => '68.13.116.36', 'total' => 1],
-			['ip' => '69.123.62.30', 'total' => 5]
-		];
+		$data = DummyDataController::GetIps(Input::get('limit', 10), Input::get('page', 1));
 
 		return response()->json(['id' => 0, 'listData' => $data])
 			->header('Content-Type', 'application/vnd.api+json');
@@ -113,7 +102,13 @@ class ProtectionOverviewController extends BaseController
 
 		//generate dummy data by random
 		$graphData = [
-			'data' => [8938, 7730, 7600, 7508, 4750],
+			'data' => [
+				DummyDataController::ApplyDuration(8938, false), 
+				DummyDataController::ApplyDuration(7730, false), 
+				DummyDataController::ApplyDuration(7600, false), 
+				DummyDataController::ApplyDuration(7508, false), 
+				DummyDataController::ApplyDuration(4750, false)
+			],
 			'label' => [
 				'Known Violators',
 				'Javascript Check Failed',
