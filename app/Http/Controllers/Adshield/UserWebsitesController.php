@@ -74,8 +74,10 @@ class UserWebsitesController extends Controller
             ->first();
 
         if (!empty($record)) {
-            return response()->json(['error' => 'userkey exists'])
-                ->header('Content-Type', 'application/vnd.api+json');
+            return response("The Key '$userKey' already exists.", 500)
+                ->header('Content-Type', 'text/plain');
+            //->json(['error' => 'userkey exists'])
+                // ->header('Content-Type', 'application/vnd.api+json');
         }
 
         DB::table("userWebsites")

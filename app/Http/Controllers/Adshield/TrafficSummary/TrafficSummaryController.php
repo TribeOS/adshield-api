@@ -7,6 +7,7 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 
+use App\Http\Controllers\Adshield\Protection\DummyDataController;
 
 
 class TrafficSummaryController extends BaseController
@@ -17,8 +18,8 @@ class TrafficSummaryController extends BaseController
 	{
 		$days = Input::get('days', 60);
 		$data = [
-			'threatResponseProtocolsUsed' => $this->getThreatResponseProtocolsUsed($days),
-			'threatsAverted' => $this->getThreatsAverted($days),
+			'threatResponseProtocolsUsed' => DummyDataController::ApplyDuration($this->getThreatResponseProtocolsUsed($days)),
+			'threatsAverted' => DummyDataController::ApplyDuration($this->getThreatsAverted($days)),
 			'trafficGraph' => $this->getTrafficGraph($days)
 		];
 
@@ -56,6 +57,10 @@ class TrafficSummaryController extends BaseController
 			'label' => 'Good Bots'
 		];
 		$data['label'] = ['January', 'February', 'March', 'April', 'May', 'June', 'July'];
+
+		foreach($data['datasets'] as $index=>$ds) {
+			$data['datasets'][$index] = DummyDataController::ApplyDuration($data['datasets'][$index]);
+		}
 
 		return $data;
 	}
