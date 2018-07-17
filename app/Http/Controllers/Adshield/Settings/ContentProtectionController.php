@@ -1,27 +1,36 @@
 <?php
 
+
 namespace App\Http\Controllers\Adshield\Settings;
 
-use Illuminate\Routing\Controller as BaseController;
+use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Http\Request;
 
+use App\User;
+use App\UserConfig;
 
 
-class ContentProtectionController extends BaseController
+class ContentProtectionController extends Controller
 {
 
 	public function handleSettings(Request $request)
 	{
+		$userId = 0;
+        try {
+            $token = $request->bearerToken();
+            $userId = LoginController::getUserIdFromToken($token);
+        } catch (Exception $e) {}
+
 		if ($request->isMethod('get'))
 		{
-			return $this->getSettings();
+			return $this->getSettings($userId);
 		}
 		else
 		{
-			return $this->saveSettings();
+			return $this->saveSettings($userId);
 		}
 	}
 
@@ -48,15 +57,21 @@ class ContentProtectionController extends BaseController
 
 	}
 
-	private function saveSettings()
+	private function saveSettings($userId)
 	{
 		$settings = Input::get('contentProtection', []);
-		//save settings to database here
-		// DB::table("settings")
-		// 	->update([
-		// 		'settings' => json_encode($settings),
-		// 		'updatedOn' => gmdate('Y-m-d H:i:s')
-		// 	]);
+		$config = UserConfig::where('userId', $userId)->first();
+
+		if (empty($config)) {
+			$config = new UserConfig();
+			$config->userId = $userId;
+		}
+		$config->updatedOn = gmdate("Y-m-d H:i:s");
+		$value = json_decode($config->config, 1);
+		$value['contentProtection'] = $settings;
+		$config->config = json_encode($value);
+		$config->save();
+		
 		//only one record in the database for this
 		return response()->json(['id'=>1, 'pageData' => $settings])
 			->header('Content-Type', 'application/vnd.api+json')

@@ -319,7 +319,7 @@ Route::post('checkurl', ['as' => 'AdshieldCheckUrl', 'uses' => 'Adshield\ApiRefe
 
 	//USER ACCOUNT and USER ASSETS
 	
-	Route::any('/userWebsites', ['uses' => 'Adshield\UserWebsitesController@handle'])
+	Route::any('/userWebsites', ['uses' => 'Adshield\Settings\UserWebsitesController@handle'])
 		->middleware('authapi');
 
 	//==========================================================================================
