@@ -2,61 +2,76 @@
 
 namespace App\Http\Controllers\Adshield\Settings;
 
-use Illuminate\Routing\Controller as BaseController;
+use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Http\Request;
 
+use App\Http\Controllers\Adshield\LoginController;
+use App\User;
+use App\UserConfig;
 
 
-class ContentProtectionController extends BaseController
+class ContentProtectionController extends Controller
 {
 
 	public function handleSettings(Request $request)
 	{
+		$userId = 0;
+        try {
+            $token = $request->bearerToken();
+            $userId = LoginController::getUserIdFromToken($token);
+        } catch (Exception $e) {}
+
 		if ($request->isMethod('get'))
 		{
-			return $this->getSettings();
+			return $this->getSettings($userId);
 		}
 		else
 		{
-			return $this->saveSettings();
+			return $this->saveSettings($userId);
 		}
 	}
 
-	private function getSettings()
+	private function getSettings($userId)
 	{
-		// $settings = DB::table("settings")->where('name', 'contentProtection')->first();
-		// $settings = json_decode($settings->settings);
+		$settings = UserConfig::where('userId', $userId)->first();
+		$config = $settings->getConfigJson('contentProtection');
 
 		$data = [
-			'threatResponse' => [
-				'requestsFromUnknownViolators' => 'block', //block, captcha
-				'requestsFromKnownViolatorDataCenters' => 'captcha', //block, captcha
+			"threatResponse" => [
+				"requestsFromUnknownViolators" => "captcha",
+				"requestsFromKnownViolatorDataCenters" => "block"
 			],
-			'referrersAndProxies' => [
-				'blockReferrers' => 'yes', //yes, no
-				'blockAnonymousProxies' => 'no', //yes, no
+			"referrersAndProxies" => [
+				"blockReferrers" => "no",
+				"blockAnonymousProxies" => "yes"
 			],
-			'machineLearning' => []
-
+			"machineLearning" => []
 		];
+		if (!empty($config)) $data = $config;
 
 		return response()->json(['id'=>1, 'pageData' => $data])
 			->header('Content-Type', 'application/vnd.api+json');
 
 	}
 
-	private function saveSettings()
+	private function saveSettings($userId)
 	{
 		$settings = Input::get('contentProtection', []);
-		//save settings to database here
-		// DB::table("settings")
-		// 	->update([
-		// 		'settings' => json_encode($settings),
-		// 		'updatedOn' => gmdate('Y-m-d H:i:s')
-		// 	]);
+		$config = UserConfig::where('userId', $userId)->first();
+
+		if (empty($config)) {
+			$config = new UserConfig();
+			$config->userId = $userId;
+		}
+		$config->updatedOn = gmdate("Y-m-d H:i:s");
+		$value = json_decode($config->config, 1);
+		$value['contentProtection'] = $settings['pageData'];
+		$config->config = json_encode($value);
+		$config->save();
+		
 		//only one record in the database for this
 		return response()->json(['id'=>1, 'pageData' => $settings])
 			->header('Content-Type', 'application/vnd.api+json')

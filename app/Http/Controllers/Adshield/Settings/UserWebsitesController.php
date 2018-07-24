@@ -1,7 +1,7 @@
 <?php
 
 
-namespace App\Http\Controllers\Adshield;
+namespace App\Http\Controllers\Adshield\Settings;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Validation\ValidatesRequests;
@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 
+use App\Http\Controllers\Adshield\LoginController;
 use App\User;
 
 
@@ -74,8 +75,10 @@ class UserWebsitesController extends Controller
             ->first();
 
         if (!empty($record)) {
-            return response()->json(['error' => 'userkey exists'])
-                ->header('Content-Type', 'application/vnd.api+json');
+            return response("The Key '$userKey' already exists.", 500)
+                ->header('Content-Type', 'text/plain');
+            //->json(['error' => 'userkey exists'])
+                // ->header('Content-Type', 'application/vnd.api+json');
         }
 
         DB::table("userWebsites")

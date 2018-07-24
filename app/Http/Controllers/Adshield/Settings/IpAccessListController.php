@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Http\Controllers\Adshield\Protection;
+namespace App\Http\Controllers\Adshield\Settings;
 
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
+use App\Http\Controllers\Adshield\ApiStatController;
 
 date_default_timezone_set("America/New_York");
 
@@ -30,7 +31,10 @@ class IpAccessListController extends BaseController
 			->orderBy($sortBy, $sortDir);
 
 		if (!empty($filter['dateFrom']) && !empty($filter['dateTo']))
-			$data->whereBetween("asStat.date_added", [$filter['dateFrom'], $filter['dateTo']]);
+			$data->whereBetween("asStat.date_added", [
+				date("Y-m-d 00:00:00", strtotime($filter['dateFrom'])), 
+				date("Y-m-d 23:59:59", strtotime($filter['dateTo']))
+			]);
 
 		if (!empty($filter['userKey'])) $data->where('userKey', $filter['userKey']);
 

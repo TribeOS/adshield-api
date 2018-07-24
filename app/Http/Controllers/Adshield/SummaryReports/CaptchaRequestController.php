@@ -7,6 +7,7 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 
+use App\Http\Controllers\Adshield\Protection\DummyDataController;
 
 
 class CaptchaRequestController extends BaseController
@@ -21,6 +22,9 @@ class CaptchaRequestController extends BaseController
 			'attemptsSolvedVsFailed' => $this->getAttemptsSolvedVsFailed($days),
 			'captchaRequests' => $this->getCaptchaRequests($days)
 		];
+
+		$data['totalTrafficVsCaptcha'] = DummyDataController::ApplyDuration($data['totalTrafficVsCaptcha']);
+		$data['attemptsSolvedVsFailed'] = DummyDataController::ApplyDuration($data['attemptsSolvedVsFailed']);
 
 		return response()->json(['id'=>0, 'pageData' => $data])
 			->header('Content-Type', 'application/vnd.api+json');
@@ -56,6 +60,10 @@ class CaptchaRequestController extends BaseController
 			'label' => 'Served Total'
 		];
 		$data['label'] = ['January', 'February', 'March', 'April', 'May', 'June', 'July'];
+
+		foreach($data['datasets'] as $index=>$ds) {
+			$data['datasets'][$index] = DummyDataController::ApplyDuration($data['datasets'][$index]);
+		}
 
 		return $data;
 	}

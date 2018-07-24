@@ -7,6 +7,7 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 
+use App\Http\Controllers\Adshield\Protection\DummyDataController;
 
 
 class UpstreamHttpErrorsController extends BaseController
@@ -41,6 +42,13 @@ class UpstreamHttpErrorsController extends BaseController
 			generate('2017-07-02', 266, 26, 292),
 			generate('2017-07-01', 224, 30, 254)
 		];
+
+		foreach($data as $key=>$value) {
+			$data[$key]['4xx'] = DummyDataController::ApplyDuration($value['4xx']);
+			$data[$key]['5xx'] = DummyDataController::ApplyDuration($value['5xx']);
+			$data[$key]['total'] = DummyDataController::ApplyDuration($value['total']);
+		}
+
 
 		return $data;
 	}

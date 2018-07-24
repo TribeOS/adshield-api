@@ -7,6 +7,7 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 
+use App\Http\Controllers\Adshield\Protection\DummyDataController;
 
 
 class CacheAnalysisController extends BaseController
@@ -17,9 +18,9 @@ class CacheAnalysisController extends BaseController
 	{
 		$days = Input::get('days', 60);
 		$data = [
-			'cacheEffectivity' => $this->getCacheEffectivity($days),
-			'cssServedFrom' => $this->getCssServedFrom($days),
-			'jsServedFrom' => $this->getJsServedFrom($days)
+			'cacheEffectivity' => DummyDataController::ApplyDuration($this->getCacheEffectivity($days)),
+			'cssServedFrom' => DummyDataController::ApplyDuration($this->getCssServedFrom($days)),
+			'jsServedFrom' => DummyDataController::ApplyDuration($this->getJsServedFrom($days))
 		];
 
 		return response()->json(['id'=>0, 'pageData' => $data])
