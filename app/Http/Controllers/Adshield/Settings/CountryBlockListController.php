@@ -6,30 +6,31 @@ use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
-use Illuminate\Http\Request;
+use Request;
 
 use App\Country;
 
 class CountryBlockListController extends BaseController
 {
 
-	public function handle(Request $request, $id=null)
+	public function handle($id=null)
 	{
-		if ($request->isMethod('get'))
+		if (Request::isMethod('get'))
 		{
 			if (empty($id)) {
-				$data = $this->getBlockedCountries();
+				$userKey = Request::get('filter')['userKey'];
+				$data = $this->getBlockedCountries($userKey);
 			} else {
 				$data = $this->getBlockedCountry($id);
 			}
 			return response()->json($data)
 				->header('Content-Type', 'application/vnd.api+json');
 		}
-		else if ($request->isMethod('post'))
+		else if (Request::isMethod('post'))
 		{
 			return $this->addCountry();
 		}
-		else if ($request->isMethod('delete'))
+		else if (Request::isMethod('delete'))
 		{
 			return $this->remove($id);
 		}
@@ -41,20 +42,22 @@ class CountryBlockListController extends BaseController
 		return $data;
 	}
 
-	private function getBlockedCountries()
+	private function getBlockedCountries($userKey)
 	{
-		$data = DB::table("asBlockedCountries")->get();
+		$data = DB::table("asBlockedCountries")->where('userKey', $userKey)->get();
 		return $data;
 	}
 
 	private function addCountry()
 	{
 		$id = Input::get("countryBlockList")['country'];
+		$userKey = Input::get("countryBlockList")['userKey'];
 		//save settings to database here
 		$insertId = DB::table("asBlockedCountries")
 			->insertGetId([
 				'country' => $id,
-				'addedOn' => gmdate('Y-m-d H:i:s')
+				'addedOn' => gmdate('Y-m-d H:i:s'),
+				'userKey' => $userKey
 			]);
 
 		$data = [

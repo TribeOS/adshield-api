@@ -13,12 +13,12 @@ use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 
+use App\Http\Controllers\Adshield\Settings\UserWebsitesController;
 use App\User;
 
 
 class LoginController extends Controller
 {
-    
 
     /**
      * handles log in from ember js

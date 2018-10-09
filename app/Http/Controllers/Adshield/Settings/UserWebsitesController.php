@@ -16,7 +16,6 @@ use App\User;
 
 class UserWebsitesController extends Controller
 {
-    
 
     public function handle(Request $request)
     {

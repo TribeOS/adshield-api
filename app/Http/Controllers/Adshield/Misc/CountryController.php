@@ -18,7 +18,7 @@ class CountryController extends BaseController
 	public function handle(Request $request, $id=null)
 	{
 		if ($request->isMethod('get'))
-		{	
+		{
 			if(empty($id)) {
 				$data = $this->getCountries();
 			} else {
@@ -33,8 +33,12 @@ class CountryController extends BaseController
 	{
 		$filter = [];
 		$name = Input::get('countryName', '');
+		$userKey = Input::get('userKey', '');
 		$data = DB::table("countries")
-			->leftJoin("asBlockedCountries", "asBlockedCountries.country", "=", "countries.id")
+			->leftJoin("asBlockedCountries", function($join) use($userKey) {
+				$join->on("asBlockedCountries.country", "=", "countries.id")
+					->where('asBlockedCountries.userKey', '=', $userKey);
+			})
 			->select(DB::raw("countries.countryCode, countries.id, countries.countryName"))
 			->whereNull("asBlockedCountries.country")
 			->orderBy('countryName')->take(10);
