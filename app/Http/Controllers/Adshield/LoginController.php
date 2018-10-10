@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 
 use App\Http\Controllers\Adshield\Settings\UserWebsitesController;
-use App\User;
+use App\Model\User;
 
 
 class LoginController extends Controller
@@ -35,32 +35,31 @@ class LoginController extends Controller
             $error = 'Invalid username/password.';
             return response($error, 401)
                 ->header('Content-Type', 'application/vnd.api+json');
-        } 
-
+        }
         $token = md5(time().rand(1000, 9999));
         $response['access_token'] = $token;
         $response['username'] = $user->username;
         $response['id'] = $user->id;
-        $this->saveToken($token, $user->id);
+        $this->saveToken($token, $user);
 
-        $response['websites'] = UserWebsitesController::getUserWebsites($user->id);
-
+        $response['websites'] = UserWebsitesController::getUserWebsites($user->acountId);
 
         return response()->json($response)
             ->header('Content-Type', 'application/vnd.api+json');
     }
 
 
-    private function saveToken($token, $userId)
+    private function saveToken($token, $user)
     {
         DB::table("accessTokens")
-            ->where("userId", $userId)
+            ->where("userId", $user->id)
             ->delete();
 
         DB::table("accessTokens")
             ->insert([
                 'accessToken' => $token,
-                'userId' => $userId,
+                'accountId' => $user->accountId,
+                'userId' => $user->id,
                 'expiresOn' => gmdate("Y-m-d H:i:s", strtotime("+24 hours")),
                 'createdOn' => gmdate("Y-m-d H:i:s")
             ]);
@@ -94,12 +93,24 @@ class LoginController extends Controller
         return true;
     }
 
-    public static function getUserIdFromToken($token)
+    /**
+     * gets the user id from the token saved.
+     * @param  [type]  $token [description]
+     * @param  boolean $all   set to TRUE to get the entire saved record of the token (includes accountID and userID)
+     * @return [type]         [description]
+     */
+    public static function getUserIdFromToken($token, $all=false)
     {
         $result = DB::table("accessTokens")->where("accessToken", $token)->first();
-        return $result->userId;
+        if (!$all) return $result->userId;
+        return $result;
     }
 
+    /**
+     * verifies the token passed with what we currently have on the database
+     * @param  Request $request [description]
+     * @return [type]           [description]
+     */
     public function verifyToken(Request $request)
     {
         $token = $request->bearerToken();
@@ -111,9 +122,9 @@ class LoginController extends Controller
 
         $valid = true;
         if (empty($result)) $valid = false;
-        
+
         return response()->json(['id' => 0, 'valid' => $valid])
-            ->header('Content-Type', 'application/vnd.api+json');        
+            ->header('Content-Type', 'application/vnd.api+json');
     }
 
 }

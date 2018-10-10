@@ -11,7 +11,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 
 use App\Http\Controllers\Adshield\LoginController;
-use App\User;
+use App\Model\User;
+use App\Model\UserWebsite;
 
 
 class UserWebsitesController extends Controller
@@ -22,17 +23,17 @@ class UserWebsitesController extends Controller
         $userId = 0;
         try {
             $token = $request->bearerToken();
-            $userId = LoginController::getUserIdFromToken($token);
+            $user = LoginController::getUserIdFromToken($token, true); //get USER instead of just the id
         } catch (Exception $e) {}
 
         if ($request->isMethod('get'))
         {
-            return $this->getWebsites($userId);
+            return $this->getWebsites($user->accountId);
         }
         else if ($request->isMethod('post'))
         {
             $website = Input::get("userWebsite");
-            return $this->create($userId, $website['domain'], $website['userKey']);
+            return $this->create($user, $website['domain'], $website['userKey']);
         }
         else if ($request->isMethod('delete'))
         {
@@ -42,11 +43,11 @@ class UserWebsitesController extends Controller
 
 
     /**
-     * get all websites belonging to this user
+     * get all websites belonging to this account
      */
-    public static function getUserWebsites($userId)
+    public static function getUserWebsites($accountId)
     {
-        $websites = DB::table("userWebsites")->where("userId", $userId)->get();
+        $websites = UserWebsite::where("accountId", $accountId)->get();
         return $websites;
     }
 
@@ -54,9 +55,9 @@ class UserWebsitesController extends Controller
     /**
      * get all websites belonging to this user (for public call)
      */
-    private function getWebsites($userId)
+    private function getWebsites($accountId)
     {
-        $websites = DB::table("userWebsites")->where("userId", $userId)->get();
+        $websites = UserWebsite::where("accountId", $accountId)->get();
         return $websites;
     }
 
@@ -66,27 +67,28 @@ class UserWebsitesController extends Controller
         //remove website?
     }
 
-    private function create($userId, $domain, $userKey)
+    private function create($user, $domain, $userKey)
     {
         //check if user key is unique FIRST
-        $record = DB::table("userWebsites")
-            ->where("userKey", $userKey)
-            ->first();
+        $record = UserWebsite::where("userKey", $userKey)->first();
 
         if (!empty($record)) {
             return response("The Key '$userKey' already exists.", 500)
                 ->header('Content-Type', 'text/plain');
-            //->json(['error' => 'userkey exists'])
-                // ->header('Content-Type', 'application/vnd.api+json');
         }
 
-        DB::table("userWebsites")
-            ->insert([
-                'userId' => $userId,
-                'domain' => $domain,
-                'userKey' => $userKey,
-                'createdOn' => gmdate("Y-m-d H:i:s")
-            ]);
+        try {
+            $record = new UserWebsite();
+            $record->userId = $user->id;
+            $record->accountId = $user->accountId;
+            $record->userKey = $userKey;
+            $record->domain = $domain;
+            $record->createdOn = gmdate('Y-m-d H:i:s');
+            $record->save();
+        } catch (\Exception $e) {
+            return [false, $e->getMessage()];
+        }
+        return true;
     }
 
 }

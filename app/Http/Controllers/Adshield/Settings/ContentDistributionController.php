@@ -9,8 +9,8 @@ use Illuminate\Support\Facades\Input;
 use Illuminate\Http\Request;
 
 use App\Http\Controllers\Adshield\LoginController;
-use App\User;
-use App\UserConfig;
+use App\Model\User;
+use App\Model\UserConfig;
 
 
 class ContentDistributionController extends Controller
