@@ -77,6 +77,8 @@ Route::post('checkurl', ['as' => 'AdshieldCheckUrl', 'uses' => 'Adshield\ApiRefe
 
 
 Route::middleware(['authapi'])->group(function () {
+
+
 	//Protection Summary
 
 	//ip violators list
@@ -275,7 +277,8 @@ Route::middleware(['authapi'])->group(function () {
 
 
 	//USER ACCOUNT and USER ASSETS
-	
+
+	Route::get('/users', ['uses' => 'Adshield\Accounts\UserController@handle']);
 	Route::any('/userWebsites', ['uses' => 'Adshield\Settings\UserWebsitesController@handle']);
 
 	//==========================================================================================

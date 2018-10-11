@@ -32,12 +32,6 @@ class AccountManagementController extends BaseController
 		// $settings = json_decode($settings->settings);
 
 		$data = [
-			'users' => [
-				['email' => 'aman@tr.be', 'accessLevel' => 'account access'],
-				['email' => 'florin@tr.be', 'accessLevel' => 'account access'],
-				['email' => 'is@tr.be', 'accessLevel' => 'account access'],
-				['email' => 'jw@tr.be', 'accessLevel' => 'account access'],
-			],
 			'account' => [
 				'company' => 'Tr.be',
 				'address' => 'temporary address value'

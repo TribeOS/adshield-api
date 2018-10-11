@@ -22,4 +22,9 @@ class User extends Model
 		return $this->belongsTo('App\Model\Account', 'accountId');
 	}
 
+	public function permission()
+	{
+		return $this->hasOne('App\Model\UserPermission', 'userId');
+	}
+
 }
