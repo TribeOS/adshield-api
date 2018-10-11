@@ -6,6 +6,7 @@ use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use DB;
 use Response;
+use Hash;
 use Illuminate\Http\Request;
 use App\Model\User;
 use App\Model\UserPermission;
@@ -14,7 +15,7 @@ use App\Http\Controllers\Adshield\LoginController;
 
 class UserController extends BaseController {
 
-	public function handle(Request $request)
+	public function handle(Request $request, $id=null)
     {
         $userId = 0;
         try {
@@ -27,9 +28,10 @@ class UserController extends BaseController {
         	$filter = $request->get('filter', false);
             return $this->getUsers($user->accountId, $filter['userId']);
         }
-        else if ($request->isMethod('post'))
+        else if ($request->isMethod('post') || $request->isMethod('put'))
         {
-            return $this->save();
+        	$data = $request->all();
+            return $this->save($id, $data['user'], $user->accountId);
         }
         else if ($request->isMethod('delete'))
         {
@@ -67,10 +69,10 @@ class UserController extends BaseController {
      * create new user/update existing user
      * @return [type] [description]
      */
-    private function save($data)
+    private function save($id=null, $data, $accountId)
     {
     	$email = $data['email'];
-    	if (empty($data['id']))
+    	if (empty($id))
     	{
 	    	$user = User::where("email", $email)->first();
 	    	if (!empty($user)) {
@@ -82,25 +84,30 @@ class UserController extends BaseController {
 	    	$user->firstname = $data['firstname'];
 	    	$user->lastname = $data['lastname'];
 	    	$user->email = $data['email'];
+	    	$user->username = $data['username'];
 	    	$user->password = Hash::make($data['password']);
+	    	$user->accountId = $accountId;
 	    	$user->save();
 	    	$usersPermission = new UserPermission();
 	    	$usersPermission->userId = $user->id;
-	    	$usersPermission->level = 1;
+	    	$usersPermission->permission = 1;
 	    	$usersPermission->save();
-	    	$user->permission = $usersPermission->level;
+	    	$user->permission = $usersPermission->permission;
+	    	$user->password = "";
 	    	return $user;
 	    }
 
-	    $user = User::find($data['id']);
+	    $user = User::find($id);
 	    $user->firstname = $data['firstname'];
     	$user->lastname = $data['lastname'];
+    	$user->username = $data['username'];
     	$user->email = $data['email'];
     	$user->save();
     	$usersPermission = UserPermission::where('userId', $user->id)->first();
     	$usersPermission->permission = $data['permission'];
     	$usersPermission->save();
-    	$user->permissions = $usersPermission->level;
+    	$user->permissions = $usersPermission->permission;
+    	$user->password = "";
     	return $user;
 
     }

@@ -9,6 +9,7 @@ class UserPermission extends Model
 {
 
 	public $timestamps = false;
+	public $primaryKey = "userId";
 
 	protected $table = "usersPermission";
 
