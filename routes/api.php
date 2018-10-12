@@ -279,6 +279,7 @@ Route::middleware(['authapi'])->group(function () {
 	//USER ACCOUNT and USER ASSETS
 
 	Route::any('/users/{id?}', ['uses' => 'Adshield\Accounts\UserController@handle']);
+	Route::any('/passwords/{id?}', ['uses' => 'Adshield\Accounts\PasswordController@handle']);
 	Route::any('/userWebsites', ['uses' => 'Adshield\Settings\UserWebsitesController@handle']);
 
 	//==========================================================================================

@@ -35,7 +35,7 @@ class UserController extends BaseController {
         else if ($request->isMethod('post') || $request->isMethod('put'))
         {
         	$data = $request->all();
-            return $this->save($id, $data['user'], $user->accountId, $request);
+            return $this->save($id, $data['user'], $user->accountId);
         }
         else if ($request->isMethod('delete'))
         {
@@ -73,22 +73,33 @@ class UserController extends BaseController {
      * create new user/update existing user
      * @return [type] [description]
      */
-    private function save($id=null, $data, $accountId, $request)
+    private function save($id=null, $data, $accountId)
     {
     	$email = $data['email'];
-    	if (empty($id))
+    	
+        if (empty($id))
     	{
-    		$request->validate([
-	    		'user.firstname' => 'required|max:255',
-	    		'user.lastname' => 'required|max:255',
-	    		'user.username' => 'required|max:255',
-	    		'user.password' => 'required',
-	    		'user.email' => 'required|max:255'
-	    	]);
-
-	    	$user = User::where("email", $email)->first();
-	    	if (!empty($user)) {
-	    		return response("The email '$email' already exists. Please register a different email address.", 500)
+    		$validator = Validator::make($data, [
+                'firstname' => 'required|max:255',
+                'lastname' => 'required|max:255',
+                'email' => [
+                    'email',
+                    'max:255',
+                    'required',
+                    Rule::unique('users')->ignore($id),
+                ],
+                'username' => [
+                    'required',
+                    Rule::unique('users')->ignore($id),
+                ],
+                'password' => 'required|max:100'
+            ]);
+	    	
+	    	if ($validator->fails()) {
+                $error = [];
+                foreach($validator->errors()->all() as $msg) $error[] = $msg;
+                $error = implode("\n", $error);
+	    		return response($error, 500)
 	                ->header('Content-Type', 'text/plain');
 	    	}
 	    	//create user
@@ -106,24 +117,34 @@ class UserController extends BaseController {
 	    	$usersPermission->save();
 	    	$user->permission = $usersPermission->permission;
 	    	$user->password = "";
-	    	return $user;
+	    	return response($user, 200);
 	    }
+
+        if ($data['isReset']) {
+            return $this->resetPassword($id, $data);
+        }
 
 	    $validator = Validator::make($data, [
     		'firstname' => 'required|max:255',
     		'lastname' => 'required|max:255',
-    		'username' => [
+            'email' => [
+                'email',
+                'max:255',
                 'required',
                 Rule::unique('users')->ignore($id),
             ],
-    		'email' => [
-                'max:255',
+    		'username' => [
                 'required',
                 Rule::unique('users')->ignore($id),
             ]
     	]);
-
-        var_dump($validator);
+        if ($validator->fails()) {
+            $error = [];
+            foreach($validator->errors()->all() as $msg) $error[] = $msg;
+            $error = implode("\n", $error);
+            return response($error, 500)
+                ->header('Content-Type', 'text/plain');
+        }
 
 	    $user = User::find($id);
 	    $user->firstname = $data['firstname'];
@@ -136,8 +157,27 @@ class UserController extends BaseController {
     	$usersPermission->save();
     	$user->permissions = $usersPermission->permission;
     	$user->password = "";
-    	return $user;
+    	return response($user, 200);
 
+    }
+
+    private function resetPassword($id, $data)
+    {
+        $validator = Validator::make($data, [
+            'password' => 'filled|confirmed|required|max:255',
+        ]);
+        if ($validator->fails()) {
+            $error = [];
+            foreach($validator->errors()->all() as $msg) $error[] = $msg;
+            $error = implode("\n", $error);
+            return response($error, 500);
+        }
+
+        $user = User::find($id);
+        $user->password = Hash::make($data['password']);
+        $user->save();
+        $user->password = "";
+        return response($user, 200);
     }
 
     private function remove()

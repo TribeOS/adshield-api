@@ -9,8 +9,8 @@ use Illuminate\Support\Facades\Input;
 use Illuminate\Http\Request;
 
 use App\Http\Controllers\Adshield\LoginController;
-use App\User;
-use App\UserConfig;
+use App\Model\User;
+use App\Model\UserConfig;
 
 
 class ContentProtectionController extends Controller
@@ -18,7 +18,6 @@ class ContentProtectionController extends Controller
 
 	public function handleSettings(Request $request)
 	{
-		$userId = 0;
         try {
             $token = $request->bearerToken();
             $userId = LoginController::getUserIdFromToken($token);
@@ -26,18 +25,18 @@ class ContentProtectionController extends Controller
 
 		if ($request->isMethod('get'))
 		{
-			return $this->getSettings($userId);
+			return $this->getSettings();
 		}
 		else
 		{
-			return $this->saveSettings($userId);
+			return $this->saveSettings();
 		}
 	}
 
-	private function getSettings($userId)
+	private function getSettings()
 	{
-		$settings = UserConfig::where('userId', $userId)->first();
-		$config = $settings->getConfigJson('contentProtection');
+		$userKey = Input::get('userKey');
+		$settings = UserConfig::where('userKey', $userKey)->first();
 
 		$data = [
 			"threatResponse" => [
@@ -50,32 +49,31 @@ class ContentProtectionController extends Controller
 			],
 			"machineLearning" => []
 		];
-		if (!empty($config)) $data = $config;
+		if (!empty($settings)) $data = $settings->getConfigJson('contentProtection');
 
-		return response()->json(['id'=>1, 'pageData' => $data])
-			->header('Content-Type', 'application/vnd.api+json');
+		return response()->json(['id'=>1, 'pageData' => $data]);
 
 	}
 
-	private function saveSettings($userId)
+	private function saveSettings()
 	{
 		$settings = Input::get('contentProtection', []);
-		$config = UserConfig::where('userId', $userId)->first();
+		$userKey = $settings['pageData']['userKey'];
+		$config = UserConfig::where('userKey', $userKey)->first();
 
 		if (empty($config)) {
 			$config = new UserConfig();
-			$config->userId = $userId;
+			$config->userKey = $userKey;
 		}
 		$config->updatedOn = gmdate("Y-m-d H:i:s");
 		$value = json_decode($config->config, 1);
+		unset($settings['pageData']['userKey']);
 		$value['contentProtection'] = $settings['pageData'];
 		$config->config = json_encode($value);
 		$config->save();
 		
 		//only one record in the database for this
-		return response()->json(['id'=>1, 'pageData' => $settings])
-			->header('Content-Type', 'application/vnd.api+json')
-			->header('Access-Control-Allow-Headers', 'Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With');
+		return response()->json(['id'=>1, 'pageData' => $settings]);
 	}
 
 }

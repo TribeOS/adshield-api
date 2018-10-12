@@ -7,6 +7,7 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use DB;
 use Response;
 use Hash;
+use Validator;
 use Illuminate\Http\Request;
 use App\Model\User;
 use App\Http\Controllers\Adshield\LoginController;
@@ -30,7 +31,7 @@ class PasswordController extends BaseController {
         if ($request->isMethod('post') || $request->isMethod('put'))
         {
         	$data = $request->all();
-            return $this->save($id, $data['password'], $user->accountId, $request);
+            return $this->save($id, $data['password']);
         }
     }
 
@@ -38,19 +39,22 @@ class PasswordController extends BaseController {
      * create new user/update existing user
      * @return [type] [description]
      */
-    private function save($id=null, $data, $accountId, $request)
+    private function save($id=null, $data)
     {
-	    $request->validate([
-    		'user.firstname' => 'required|max:255',
-    		'user.lastname' => 'required|max:255',
-    		'user.username' => 'required|max:255',
-    		'user.email' => 'required|max:255'
-    	]);
+	    $validator = Validator::make($data, [
+            'password' => 'confirmed|required|max:255',
+        ]);
+        if ($validator->fails()) {
+            $error = [];
+            foreach($validator->errors()->all() as $msg) $error[] = $msg;
+            $error = implode("\n", $error);
+            return response($error, 500);
+        }
 
 	    $user = User::find($id);
 	    $user->password = Hash::make($data['password']);
     	$user->save();
-    	return $user;
+    	return response($user, 200);
 
     }
 

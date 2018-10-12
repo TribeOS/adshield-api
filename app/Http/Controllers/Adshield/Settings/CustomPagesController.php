@@ -9,8 +9,8 @@ use Illuminate\Support\Facades\Input;
 use Illuminate\Http\Request;
 
 use App\Http\Controllers\Adshield\LoginController;
-use App\User;
-use App\UserConfig;
+use App\Model\User;
+use App\Model\UserConfig;
 
 
 class CustomPagesController extends Controller
@@ -26,18 +26,18 @@ class CustomPagesController extends Controller
 
 		if ($request->isMethod('get'))
 		{
-			return $this->getSettings($userId);
+			$userKey = Input::get('userKey');
+			return $this->getSettings($userKey);
 		}
 		else
 		{
-			return $this->saveSettings($userId);
+			return $this->saveSettings();
 		}
 	}
 
-	private function getSettings($userId)
+	private function getSettings($userKey)
 	{
-		$settings = UserConfig::where('userId', $userId)->first();
-		$config = $settings->getConfigJson('customPage');
+		$settings = UserConfig::where('userKey', $userKey)->first();
 
 		$data = [
 			'captchaPages' => [
@@ -56,31 +56,30 @@ class CustomPagesController extends Controller
 			]
 		];
 
-		if (!empty($config)) $data = $config;
+		if (!empty($settings)) $data = $settings->getConfigJson('customPage');
 
-		return response()->json(['id'=>1, 'pageData' => $data])
-			->header('Content-Type', 'application/vnd.api+json');
+		return response()->json(['id'=>1, 'pageData' => $data]);
 
 	}
 
-	private function saveSettings($userId)
+	private function saveSettings()
 	{
 		$settings = Input::get('customPage', []);
-		$config = UserConfig::where('userId', $userId)->first();
+		$userKey = $settings['pageData']['userKey'];
+		$config = UserConfig::where('userKey', $userKey)->first();
 
 		if (empty($config)) {
 			$config = new UserConfig();
-			$config->userId = $userId;
+			$config->userKey = $userKey;
 		}
 		$config->updatedOn = gmdate("Y-m-d H:i:s");
 		$value = json_decode($config->config, 1);
+		unset($settings['pageData']['userKey']);
 		$value['customPage'] = $settings['pageData'];
 		$config->config = json_encode($value);
 		$config->save();
 
-		return response()->json(['id'=>1, 'pageData' => $settings])
-			->header('Content-Type', 'application/vnd.api+json')
-			->header('Access-Control-Allow-Headers', 'Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With');
+		return response()->json(['id'=>1, 'pageData' => $settings]);
 	}
 
 }
