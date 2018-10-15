@@ -56,7 +56,7 @@ class CustomPagesController extends Controller
 			]
 		];
 
-		if (!empty($settings)) $data = $settings->getConfigJson('customPage');
+		if (!empty($settings) && !empty($settings->getConfigJson('customPage'))) $data = $settings->getConfigJson('customPage');
 
 		return response()->json(['id'=>1, 'pageData' => $data]);
 

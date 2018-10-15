@@ -25,7 +25,8 @@ class ContentProtectionController extends Controller
 
 		if ($request->isMethod('get'))
 		{
-			return $this->getSettings();
+			$userKey = Input::get('userKey');
+			return $this->getSettings($userKey);
 		}
 		else
 		{
@@ -33,9 +34,8 @@ class ContentProtectionController extends Controller
 		}
 	}
 
-	private function getSettings()
+	private function getSettings($userKey)
 	{
-		$userKey = Input::get('userKey');
 		$settings = UserConfig::where('userKey', $userKey)->first();
 
 		$data = [
@@ -49,7 +49,7 @@ class ContentProtectionController extends Controller
 			],
 			"machineLearning" => []
 		];
-		if (!empty($settings)) $data = $settings->getConfigJson('contentProtection');
+		if (!empty($settings) && !empty($settings->getConfigJson('contentProtection'))) $data = $settings->getConfigJson('contentProtection');
 
 		return response()->json(['id'=>1, 'pageData' => $data]);
 
