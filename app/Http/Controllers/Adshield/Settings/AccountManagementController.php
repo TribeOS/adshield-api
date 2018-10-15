@@ -8,63 +8,62 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Http\Request;
 
+use App\Http\Controllers\Adshield\LoginController;
+use App\Model\Account;
 
 
+/**
+ * handles setting and fetching of account config
+ */
 class AccountManagementController extends BaseController
 {
 
 	public function handle(Request $request)
 	{
+		$userId = 0;
+        try {
+            $token = $request->bearerToken();
+            $user = LoginController::getUserIdFromToken($token, true);
+        } catch (Exception $e) {}
+
 		if ($request->isMethod('get'))
 		{
-			return $this->getSettings();
+			return $this->getSettings($user->accountId);
 		}
 		else if ($request->isMethod('put'))
 		{
-			return $this->saveSettings();
+			return $this->saveSettings($user->accountId);
 		}
 	}
 
 
-	private function getSettings()
+	private function getSettings($accountId)
 	{
-		// $settings = DB::table("settings")->where('name', 'customPages')->first();
-		// $settings = json_decode($settings->settings);
-
+		$account = Account::where('id', $accountId)->first();
 		$data = [
 			'account' => [
-				'company' => 'Tr.be',
-				'address' => 'temporary address value'
+				'company' => '',
+				'address' => ''
 			],
-			'emailNotifications' => [
-				['email' => 'is@tr.be', 'coverage' => 'all'],
-				['email' => 'jw@tr.be', 'coverage' => 'all'],
-			],
-			'password' => [
-			]
+			'emailNotifications' => [],
+			'password' => []
 		];
 
-		return response()->json(['id'=>1, 'pageData' => $data])
-			->header('Content-Type', 'application/vnd.api+json');
+		if (!empty($account) && !empty($account->config)) $data = json_decode($account->config);;
+
+		return response()->json(['id'=>1, 'pageData' => $data]);
 
 	}
 
 
-	private function saveSettings()
+	private function saveSettings($accountId)
 	{
 		$settings = Input::get('accountManagement', []);
 		$settings = $settings['pageData'];
-		//save settings to database here
-		// throw back the update record
-		// DB::table("settings")
-		// 	->update([
-		// 		'settings' => json_encode($settings),
-		// 		'updatedOn' => gmdate('Y-m-d H:i:s')
-		// 	]);
-		//only one record in the database for this
-		return response()->json(['id'=>1, 'pageData' => $settings])
-			->header('Content-Type', 'application/vnd.api+json')
-			->header('Access-Control-Allow-Headers', 'Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With');
+		$account = Account::find($accountId);
+		$account->config = json_encode($settings);
+		$account->save();
+		return response()->json(['id'=>1, 'pageData' => $settings]);
 	}
 
 }

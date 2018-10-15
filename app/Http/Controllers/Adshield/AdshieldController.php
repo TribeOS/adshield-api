@@ -16,7 +16,7 @@ class AdshieldController extends BaseController
 {
 
 	/**
-	 * main function to call to import adshield to thirdparty websites
+	 * main function to call to import adshield to third party websites
 	 */
 	public function ImportAdshield()
 	{
