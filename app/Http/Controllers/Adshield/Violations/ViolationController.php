@@ -53,24 +53,26 @@ class ViolationController extends BaseController {
 
 
 
-	protected function logViolation($userKey, $ip, $ipStr, $violation, $info)
+	protected function logViolation($userKey, $ip, $ipStr, $violationType, $data)
 	{
 		$infoId = 0;
 		//check if info exists, if so use its id. otherwise create new entry.
 		$info = DB::table("trViolationInfo")
 			->where([
-				'userAgent' => $info['userAgent'],
-				'fullUrl' => $info['fullUrl'],
-				'country' => $info['country'],
-				'city' => $info['city']
+				'userAgent' => !empty($info['userAgent']) ? $info['userAgent'] : '',
+				'fullUrl' => !empty($info['fullUrl']) ? $info['fullUrl'] : '',
+				'country' => !empty($info['country']) ? $info['country'] : '',
+				'city' => !empty($info['city']) ? $info['city'] : ''
 			])->first();
-		if (empty($info)) {
+		
+		if (empty($info))
+		{
 			//create new violation info for recording
 			$info = new ViolationInfo();
-			$info->userAgent = $info['userAgent'];
-			$info->fullUrl = $info['fullUrl'];
-			$info->country = $info['country'];
-			$info->city = $info['city'];
+			$info->userAgent = !empty($info['userAgent']) ? $info['userAgent'] : '';
+			$info->fullUrl = !empty($info['fullUrl']) ? $info['fullUrl'] : '';
+			$info->country = !empty($info['country']) ? $info['country'] : '';
+			$info->city = !empty($info['city']) ? $info['city'] : '';
 			$info->save();
 		} 
 		$infoId = $info->id;
@@ -80,7 +82,7 @@ class ViolationController extends BaseController {
 		$violation->createdOn = gmdate("Y-m-d H:i:s");
 		$violation->ip = $ip;
 		$violation->ipStr = $ipStr;
-		$violation->violation = $violation;
+		$violation->violation = $violationType;
 		$violation->violationInfo = $infoId;
 		$violation->userKey = $userKey;
 		$violation->save();
