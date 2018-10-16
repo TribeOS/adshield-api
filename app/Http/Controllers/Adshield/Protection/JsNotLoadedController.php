@@ -4,10 +4,11 @@ namespace App\Http\Controllers\Adshield\Protection;
 
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
-use Illuminate\Support\Facades\DB;
+use DB;
 use Illuminate\Support\Facades\Input;
 
-date_default_timezone_set("America/New_York");
+use App\Http\Controllers\Adshield\Violations\ViolationController;
+use App\Model\Violation;
 
 
 class JsNotLoadedController extends BaseController
@@ -15,54 +16,28 @@ class JsNotLoadedController extends BaseController
 
 	public function getList()
 	{
-		// $page = Input::get('page', 0);
-		// $limit = Input::get('limit', 10);
-		// $sortBy = Input::get('sortBy', 'last_updated');
-		// $sortDir = Input::get('sortDir', 'DESC');
-
-		// $filter = Input::get('filter', []);
-
-		// $data = DB::table("asListIp")
-		// 	->join('asStatInfo', 'asListIp.ip', '=', 'asStatInfo.ip')
-		// 	->leftJoin('asStat', function($join) use($filter) {
-		// 		$join->on('asStat.info_id', '=', 'asStatInfo.id');
-		// 		if (!empty($filter['duration']) && $filter['duration'] > 0)
-		// 		{
-		// 			$duration = $filter['duration'];
-		// 			$join->where("asStat.date_added", ">=", "DATE_SUB(NOW(), INTERVAL $duration DAY)");
-		// 		}
-		// 	})
-		// 	->select(DB::raw("asListIp.ip, COUNT(*) as total"))
-		// 	->take($limit)->skip($page * $limit)
-		// 	->groupBy('asListIp.ip')
-		// 	->orderBy($sortBy, $sortDir);
-
-		// if (!empty($filter['dateFrom']) && !empty($filter['dateTo']))
-		// 	$data->whereBetween("last_updated", [$filter['dateFrom'], $filter['dateTo']]);
-
-		// if ($filter['status'] !== null) $data->where("status", $filter['status']);
-		// if (!empty($filter['ip']))
-		// {
-		// 	try {
-		// 		$ip = inet_pton($filter['ip']);
-		// 		$data->where("asListIp.ip", inet_pton($filter['ip']));
-		// 	} catch (Exception $e) {}
-		// }
-
-		// $data = $data->paginate($limit);
-		// foreach($data as $d)
-		// {
-		// 	$d->ip = ApiStatController::IPFromBinaryString($d->ip);
-		// }
-
-		// $data->appends([
-		// 	'sortBy' => $sortBy,
-		// 	'sortDir' => $sortDir,
-		// 	'limit' => $limit
-		// ]);
+		$page = Input::get('page', 0);
+		$limit = Input::get('limit', 10);
 		
-		$data = [];
-		$data = DummyDataController::GetIps(Input::get('limit', 10), Input::get('page', 1));
+		$filter = Input::get('filter', []);
+
+		$data = DB::table("trViolations")
+			->select(DB::raw("ipStr AS ip, COUNT(*) as total"))
+			->groupBy('ipStr')
+			->where('violation', ViolationController::V_NO_JS)
+			->where('userKey', $filter['userKey'])
+			->orderBy('ipStr', 'asc');
+
+		if (!empty($filter['duration']) && $filter['duration'] > 0)
+		{
+			$duration = $filter['duration'];
+			$data->where("createdOn", ">=", "DATE_SUB(NOW(), INTERVAL $duration DAY)");
+		}
+
+		$data = $data->paginate($limit);
+		$data->appends([
+			'limit' => $limit
+		]);
 
 		return response()->json(['id' => 0, 'listData' => $data])
 			->header('Content-Type', 'application/vnd.api+json');
@@ -73,24 +48,30 @@ class JsNotLoadedController extends BaseController
 		$filter = Input::get("filter", []);
 		$ip = $filter['ip'];
 
-		//sample data
-		$data = DummyDataController::IpGetGraphData(2);
+		$violation = DB::table("trViolations")
+			->select(DB::raw("violation, COUNT(*) AS total"))
+			->where("ip", inet_pton($ip))
+			->whereIn("violation", [ViolationController::V_NO_JS])
+			->groupBy("violation")
+			->get();
+
+		//TEST
+		$data = [0, $violation[0]->total];
 
 		$info = IpInfoController::GetIpInfo($ip);
 		$graphData = [
-			'data' => $data[$ip]['violations'],
+			'data' => $data,
 			'label' => ['Automated Browsers', 'Rate Unlimited'],
 			'info' => [
 				'ip' => $ip,
-				'loc' => $info['city'] . ', ' . $info['country'],
-				'org' => $info['org'],
-				'isp' => $info['isp']
+				'loc' => (isset($info['city']) ? $info['city'] : '') . ', ' . (isset($info['country']) ? $info['country'] : ''),
+				'org' => isset($info['org']) ? $info['org'] : '',
+				'isp' => isset($info['isp']) ? $info['isp'] : ''
 			]
 		];
 
 
-		return response()->json(['id'=>0, 'graphData' => $graphData])
-			->header('Content-Type', 'application/vnd.api+json');
+		return response()->json(['id'=>0, 'graphData' => $graphData]);
 	}
 	
 }
