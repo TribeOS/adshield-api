@@ -19,10 +19,10 @@ class ViolationNoJsController extends ViolationController {
 			'userAgent' => $_SERVER['HTTP_USER_AGENT'],
 			'fullUrl' => ''
 		];
-		if (!empty($ip[1]))
+		if (!empty($ip['string']))
 		{
-			$ipInfo = $this->GetIpInfo($ip[1]);
 			try {
+				$ipInfo = $this->GetIpInfo($ip['string']);
 				$info['country'] = $ipInfo['country'];
 				$info['city'] = $ipInfo['city'];
 			} catch (\Exception $e) {}
@@ -30,7 +30,7 @@ class ViolationNoJsController extends ViolationController {
 
 		//save user info and violation
 		try {
-			$this->logViolation($ip[0], $ip[1], ViolationController::V_NO_JS, $info);
+			$this->logViolation($ip['binary'], $ip['string'], ViolationController::V_NO_JS, $info);
 		} catch (\Exception $e) {
 			echo $e->getMessage();
 		}
