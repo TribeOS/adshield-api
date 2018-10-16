@@ -16,7 +16,7 @@ class ViolationNoJsController extends ViolationController {
 		$ip = $this->GetUserIp();
 		
 		$info = [
-			'userAgent' => $_SERVER['HTTP_USER_AGENT'],
+			'userAgent' => empty($_SERVER['HTTP_USER_AGENT']) ? '' : $_SERVER['HTTP_USER_AGENT'],
 			'fullUrl' => ''
 		];
 		if (!empty($ip['string']))
