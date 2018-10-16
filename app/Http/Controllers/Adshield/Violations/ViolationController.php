@@ -53,7 +53,7 @@ class ViolationController extends BaseController {
 
 
 
-	protected function logViolation($ip, $ipStr, $violation, $info)
+	protected function logViolation($userKey, $ip, $ipStr, $violation, $info)
 	{
 		$infoId = 0;
 		//check if info exists, if so use its id. otherwise create new entry.
@@ -82,8 +82,21 @@ class ViolationController extends BaseController {
 		$violation->ipStr = $ipStr;
 		$violation->violation = $violation;
 		$violation->violationInfo = $infoId;
+		$violation->userKey = $userKey;
 		$violation->save();
 
+	}
+
+	/**
+	 * make sure userKey passed exists in our database
+	 * @param [type] $userKey [description]
+	 */
+	protected function VerifyKey($userKey=null)
+	{
+		if (empty($userKey)) return false;
+		$website = DB::table('userWebsites')->where('userKey', $userKey)->first();
+		if (empty($website)) return false;
+		return true;
 	}
 
 }

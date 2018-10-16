@@ -10,8 +10,12 @@ use App\Http\Controllers\Adshield\Violations\ViolationController;
  */
 class ViolationNoJsController extends ViolationController {
 
+
 	public function log($userKey)
 	{
+
+		if (!$this->VerifyKey($userKey)) return false;
+
 		//get user information
 		$ip = $this->GetUserIp();
 		
@@ -30,7 +34,7 @@ class ViolationNoJsController extends ViolationController {
 
 		//save user info and violation
 		try {
-			$this->logViolation($ip['binary'], $ip['string'], ViolationController::V_NO_JS, $info);
+			$this->logViolation($userKey, $ip['binary'], $ip['string'], ViolationController::V_NO_JS, $info);
 		} catch (\Exception $e) {
 			echo $e->getMessage();
 		}
