@@ -13,6 +13,11 @@ date_default_timezone_set("America/New_York");
 class IpInfoController extends BaseController
 {
 
+	/**
+	 * gets the info of the given IP through ip-api.com service
+	 * IMPT this service has limitations. (like 100 requests per hour or something)
+	 * @param [type] $ip [description]
+	 */
 	public static function GetIpInfo($ip)
 	{
 		$ipBinary = inet_pton($ip);
@@ -42,6 +47,13 @@ class IpInfoController extends BaseController
 	}
 
 
+	/**
+	 * saves the given parameters into our IP info cache table
+	 * @param [type]  $ip       [description]
+	 * @param [type]  $info     [description]
+	 * @param [type]  $response [description]
+	 * @param boolean $expired  [description]
+	 */
 	public static function SaveIpInfo($ip, $info, $response, $expired = false)
 	{
 		//insert/replace?

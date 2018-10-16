@@ -54,6 +54,13 @@ Route::post('checkurl', ['as' => 'AdshieldCheckUrl', 'uses' => 'Adshield\ApiRefe
 	->middleware('api.access');
 
 
+/**
+ * violations api endpoint
+ */
+Route::get('nojs/{userKey}', ['as' => 'LogNoJsViolation', 'uses' => 'Adshield\Violations\ViolationNoJsController@log'])
+	->where('userKey', '[a-zA-Z0-9]+');
+
+
 
 /**
  * route for frontend
