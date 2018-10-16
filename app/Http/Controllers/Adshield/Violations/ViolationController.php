@@ -59,20 +59,20 @@ class ViolationController extends BaseController {
 		//check if info exists, if so use its id. otherwise create new entry.
 		$info = DB::table("trViolationInfo")
 			->where([
-				'userAgent' => !empty($info['userAgent']) ? $info['userAgent'] : '',
-				'fullUrl' => !empty($info['fullUrl']) ? $info['fullUrl'] : '',
-				'country' => !empty($info['country']) ? $info['country'] : '',
-				'city' => !empty($info['city']) ? $info['city'] : ''
+				'userAgent' => !empty($data['userAgent']) ? $data['userAgent'] : '',
+				'fullUrl' => !empty($data['fullUrl']) ? $data['fullUrl'] : '',
+				'country' => !empty($data['country']) ? $data['country'] : '',
+				'city' => !empty($data['city']) ? $data['city'] : ''
 			])->first();
 		
 		if (empty($info))
 		{
 			//create new violation info for recording
 			$info = new ViolationInfo();
-			$info->userAgent = !empty($info['userAgent']) ? $info['userAgent'] : '';
-			$info->fullUrl = !empty($info['fullUrl']) ? $info['fullUrl'] : '';
-			$info->country = !empty($info['country']) ? $info['country'] : '';
-			$info->city = !empty($info['city']) ? $info['city'] : '';
+			$info->userAgent = !empty($data['userAgent']) ? $data['userAgent'] : '';
+			$info->fullUrl = !empty($data['fullUrl']) ? $data['fullUrl'] : '';
+			$info->country = !empty($data['country']) ? $data['country'] : '';
+			$info->city = !empty($data['city']) ? $data['city'] : '';
 			$info->save();
 		} 
 		$infoId = $info->id;
