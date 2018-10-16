@@ -7,6 +7,7 @@ use App\Http\Controllers\Adshield\ApiStatController;
 use App\Http\Controllers\Adshield\Protection\IpInfoController;
 use App\Model\Violation;
 use App\Model\ViolationInfo;
+use DB;
 
 
 /**
