@@ -13,12 +13,9 @@ class ViolationNoJsController extends ViolationController {
 
 	public function log($userKey)
 	{
-
-		if (!$this->VerifyKey($userKey)) return false;
-
+		$this->VerifyKey($userKey);
 		//get user information
 		$ip = $this->GetUserIp();
-		
 		$info = [
 			'userAgent' => empty($_SERVER['HTTP_USER_AGENT']) ? '' : $_SERVER['HTTP_USER_AGENT'],
 			'fullUrl' => ''

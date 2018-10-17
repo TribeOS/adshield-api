@@ -9,6 +9,9 @@ use App\Model\Violation;
 use App\Model\ViolationInfo;
 use DB;
 
+use App\Http\Controllers\Adshield\Violations\ViolationUserAgentController;
+use App\Http\Controllers\Adshield\Violations\ViolationIPController;
+
 
 /**
  * main class for violations controllers
@@ -18,7 +21,7 @@ class ViolationController extends BaseController {
 	const V_KNOWN_VIOLATOR = 'KNOWN_VIOLATOR';
 	const V_NO_JS = 'NO_JS';
 	const V_JS_CHECK_FAILED = 'JS_CHECK_FAILED';
-	const V_KNOWN_VIOLATION_UA = 'KNOWN_VIOLATOR_UA';
+	const V_KNOWN_VIOLATOR_UA = 'KNOWN_VIOLATOR_UA';
 	const V_SUSPICIOUS_UA = 'SUSPICIOUS_UA';
 	const V_BROWSER_INTEGRITY = 'BROWSER_INTEGRITY';
 	const V_KNOWON_DC = 'KNOWN_DATA_CENTER';
@@ -27,6 +30,7 @@ class ViolationController extends BaseController {
 	const V_BLOCKED_COUNTRY = 'BLOCKED_COUNTRY';
 	const V_AGGREGATOR_UA = 'AGGREGATOR_UA';
 	const V_KNOWN_VIOLATOR_AUTO_TOOL = 'KNOWN_VIOLATOR_AUTO_TOOL';
+
 
 	/**
 	 * get user IP via ApiStatController's method.
@@ -51,9 +55,48 @@ class ViolationController extends BaseController {
 		return IpInfoController::GetIpInfo($ip);
 	}
 
-
-
+	/**
+	 * subclass access to log save function
+	 * @param  [type] $userKey       [description]
+	 * @param  [type] $ip            [description]
+	 * @param  [type] $ipStr         [description]
+	 * @param  [type] $violationType [description]
+	 * @param  [type] $data          [description]
+	 * @return [type]                [description]
+	 */
 	protected function logViolation($userKey, $ip, $ipStr, $violationType, $data)
+	{
+		$violations = [];
+
+		//check if useragent has an existing violation
+		if (ViolationUserAgentController::hasViolation($data['userAgent'])) {
+			$this->doLog($userKey, $ip, $ipStr, self::V_KNOWN_VIOLATOR_UA, $data);
+			$violations[] = self::V_KNOWN_VIOLATOR_UA;
+		}
+
+		//check if IP has an existing violation
+		if (ViolationIPController::hasViolation($ip)) {
+			$this->doLog($userKey, $ip, $ipStr, self::V_KNOWN_VIOLATOR, $data);
+			$violations[] = self::V_KNOWN_VIOLATOR;
+		}
+
+
+		$this->doLog($userKey, $ip, $ipStr, $violationType, $data);
+		$violations[] = $violationType;
+		return $violations;
+	}
+
+
+	/**
+	 * performs the actual saving of log
+	 * @param  [type] $userKey       [description]
+	 * @param  [type] $ip            [description]
+	 * @param  [type] $ipStr         [description]
+	 * @param  [type] $violationType [description]
+	 * @param  [type] $data          [description]
+	 * @return [type]                [description]
+	 */
+	private function doLog($userKey, $ip, $ipStr, $violationType, $data)
 	{
 		$infoId = 0;
 		//check if info exists, if so use its id. otherwise create new entry.
@@ -64,7 +107,7 @@ class ViolationController extends BaseController {
 				'country' => !empty($data['country']) ? $data['country'] : '',
 				'city' => !empty($data['city']) ? $data['city'] : ''
 			])->first();
-		
+
 		if (empty($info))
 		{
 			//create new violation info for recording
@@ -74,7 +117,7 @@ class ViolationController extends BaseController {
 			$info->country = !empty($data['country']) ? $data['country'] : '';
 			$info->city = !empty($data['city']) ? $data['city'] : '';
 			$info->save();
-		} 
+		}
 		$infoId = $info->id;
 
 		//create new violation record
@@ -86,7 +129,6 @@ class ViolationController extends BaseController {
 		$violation->violationInfo = $infoId;
 		$violation->userKey = $userKey;
 		$violation->save();
-
 	}
 
 	/**
@@ -95,10 +137,10 @@ class ViolationController extends BaseController {
 	 */
 	protected function VerifyKey($userKey=null)
 	{
-		if (empty($userKey)) return false;
+		$msg = "Invalid request!";
+		if (empty($userKey)) die($msg);
 		$website = DB::table('userWebsites')->where('userKey', $userKey)->first();
-		if (empty($website)) return false;
-		return true;
+		if (empty($website)) die($msg);
 	}
 
 }
