@@ -12,7 +12,30 @@ AdShield = function()
     self.UserKey = null;
     self.AdShieldType = 3;
 
-    var GetParameterByName = function(name, url)
+    //create "closest()" function
+    this.Element && function(ElementPrototype) {
+        ElementPrototype.matches = ElementPrototype.matches ||
+        ElementPrototype.matchesSelector ||
+        ElementPrototype.webkitMatchesSelector ||
+        ElementPrototype.msMatchesSelector ||
+        function(selector) {
+            var node = this, nodes = (node.parentNode || node.document).querySelectorAll(selector), i = -1;
+            while (nodes[++i] && nodes[i] != node);
+            return !!nodes[i];
+        }
+    }(Element.prototype);
+
+    // closest polyfill
+    this.Element && function(ElementPrototype) {
+        ElementPrototype.closest = ElementPrototype.closest ||
+        function(selector) {
+            var el = this;
+            while (el.matches && !el.matches(selector)) el = el.parentNode;
+            return el.matches ? el : null;
+        }
+    }(Element.prototype);
+
+    GetParameterByName = function(name, url)
     {
         if (!url) url = window.location.href;
         name = name.replace(/[\[\]]/g, "\\$&");
@@ -22,7 +45,7 @@ AdShield = function()
         return decodeURIComponent(results[2].replace(/\+/g, " "));
     }
 
-    var httpGet = function(url, arg, callback)
+    self.httpGet = function(url, arg, callback)
     {
         var xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() {
@@ -35,18 +58,13 @@ AdShield = function()
         xhttp.send(data);
     }
 
-    var httpPost = function(url, arg, callback)
+    self.httpPost = function(url, arg, callback)
     {
         var xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() {
-            if (this.readyState == 4 && this.status == 200) {
-                callback(this.responseText.toJSON());
-            }
-        };
-        xhttp.setRequestHeader("Content-Type", "application/json");
+        xhttp.addEventListener("load", callback);
         xhttp.open("POST", url, true);
-        var data = JSON.stringify(arg);
-        xhttp.send(data);
+        xhttp.setRequestHeader("Content-Type", "application/json");
+        xhttp.send(JSON.stringify(arg));
     }
 
     /**
@@ -71,7 +89,7 @@ AdShield = function()
             source : source, sub_source : subsource,
             user_agent : navigator.userAgent, visitUrl : visitUrl
         }
-        $.post(self.urls.statlog, arg, function(d) {});
+        self.httpPost(self.urls.statlog, arg, function(d) {});
     }
 
     /**
@@ -81,8 +99,10 @@ AdShield = function()
     {
         if (window.top != window.self)
         {
-            $('a').click(function() {
-                window.open($(this).attr("href")); return false;
+            document.querySelectorAll('a').forEach(function(link) {
+                link.onclick = function() {
+                    window.open(link.href); return false;
+                }
             });
             self.SendStatLog(5);
             return true;
@@ -125,7 +145,7 @@ AdShield = function()
         }
 
         //TODO : what to do for each conditions here? or leave them as is?
-        $.post(self.urls.checkReferrer, arg, function(d) {
+        self.httpPost(self.urls.checkReferrer, arg, function(d) {
             switch(d.result) {
                 case "{{ ReferrerFilterController::STATUS_SAFE }}" :
                     //safe - redirect to share.cat
@@ -171,10 +191,16 @@ AdShield = function()
             var ads = adshield_ads;
             self.ActivateShieldForAds(adShieldID, ads);
         } else if (shield_type == "2") {
-            var shield = $(document.createElement('div'));
-            shield.css({ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "#000", opacity: "0.0" });
-            shield.attr("id", adShieldID);
-            $("body").append(shield);
+            var shield = document.createElement('div');
+            shield.style.position = "fixed";
+            shield.style.top = 0;
+            shield.style.left = 0;
+            shield.style.right = 0;
+            shield.style.bottom = 0;
+            shield.style.background = "#000";
+            shield.style.opacity = "0.0";
+            shield.id = adShieldID;
+            document.querySelector("body").appendChild(shield);
         } else if (shield_type == "3") {
             //ad click handler
             self.ClickedMyAd.init({
@@ -206,14 +232,16 @@ AdShield = function()
         self.SetAdshieldOnClick(adShieldID, shield_type);
 
         //perform ip check
-        $.post(self.urls.adShieldHandler, { checkip : 1, key : self.UserKey }, function(d)
+        self.httpPost(self.urls.adShieldHandler, { checkip : 1, key : self.UserKey }, function(d)
         {
             switch(d.status)
             {
                 case "1":
                     self.ClickedMyAd.statusValue = 1;
                     //whitelisted
-                    $("div#" + adShieldID).remove();
+                    document.querySelectorAll("div#" + adShieldID).forEach(function(item) {
+                        item.parentNode.removeChild(item);
+                    });
                     break;
                 case "2":
                     //greylist
@@ -249,28 +277,34 @@ AdShield = function()
      */
     self.SetAdshieldOnClick = function(adShieldID, shield_type)
     {
-        $("body").off("click", "div#" + adShieldID);
-        $("div#" + adShieldID).off("click");
-        $("div#" + adShieldID).click(function() {
-            // self.RenderCaptcha(1, adShieldID);
-            //log ad click
-            self.LogAdShieldClick(function(logid, status)
-            {
-                // if (status === 0) window.location = "http://share.cat/sys/block.html";
-                if (status === 0) window.location = "http://redirect.com";
-                //initialize recaptcha
-                if (shield_type == "3")
+        document.querySelectorAll("body div#" + adShieldID).forEach(function(elem) {
+            elem.removeEventListener("click");
+        })
+        document.querySelectorAll("div#" + adShieldID).forEach(function(elem) {
+            elem.removeEventListener("click");
+        });
+        document.querySelectorAll("div#" + adShieldID).forEach(function(elem) {
+            elem.click(function() {
+                // self.RenderCaptcha(1, adShieldID);
+                //log ad click
+                self.LogAdShieldClick(function(logid, status)
                 {
-                    // self.RenderCaptcha(logid, adShieldID, function()
-                    // {
-                        self.ClickedMyAd.setClickCatch(false);
-                        self.ClickedMyAd.statusValue = 1;
-                    // });
-                }
-                else
-                {
-                    // self.RenderCaptcha(logid, adShieldID);
-                }
+                    // if (status === 0) window.location = "http://share.cat/sys/block.html";
+                    if (status === 0) window.location = "http://redirect.com";
+                    //initialize recaptcha
+                    if (shield_type == "3")
+                    {
+                        // self.RenderCaptcha(logid, adShieldID, function()
+                        // {
+                            self.ClickedMyAd.setClickCatch(false);
+                            self.ClickedMyAd.statusValue = 1;
+                        // });
+                    }
+                    else
+                    {
+                        // self.RenderCaptcha(logid, adShieldID);
+                    }
+                });
             });
         });
     }
@@ -372,7 +406,7 @@ AdShield = function()
         }
 
         //log this click
-        $.post(self.urls.adShieldHandler, arg, function(d)
+        self.httpPost(self.urls.adShieldHandler, arg, function(d)
         {
             onComplete(d.id, d.status);
         }, 'json');
@@ -380,24 +414,33 @@ AdShield = function()
 
     self.ActivateShieldForAds = function(adShieldID, selectors)
     {
-        $(selectors).each(function(index)
+        document.querySelectorAll(selectors).forEach(function(item)
         {
-            var shield = $(document.createElement('div'));
-            css = { position: "absolute", top: 0, left: 0, width: '100%', height: '100%',
-                    background: "#000", opacity: "0.0", "z-index" : "1" }
-            shield.css(css);
-            shield.attr("id", adShieldID);
-            var type = $(this).prop("tagName");
+            var shield = document.createElement('div');
+            shield.style.position = "absolute";
+            shield.style.top = 0;
+            shield.style.left = 0;
+            shield.style.width = "100%";
+            shield.style.height = "100%";
+            shield.style.background = "#000";
+            shield.style.opacity = "0.0";
+            shield.style.zIndex = "1";
+            shield.id = adShieldID;
+            var type = item.tagName;
             if (type == "IFRAME")
             {
-                $(this).wrap("<div></div>");
-                var iframe = $(this);
+                let wrapper = document.createElement("div");
+                item.parentNode.insertBefore(wrapper, item);
+                wrapper.appendChild(item);
+                var iframe = item;
                 var anchor = iframe.closest("div");
-                $(anchor).css({ position: 'relative' }).append(shield);
+                anchor.style.position = 'relative';
+                anchor.appendChild(shield);
             } 
             else 
             {
-                $(this).css({ position : 'relative' }).append(shield);
+                item.style.position = 'relative';
+                item.appendChild(shield);
             }
         });
     }
@@ -427,38 +470,41 @@ AdShield = function()
             if (typeof options.selectors != 'undefined') self.selectors = options.selectors;
             if (typeof options.onClick != 'undefined') self.onClick = options.onClick;
 
-            $(self.selectors)
-                .mouseover(function() {
+            document.querySelectorAll(self.selectors).forEach(function(elem) {
+                elem.onmouseover = function() {
                     if (self.overAnAd) return;
                     self.overAnAd = true;
-                    self.adType = self.getType($(this));
-                })
-                .mouseout(function() {
-                    if (self.isMouseMoving) self.overAnAd = false;
-                });
+                    self.adType = self.getType(elem);
+                }
 
-            $(window).blur(function() {
+                elem.onmouseout = function() {
+                    if (self.isMouseMoving) self.overAnAd = false;
+                }
+            });
+
+            window.onblur = function() {
                 if (self.clickIsHandled) return;
                 if (!self.overAnAd) return;
                 //we assume user clicked on the ad
                 self.onClick();
                 self.overAnAd = false;
-            }).focus();
+            }
+            window.focus();
 
             var timeout;
-            $(document).mousemove(function() {
+            document.onmousemove = function() {
                 self.isMouseMoving = true;
                 clearTimeout(timeout);
                 timeout = setTimeout(function() {
                     self.isMouseMoving = false;
                 }, 500);
-            });
+            }
         },
         getType : function(dom) {
             //determine which element/dom is being hovered over
-            var tag = dom.prop("tagName");
-            var id = typeof dom.attr("id") == 'undefined' ? '' : dom.attr("id");
-            var cls = typeof dom.attr("class") == 'undefined' ? '' : dom.attr("class");
+            var tag = dom.tagName;
+            var id = typeof dom.id == 'undefined' ? '' : dom.id;
+            var cls = typeof dom.className == 'undefined' ? '' : dom.className;
             if (tag == "INS") 
             { //adsense
                 return 0;
@@ -503,26 +549,28 @@ AdShield = function()
         addElementToProtect : function(selector)
         {
             var self = this;
-            $(selector)
-                .mouseover(function()
-                {
-                    if (self.overAnAd) return;
-                    self.overAnAd = true;
-                    self.adType = self.getType($(this));
-                })
-                .mouseout(function()
-                {
-                    self.overAnAd = false;
-                });
+            document.querySelectorAll(selector).forEach(function(item) {
+                    item.onmouseover = function()
+                    {
+                        if (self.overAnAd) return;
+                        self.overAnAd = true;
+                        self.adType = self.getType(item);
+                    }
+                    item.onmouseout = function()
+                    {
+                        self.overAnAd = false;
+                    }
+            });
 
-            $(window).blur(function()
+            window.onblur(function()
             {
                 if (self.clickIsHandled) return;
                 if (!self.overAnAd) return;
                 //we assume user clicked on the ad
                 self.onClick();
                 self.overAnAd = false;
-            }).focus();
+            });
+            window.focus();
             self.lateShielding(selector);
         },
 
@@ -536,7 +584,7 @@ AdShield = function()
 
     self.LogCaptcha = function(l, s) 
     {
-        $.post(self.urls.adShieldHandler, 
+        self.httpPost(self.urls.adShieldHandler, 
             { 
                 key : self.UserKey, logCaptcha : 1, log_id : l, status : s
             }, 
@@ -550,6 +598,26 @@ AdShield = function()
         {
             case 'key' : self.UserKey = value; break;
         }
+    }
+
+    self.CheckViolations = function()
+    {
+        let refererUrl = document.referrer;
+        let arg = {
+            refererUrl : refererUrl,
+            fullUrl : encodeURIComponent(refererUrl),
+            source : GetParameterByName("utm_source"),
+            subsource : GetParameterByName("utm_medium"),
+            visitUrl : "",
+            userAgent : navigator.userAgent
+        }
+        if (refererUrl.indexOf("://") > -1) { domain = refererUrl.split('/')[2]; }
+        else { domain = refererUrl.split('/')[0]; }
+        domain = domain.split(':')[0];
+        arg.visitUrl = document.location.toString() || "";
+        self.httpPost(self.urls.vlog, arg, function(response) {
+            //perform action here
+        });   
     }
 
     self.Init = function()

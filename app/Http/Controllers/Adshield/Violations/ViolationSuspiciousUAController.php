@@ -16,10 +16,10 @@ class ViolationSuspiciousUAController extends ViolationController {
 	 * @param  string  $ip raw IP. ready to be compared to binary IP in database
 	 * @return boolean     [description]
 	 */
-	public static function hasViolation($userKey='', $country='')
+	public static function hasViolation($userAgent)
 	{
-		$violation = '';
-		return !empty($violation);
+		$serverUserAgent = $_SERVER['HTTP_USER_AGENT'];
+		return $userAgent !== $serverUserAgent;
 	}
 
 }

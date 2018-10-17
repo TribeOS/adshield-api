@@ -13,6 +13,7 @@ use App\Http\Controllers\Adshield\Violations\ViolationUserAgentController;
 use App\Http\Controllers\Adshield\Violations\ViolationIPController;
 use App\Http\Controllers\Adshield\Violations\ViolationDataCenterController;
 use App\Http\Controllers\Adshield\Violations\ViolationBlockedCountryController;
+use App\Http\Controllers\Adshield\Violations\ViolationSuspiciousUAController;
 
 
 /**
@@ -99,6 +100,14 @@ class ViolationController extends BaseController {
 			) {
 			$this->doLog($userKey, $ip, $ipStr, self::V_BLOCKED_COUNTRY, $data);
 			$violations[] = self::V_BLOCKED_COUNTRY;
+		}
+
+		//check for suspiciouse user agent
+		if (ViolationBlockedCViolationSuspiciousUAControllerountryController::hasViolation(
+				isset($data['userAgent']) ? $data['userAgent'] : '')
+			) {
+			$this->doLog($userKey, $ip, $ipStr, self::V_SUSPICIOUS_UA, $data);
+			$violations[] = self::V_SUSPICIOUS_UA;
 		}
 
 		if ($violationType !== self::V_NONE) {
