@@ -32,9 +32,7 @@ class ViolationNoJsController extends ViolationController {
 		//save user info and violation
 		try {
 			$this->logViolation($userKey, $ip['binary'], $ip['string'], ViolationController::V_NO_JS, $info);
-		} catch (\Exception $e) {
-			echo $e->getMessage();
-		}
+		} catch (\Exception $e) { }
 	}
 
 }

@@ -11,6 +11,8 @@ use DB;
 
 use App\Http\Controllers\Adshield\Violations\ViolationUserAgentController;
 use App\Http\Controllers\Adshield\Violations\ViolationIPController;
+use App\Http\Controllers\Adshield\Violations\ViolationDataCenterController;
+use App\Http\Controllers\Adshield\Violations\ViolationBlockedCountryController;
 
 
 /**
@@ -24,13 +26,18 @@ class ViolationController extends BaseController {
 	const V_KNOWN_VIOLATOR_UA = 'KNOWN_VIOLATOR_UA';
 	const V_SUSPICIOUS_UA = 'SUSPICIOUS_UA';
 	const V_BROWSER_INTEGRITY = 'BROWSER_INTEGRITY';
-	const V_KNOWON_DC = 'KNOWN_DATA_CENTER';
+	const V_KNOWN_DC = 'KNOWN_DATA_CENTER';
 	const V_PAGES_PER_MINUTE_EXCEED = 'PAGES_PER_MINUTE_EXCEED';
 	const V_PAGES_PER_SESSION_EXCEED = 'PAGES_PER_SESSION_EXCEED';
 	const V_BLOCKED_COUNTRY = 'BLOCKED_COUNTRY';
 	const V_AGGREGATOR_UA = 'AGGREGATOR_UA';
 	const V_KNOWN_VIOLATOR_AUTO_TOOL = 'KNOWN_VIOLATOR_AUTO_TOOL';
+	const V_NONE = 'none'; //pass this to logViolation()'s violationType to perform other passive checks only
 
+	function __construct() {
+		//used for testing data
+		// ViolationDataCenterController::hasViolation(inet_pton('5.77.36.7'));
+	}
 
 	/**
 	 * get user IP via ApiStatController's method.
@@ -80,9 +87,25 @@ class ViolationController extends BaseController {
 			$violations[] = self::V_KNOWN_VIOLATOR;
 		}
 
+		//check if IP belongs to a data center IP range
+		if (ViolationDataCenterController::hasViolation($ip)) {
+			$this->doLog($userKey, $ip, $ipStr, self::V_KNOWN_DC, $data);
+			$violations[] = self::V_KNOWN_DC;
+		}
 
-		$this->doLog($userKey, $ip, $ipStr, $violationType, $data);
-		$violations[] = $violationType;
+		//check for blocked country
+		if (ViolationBlockedCountryController::hasViolation(
+				isset($data['country']) ? $data['country'] : '')
+			) {
+			$this->doLog($userKey, $ip, $ipStr, self::V_BLOCKED_COUNTRY, $data);
+			$violations[] = self::V_BLOCKED_COUNTRY;
+		}
+
+		if ($violationType !== self::V_NONE) {
+			$this->doLog($userKey, $ip, $ipStr, $violationType, $data);
+			$violations[] = $violationType;
+		}
+
 		return $violations;
 	}
 
@@ -130,6 +153,7 @@ class ViolationController extends BaseController {
 		$violation->userKey = $userKey;
 		$violation->save();
 	}
+
 
 	/**
 	 * make sure userKey passed exists in our database
