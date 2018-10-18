@@ -63,10 +63,10 @@ class IpInfoController extends BaseController
 				->insert([
 					'ipStr' => $ip,
 					'ip' => inet_pton($ip),
-					'org' => self::RetVal($info['org']),
-					'isp' => self::RetVal($info['isp']),
-					'city' => self::RetVal($info['city']),
-					'country' => self::RetVal($info['country']),
+					'org' => $info['org'] ?? '',
+					'isp' => $info['isp'] ?? '',
+					'city' => $info['city'] ?? '',
+					'country' => $info['country'] ?? '',
 					'updatedOn' => gmdate("Y-m-d H:i:s"),
 					'rawInfo' => $response
 				]);
@@ -75,10 +75,10 @@ class IpInfoController extends BaseController
 		{
 			DB::table("asIpCachedInfo")
 				->update([
-					'org' => self::RetVal($info['org']),
-					'isp' => self::RetVal($info['isp']),
-					'city' => self::RetVal($info['city']),
-					'country' => self::RetVal($info['country']),
+					'org' => $info['org'] ?? '',
+					'isp' => $info['isp'] ?? '',
+					'city' => $info['city'] ?? '',
+					'country' => $info['country'] ?? '',
 					'updatedOn' => gmdate("Y-m-d H:i:s"),
 					'rawInfo' => $response
 				])
@@ -87,11 +87,4 @@ class IpInfoController extends BaseController
 	}
 
 
-	public static function RetVal($var)
-	{
-		if (!isset($var)) return "";
-		if (empty($var)) return "";
-		return $var;
-	}
-	
 }

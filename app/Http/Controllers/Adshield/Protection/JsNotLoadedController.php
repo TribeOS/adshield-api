@@ -18,10 +18,10 @@ class JsNotLoadedController extends BaseController
 	{
 		$page = Input::get('page', 0);
 		$limit = Input::get('limit', 10);
-		
 		$filter = Input::get('filter', []);
 
 		$data = DB::table("trViolations")
+			->join("trViolationIps", "trViolationIps.id", "=", "trViolations.ip")
 			->select(DB::raw("ipStr AS ip, COUNT(*) as total"))
 			->groupBy('ipStr')
 			->where('violation', ViolationController::V_NO_JS)
@@ -31,7 +31,7 @@ class JsNotLoadedController extends BaseController
 		if (!empty($filter['duration']) && $filter['duration'] > 0)
 		{
 			$duration = $filter['duration'];
-			$data->where("createdOn", ">=", "DATE_SUB(NOW(), INTERVAL $duration DAY)");
+			$data->where("createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
 		}
 
 		$data = $data->paginate($limit);
@@ -39,8 +39,7 @@ class JsNotLoadedController extends BaseController
 			'limit' => $limit
 		]);
 
-		return response()->json(['id' => 0, 'listData' => $data])
-			->header('Content-Type', 'application/vnd.api+json');
+		return response()->json(['id' => 0, 'listData' => $data]);
 	}
 
 	public function getGraphData()
@@ -49,8 +48,11 @@ class JsNotLoadedController extends BaseController
 		$ip = $filter['ip'];
 
 		$violation = DB::table("trViolations")
+			->join("trViolationIps", function($join) use($ip) {
+				$join->on("trViolationIps.id", "=", "trViolations.ip")
+					->where("trViolationIps.ip", "=", inet_pton($ip));
+			})
 			->select(DB::raw("violation, COUNT(*) AS total"))
-			->where("ip", inet_pton($ip))
 			->whereIn("violation", [ViolationController::V_NO_JS])
 			->groupBy("violation")
 			->get();

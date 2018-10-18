@@ -14,6 +14,9 @@ class ViolationUserAgentController extends ViolationController {
 
 	/**
 	 * checks if this user agent exists on our violation info.
+	 * we perform additional check to make sure : 
+	 * - we're not using any newly saved violation record along with the current request/checking (IP checking is run before this)
+	 * - thus making sure we are only checking user agents of existing violations prior to this request
 	 * @param  string  $userAgent [description]
 	 * @return boolean            [description]
 	 */

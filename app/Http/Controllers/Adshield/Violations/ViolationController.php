@@ -38,10 +38,15 @@ class ViolationController extends BaseController {
 
 	//we use this to indicate if the log has created a new violation record and/or new info record
 	private $newViolationInfoRecord = false, $newViolationIp= false;
+	//we store the current time and use for all logs on the current request
+	//to make sure they all have the same date/time
+	private $currentTime = '';
 
 	function __construct() {
 		//used for testing data
 		// ViolationDataCenterController::hasViolation(inet_pton('5.77.36.7'));
+		//we store the current date/time upon arrival of request
+		$this->currentTime = gmdate("Y-m-d H:i:s");
 	}
 
 	/**
@@ -161,7 +166,8 @@ class ViolationController extends BaseController {
 
 		//store violation ip if non-existent
 		$violationIp = ViolationIp::where('ip', $ip)->first();
-		if (empty($violationIp)) {
+		if (empty($violationIp))
+		{
 			$violationIp = new ViolationIp();
 			$violationIp->ip = $ip;
 			$violationIp->ipStr = $ipStr;
@@ -171,7 +177,7 @@ class ViolationController extends BaseController {
 
 		//create new violation record
 		$violation = new Violation();
-		$violation->createdOn = gmdate("Y-m-d H:i:s");
+		$violation->createdOn = $this->currentTime;
 		$violation->ip = $violationIp->id;
 		$violation->violation = $violationType;
 		$violation->violationInfo = $infoId;
