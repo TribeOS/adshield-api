@@ -8,7 +8,7 @@ use Request;
 use App\Model\UserConfig;
 
 /**
- * main handler for checking violations.
+ * MAIN handler for checking violations.
  * this will handle the call made by our JS library
  * main flow would be : 
  * - js gathers info from the frontend and sends it over to our backend

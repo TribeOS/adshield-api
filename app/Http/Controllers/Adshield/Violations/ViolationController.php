@@ -103,7 +103,7 @@ class ViolationController extends BaseController {
 		}
 
 		//check for suspiciouse user agent
-		if (ViolationBlockedCViolationSuspiciousUAControllerountryController::hasViolation(
+		if (ViolationSuspiciousUAController::hasViolation(
 				isset($data['userAgent']) ? $data['userAgent'] : '')
 			) {
 			$this->doLog($userKey, $ip, $ipStr, self::V_SUSPICIOUS_UA, $data);
