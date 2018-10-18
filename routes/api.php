@@ -57,7 +57,7 @@ Route::post('checkurl', ['as' => 'AdshieldCheckUrl', 'uses' => 'Adshield\ApiRefe
 /**
  * violations api endpoint
  */
-Route::post('v/{userKey}', ['as' => 'CheckViolation', 'uses' => 'Adshield\Violations\ViolationCheckController@Check'])
+Route::any('v/{userKey}', ['as' => 'CheckViolation', 'uses' => 'Adshield\Violations\ViolationCheckController@Check'])
 	->where('userKey', '[a-zA-Z0-9]+');
 
 /**
@@ -72,7 +72,6 @@ Route::get('nojs/{userKey}', ['as' => 'LogNoJsViolation', 'uses' => 'Adshield\Vi
  */
 
 
-	
 	//==========================================================================================
 
 	//User authentication/login

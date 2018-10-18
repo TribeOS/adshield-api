@@ -15,4 +15,9 @@ class Violation extends Model
 		return $this->belongsTo('App\Model\ViolationInfo', 'violationInfo');
 	}
 
+	public function myIp()
+	{
+		return $this->hasMany('App\Model\ViolationIp', 'ip');
+	}
+
 }

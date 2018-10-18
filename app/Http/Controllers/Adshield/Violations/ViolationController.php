@@ -7,6 +7,7 @@ use App\Http\Controllers\Adshield\ApiStatController;
 use App\Http\Controllers\Adshield\Protection\IpInfoController;
 use App\Model\Violation;
 use App\Model\ViolationInfo;
+use App\Model\ViolationIp;
 use DB;
 
 use App\Http\Controllers\Adshield\Violations\ViolationUserAgentController;
@@ -34,6 +35,9 @@ class ViolationController extends BaseController {
 	const V_AGGREGATOR_UA = 'AGGREGATOR_UA';
 	const V_KNOWN_VIOLATOR_AUTO_TOOL = 'KNOWN_VIOLATOR_AUTO_TOOL';
 	const V_NONE = 'none'; //pass this to logViolation()'s violationType to perform other passive checks only
+
+	//we use this to indicate if the log has created a new violation record and/or new info record
+	private $newViolationInfoRecord = false, $newViolationIp= false;
 
 	function __construct() {
 		//used for testing data
@@ -74,18 +78,20 @@ class ViolationController extends BaseController {
 	 */
 	protected function logViolation($userKey, $ip, $ipStr, $violationType, $data)
 	{
+		$newViolationId = 0;
 		$violations = [];
-
-		//check if useragent has an existing violation
-		if (ViolationUserAgentController::hasViolation($data['userAgent'])) {
-			$this->doLog($userKey, $ip, $ipStr, self::V_KNOWN_VIOLATOR_UA, $data);
-			$violations[] = self::V_KNOWN_VIOLATOR_UA;
-		}
 
 		//check if IP has an existing violation
 		if (ViolationIPController::hasViolation($ip)) {
-			$this->doLog($userKey, $ip, $ipStr, self::V_KNOWN_VIOLATOR, $data);
+			$newViolationId = $this->doLog($userKey, $ip, $ipStr, self::V_KNOWN_VIOLATOR, $data);
 			$violations[] = self::V_KNOWN_VIOLATOR;
+		}
+
+
+		//check if useragent has an existing violation
+		if (ViolationUserAgentController::hasViolation($data['userAgent'], $newViolationId)) {
+			$this->doLog($userKey, $ip, $ipStr, self::V_KNOWN_VIOLATOR_UA, $data);
+			$violations[] = self::V_KNOWN_VIOLATOR_UA;
 		}
 
 		//check if IP belongs to a data center IP range
@@ -149,18 +155,29 @@ class ViolationController extends BaseController {
 			$info->country = !empty($data['country']) ? $data['country'] : '';
 			$info->city = !empty($data['city']) ? $data['city'] : '';
 			$info->save();
+			$this->newViolationInfoRecord = true;
 		}
 		$infoId = $info->id;
+
+		//store violation ip if non-existent
+		$violationIp = ViolationIp::where('ip', $ip)->first();
+		if (empty($violationIp)) {
+			$violationIp = new ViolationIp();
+			$violationIp->ip = $ip;
+			$violationIp->ipStr = $ipStr;
+			$violationIp->save();
+			$this->newViolationIp = true;
+		}
 
 		//create new violation record
 		$violation = new Violation();
 		$violation->createdOn = gmdate("Y-m-d H:i:s");
-		$violation->ip = $ip;
-		$violation->ipStr = $ipStr;
+		$violation->ip = $violationIp->id;
 		$violation->violation = $violationType;
 		$violation->violationInfo = $infoId;
 		$violation->userKey = $userKey;
 		$violation->save();
+		return $violation->id;
 	}
 
 

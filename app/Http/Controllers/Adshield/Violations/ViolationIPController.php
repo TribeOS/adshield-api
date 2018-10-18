@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Adshield\Violations;
 
 use App\Http\Controllers\Adshield\Violations\ViolationController;
-use App\Model\Violation;
+use App\Model\ViolationIp;
 
 /**
  * handles additional check for violators detected via existing IP in our database
@@ -18,7 +18,7 @@ class ViolationIPController extends ViolationController {
 	 */
 	public static function hasViolation($ip='')
 	{
-		$violation = Violation::where('ip', $ip)->first();
+		$violation = ViolationIp::where('ip', $ip)->first();
 		return !empty($violation);
 	}
 

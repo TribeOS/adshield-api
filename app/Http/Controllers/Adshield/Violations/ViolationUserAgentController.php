@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Adshield\Violations;
 
 use App\Http\Controllers\Adshield\Violations\ViolationController;
-use App\Model\ViolationInfo;
+use DB;
 
 /**
  * handles additional check for violators detected via existing user agent in our database
@@ -17,9 +17,15 @@ class ViolationUserAgentController extends ViolationController {
 	 * @param  string  $userAgent [description]
 	 * @return boolean            [description]
 	 */
-	public static function hasViolation($userAgent='')
+	public static function hasViolation($userAgent='', $newViolationId=0)
 	{
-		$violation = ViolationInfo::where('userAgent', $userAgent)->first();
+		$violation = DB::table("trViolationInfo")
+			->join("trViolations", function($join) use($userAgent, $newViolationId) {
+				$join->on("trViolations.violationInfo", "=", "trViolationInfo.id")
+					->where("trViolations.id", "<>", $newViolationId);
+			})
+			->where('userAgent', '=', $userAgent)
+			->first();
 		return !empty($violation);
 	}
 

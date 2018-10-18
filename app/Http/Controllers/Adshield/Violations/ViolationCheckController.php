@@ -53,7 +53,7 @@ class ViolationCheckController extends ViolationController {
 			die();
 		}
 
-		return $this->Response($userKey, $violations, $info)
+		return $this->Response($userKey, $violations, $info);
 
 	}
 
