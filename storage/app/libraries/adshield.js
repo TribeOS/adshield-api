@@ -429,9 +429,9 @@ AdShield = function()
             var type = item.tagName;
             if (type == "IFRAME")
             {
-                let wrapper = document.createElement("div");
-                item.parentNode.insertBefore(wrapper, item);
-                wrapper.appendChild(item);
+                var wrp = document.createElement("div");
+                item.parentNode.insertBefore(wrp, item);
+                wrp.appendChild(item);
                 var iframe = item;
                 var anchor = iframe.closest("div");
                 anchor.style.position = 'relative';
@@ -602,8 +602,8 @@ AdShield = function()
 
     self.CheckViolations = function()
     {
-        let refererUrl = document.referrer;
-        let arg = {
+        var refererUrl = document.referrer;
+        var arg = {
             refererUrl : refererUrl,
             fullUrl : encodeURIComponent(refererUrl),
             source : GetParameterByName("utm_source"),
@@ -627,7 +627,22 @@ AdShield = function()
      */
     self.ViolationResponse = function(action, options)
     {
-        //act here
+        //act here :
+        //- content protection
+        //  - captcha
+        //  - block page
+        //- Custom page
+        //  - captcha
+        //  - block page
+        //  - custom validation and itentity page
+        // - content distribution
+        //  - enable content cache
+        //  - cache urls without extension
+        //  - mobile cache
+        //  - cache extension
+        //  - compression & reroute
+        //
+        //
     }
 
     self.Init = function()
