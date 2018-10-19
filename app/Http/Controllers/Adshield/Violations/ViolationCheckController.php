@@ -42,7 +42,8 @@ class ViolationCheckController extends ViolationController {
 			} catch (\Exception $e) {}
 		}
 
-		//log traffic
+		//try to Log traffic here as well
+		//=======================
 
 		$violations = [];
 		//call other logs to perform logging

@@ -57,14 +57,14 @@ Route::post('checkurl', ['as' => 'AdshieldCheckUrl', 'uses' => 'Adshield\ApiRefe
 /**
  * violations api endpoint
  */
-Route::any('v/{userKey}', ['as' => 'CheckViolation', 'uses' => 'Adshield\Violations\ViolationCheckController@Check'])
-	->where('userKey', '[a-zA-Z0-9]+');
+Route::post('v/{userKey?}', ['as' => 'CheckViolation', 'uses' => 'Adshield\Violations\ViolationCheckController@Check'])
+	->where('userKey', '[a-zA-Z0-9]+')->middleware('api.access');
 
 /**
  * violation : "JS Disabled" end point
  */
-Route::get('nojs/{userKey}', ['as' => 'LogNoJsViolation', 'uses' => 'Adshield\Violations\ViolationNoJsController@log'])
-	->where('userKey', '[a-zA-Z0-9]+');
+Route::get('nojs/{userKey?}', ['as' => 'LogNoJsViolation', 'uses' => 'Adshield\Violations\ViolationNoJsController@log'])
+	->where('userKey', '[a-zA-Z0-9]+')->middleware('api.access');
 
 
 /**

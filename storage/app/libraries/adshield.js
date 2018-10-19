@@ -185,7 +185,7 @@ AdShield = function()
             }
         }
 
-        var adShieldID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        var adShieldID = "as" + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
         if (shield_type == "1") {
             //cover all ads with blocker
             var ads = adshield_ads;
@@ -615,9 +615,19 @@ AdShield = function()
         else { domain = refererUrl.split('/')[0]; }
         domain = domain.split(':')[0];
         arg.visitUrl = document.location.toString() || "";
-        self.httpPost(self.urls.vlog, arg, function(response) {
+        self.httpPost(self.urls.vlog + "/" + self.UserKey, arg, function(response) {
             //perform action here
+            self.ViolationResponse(response.action);
         });   
+    }
+
+    /**
+     * perform action as indicated on the parameter
+     * @param {[type]} action [description]
+     */
+    self.ViolationResponse = function(action, options)
+    {
+        //act here
     }
 
     self.Init = function()
@@ -641,6 +651,7 @@ AdShield = function()
         self.CheckIframed();
         self.CheckReferrerUrl();
         self.StartAdShield();
+        self.CheckViolations();
     }
 
 }
