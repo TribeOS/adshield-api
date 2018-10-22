@@ -106,6 +106,14 @@ class ViolationController extends BaseController {
 		}
 
 		//check for blocked country
+		if (ViolationJSCheckFailedController::hasViolation(
+				isset($data['jsCheck']) ? $data['jsCheck'] : false)
+			) {
+			$this->doLog($userKey, $ip, $ipStr, self::V_JS_CHECK_FAILED, $data);
+			$violations[] = self::V_JS_CHECK_FAILED;
+		}
+
+		//check for blocked country
 		if (ViolationBlockedCountryController::hasViolation(
 				isset($data['country']) ? $data['country'] : '')
 			) {

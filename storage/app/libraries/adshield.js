@@ -609,12 +609,16 @@ AdShield = function()
             source : GetParameterByName("utm_source"),
             subsource : GetParameterByName("utm_medium"),
             visitUrl : "",
-            userAgent : navigator.userAgent
+            userAgent : navigator.userAgent,
+            jsCheck : false,
         }
         if (refererUrl.indexOf("://") > -1) { domain = refererUrl.split('/')[2]; }
         else { domain = refererUrl.split('/')[0]; }
         domain = domain.split(':')[0];
         arg.visitUrl = document.location.toString() || "";
+        try {
+            arg.jsCheck = self.checkJSEngine();
+        } catch (e) {}
         self.httpPost(self.urls.vlog + "/" + self.UserKey, arg, function(response) {
             //perform action here
             self.ViolationResponse(response.action);
@@ -643,6 +647,19 @@ AdShield = function()
         //  - compression & reroute
         //
         //
+    }
+
+    /**
+     * check if we are in a browser or not
+     * @return {[type]} [description]
+     */
+    self.checkJSEngine = function() {
+        if (typeof document == "undefined") return false;
+        if (typeof document.URL == "undefined") return false;
+        if (typeof window == "undefined") return false;
+        if (typeof window.alert == "undefined") return false;
+        if (typeof document.body == "undefined") return false;
+        return true;
     }
 
     self.Init = function()
