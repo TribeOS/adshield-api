@@ -15,57 +15,30 @@ class IpJsCheckFailedController extends BaseController
 
 	public function getList()
 	{
-		// $page = Input::get('page', 0);
-		// $limit = Input::get('limit', 10);
-		// $sortBy = Input::get('sortBy', 'last_updated');
-		// $sortDir = Input::get('sortDir', 'DESC');
+		$page = Input::get('page', 0);
+		$limit = Input::get('limit', 10);
+		$filter = Input::get('filter', []);
 
-		// $filter = Input::get('filter', []);
+		$data = DB::table("trViolations")
+			->join("trViolationIps", "trViolationIps.id", "=", "trViolations.ip")
+			->select(DB::raw("ipStr AS ip, COUNT(*) as total"))
+			->groupBy('ipStr')
+			->where('violation', ViolationController::V_JS_CHECK_FAILED)
+			->where('userKey', $filter['userKey'])
+			->orderBy('ipStr', 'asc');
 
-		// $data = DB::table("asListIp")
-		// 	->join('asStatInfo', 'asListIp.ip', '=', 'asStatInfo.ip')
-		// 	->leftJoin('asStat', function($join) use($filter) {
-		// 		$join->on('asStat.info_id', '=', 'asStatInfo.id');
-		// 		if (!empty($filter['duration']) && $filter['duration'] > 0)
-		// 		{
-		// 			$duration = $filter['duration'];
-		// 			$join->where("asStat.date_added", ">=", "DATE_SUB(NOW(), INTERVAL $duration DAY)");
-		// 		}
-		// 	})
-		// 	->select(DB::raw("asListIp.ip, COUNT(*) as total"))
-		// 	->take($limit)->skip($page * $limit)
-		// 	->groupBy('asListIp.ip')
-		// 	->orderBy($sortBy, $sortDir);
+		if (!empty($filter['duration']) && $filter['duration'] > 0)
+		{
+			$duration = $filter['duration'];
+			$data->where("createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
+		}
 
-		// if (!empty($filter['dateFrom']) && !empty($filter['dateTo']))
-		// 	$data->whereBetween("last_updated", [$filter['dateFrom'], $filter['dateTo']]);
+		$data = $data->paginate($limit);
+		$data->appends([
+			'limit' => $limit
+		]);
 
-		// if ($filter['status'] !== null) $data->where("status", $filter['status']);
-		// if (!empty($filter['ip']))
-		// {
-		// 	try {
-		// 		$ip = inet_pton($filter['ip']);
-		// 		$data->where("asListIp.ip", inet_pton($filter['ip']));
-		// 	} catch (Exception $e) {}
-		// }
-
-		// $data = $data->paginate($limit);
-		// foreach($data as $d)
-		// {
-		// 	$d->ip = ApiStatController::IPFromBinaryString($d->ip);
-		// }
-
-		// $data->appends([
-		// 	'sortBy' => $sortBy,
-		// 	'sortDir' => $sortDir,
-		// 	'limit' => $limit
-		// ]);
-		
-		$data = [];
-		$data = DummyDataController::GetIps(Input::get('limit', 10), Input::get('page', 1));
-
-		return response()->json(['id' => 0, 'listData' => $data])
-			->header('Content-Type', 'application/vnd.api+json');
+		return response()->json(['id' => 0, 'listData' => $data]);
 	}
 
 	public function getGraphData()
@@ -73,25 +46,32 @@ class IpJsCheckFailedController extends BaseController
 		$filter = Input::get("filter", []);
 		$ip = $filter['ip'];
 
-		//generate dummy data by random
-		//sample data
-		$data = DummyDataController::IpGetGraphData(2);
-		
+		$violation = DB::table("trViolations")
+			->join("trViolationIps", function($join) use($ip) {
+				$join->on("trViolationIps.id", "=", "trViolations.ip")
+					->where("trViolationIps.ip", "=", inet_pton($ip));
+			})
+			->select(DB::raw("violation, COUNT(*) AS total"))
+			->whereIn("violation", [ViolationController::V_JS_CHECK_FAILED])
+			->groupBy("violation")
+			->get();
+
+		//TEST
+		$data = [$violation[0]->total, 0];
+
 		$info = IpInfoController::GetIpInfo($ip);
 		$graphData = [
-			'data' => $data[$ip]['violations'],
+			'data' => $data,
 			'label' => ['Known Signatures/Identity', 'Session Length Exceed'],
 			'info' => [
 				'ip' => $ip,
-				'loc' => $info['city'] . ', ' . $info['country'],
-				'org' => $info['org'],
-				'isp' => $info['isp']
+				'loc' => (isset($info['city']) ? $info['city'] : '') . ', ' . (isset($info['country']) ? $info['country'] : ''),
+				'org' => isset($info['org']) ? $info['org'] : '',
+				'isp' => isset($info['isp']) ? $info['isp'] : ''
 			]
 		];
 
-
-		return response()->json(['id'=>0, 'graphData' => $graphData])
-			->header('Content-Type', 'application/vnd.api+json');
+		return response()->json(['id'=>0, 'graphData' => $graphData]);	
 	}
 	
 }

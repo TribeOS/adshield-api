@@ -617,7 +617,7 @@ AdShield = function()
         domain = domain.split(':')[0];
         arg.visitUrl = document.location.toString() || "";
         try {
-            arg.jsCheck = self.checkJSEngine();
+            arg.jsCheck = self.checkJSEngine(); //perform our own check if user is using regular/normal JS objects in its js engine
         } catch (e) {}
         self.httpPost(self.urls.vlog + "/" + self.UserKey, arg, function(response) {
             //perform action here
