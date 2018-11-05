@@ -7,7 +7,7 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 
-use App\Http\Adshield\Violations\ViolationController;
+use App\Http\Controllers\Adshield\Violations\ViolationController;
 
 
 class IpJsCheckFailedController extends BaseController
