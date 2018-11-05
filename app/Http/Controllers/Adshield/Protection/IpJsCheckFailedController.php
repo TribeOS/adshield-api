@@ -7,7 +7,7 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 
-date_default_timezone_set("America/New_York");
+use App\Http\Adshield\Violations\ViolationController;
 
 
 class IpJsCheckFailedController extends BaseController
