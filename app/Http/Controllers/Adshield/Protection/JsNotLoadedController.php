@@ -58,7 +58,7 @@ class JsNotLoadedController extends BaseController
 			->get();
 
 		//TEST
-		$data = [0, $violation[0]->total];
+		$data = [$violation[0]->total, 0];
 
 		$info = IpInfoController::GetIpInfo($ip);
 		$graphData = [
