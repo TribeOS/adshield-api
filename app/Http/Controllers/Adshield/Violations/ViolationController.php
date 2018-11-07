@@ -246,14 +246,14 @@ class ViolationController extends BaseController {
 		if (empty($ip))
 		{
 			$ip = new ViolationIp();
-			$ip->ip = $ip;
+			$ip->ip = $ipBinary;
 			$ip->ipStr = $ipStr;
 			$ip->save();
 		}
-		// $log = new ViolationRequestLog();
-		// $log->ip = $ip->id;
-		// $log->createdOn = gmdate("Y-m-d H:i:s");
-		// $log->save();
+		$log = new ViolationRequestLog();
+		$log->ip = $ip->id;
+		$log->createdOn = gmdate("Y-m-d H:i:s");
+		$log->save();
 	}
 
 }
