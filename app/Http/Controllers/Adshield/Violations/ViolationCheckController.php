@@ -26,7 +26,7 @@ class ViolationCheckController extends ViolationController {
 	public function Check($userKey='')
 	{
 		$this->VerifyKey($userKey);
-		$this->config = $this->GetConfig($userkey);
+		$this->config = $this->GetConfig($userKey);
 		//get user information
 		$ip = $this->GetUserIp();
 		$info = Request::all();
