@@ -32,6 +32,14 @@ class ViolationPagesPerMinuteController extends ViolationController {
 		//TODO: 
 		// check against logs for the past 1 minute if records exceed for this IP on this website
 		// only consider check after the last time the user has a pagesPerMinute violation, otherwise don't filter logs
+
+		//if user has exceeded, lets remove its logs from the database
+		//and issue a ViolationLog for exceeding the pages per minute rule
+		/*
+		DB::table("trViolationLog")
+			->where("userKey", $data['userKey'])
+			->delete();
+		*/
 	}
 
 }
