@@ -18,7 +18,14 @@ class ViolationIPController extends ViolationController {
 	 */
 	public static function hasViolation($ip='')
 	{
-		$violation = ViolationIp::where('ip', $ip)->first();
+		$violation = ViolationIp::where('ip', $ip)
+			->whereIn("violation", [
+				self::V_BROWSER_INTEGRITY,
+				self::V_PAGES_PER_MINUTE_EXCEED,
+				self::V_BLOCKED_COUNTRY,
+				self::V_JS_CHECK_FAILED
+			])
+			->first();
 		//check agains blacklist IP's as well
 		return !empty($violation);
 	}
