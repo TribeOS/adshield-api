@@ -12,12 +12,37 @@ class ViolationBrowserIntegrityCheckController extends ViolationController {
 
 
 	/**
-	 * 
+	 * performs a series of tests on the request data we have for possible
+	 * bot/spam/crawler based on data like user agent and other request data and headers
+	 * TODO: need to research
 	 */
-	public static function hasViolation()
+	public static function hasViolation($data)
 	{
-
+		//empty/blank useragent treated as a browser integrity flaw
+		if (empty($data['userAgent'])) return true;
+		//check if useragent exists in our knownagents and is marked as spam/bad bot
+		if (self::isBadBot($data['userAgent'])) return true;
 		return false;
+	}
+
+
+	/**
+	 * check if userAgent has a matching agent string in our known agents 
+	 * that are marked as bad bot/spam
+	 */
+	private static function isBadBot($userAgent)
+	{
+		$badAgent = DB::table('badAgents')
+			->where($userAgent, 'like', "CONCAT('%', phrase, '%')")
+			->first();
+		if (!empty($badAgent)) return true;
+
+		$knownAgent = DB::table("knownAgents")
+			->where("uaString", "like", '%' . trim($userAgent) . '%')
+			->where('type', 'like', '%S%')
+			->first();
+
+		return !empty($knownAgent);
 	}
 
 }

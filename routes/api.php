@@ -14,8 +14,9 @@ use Illuminate\Http\Request;
 */
 
 
-URL::forceScheme('https');
-
+if (\App::environment() !== 'local') {
+	\URL::forceScheme('https');
+}
 
 Route::get("/", function() {
 	return redirect()->away('https://tribeos.io');
@@ -58,7 +59,7 @@ Route::post('checkurl', ['as' => 'AdshieldCheckUrl', 'uses' => 'Adshield\ApiRefe
 /**
  * violations api endpoint
  */
-Route::post('v/{userKey?}', ['as' => 'CheckViolation', 'uses' => 'Adshield\Violations\ViolationCheckController@Check'])
+Route::any('v/{userKey?}', ['as' => 'CheckViolation', 'uses' => 'Adshield\Violations\ViolationCheckController@Check'])
 	->where('userKey', '[a-zA-Z0-9]+')->middleware('api.access');
 
 /**

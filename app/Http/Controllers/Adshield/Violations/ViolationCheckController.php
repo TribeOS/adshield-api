@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Adshield\Violations;
 use App\Http\Controllers\Adshield\Violations\ViolationController;
 use DB;
 use Request;
-use App\Model\UserConfig;
 
 /**
  * MAIN handler for checking violations.
@@ -27,12 +26,10 @@ class ViolationCheckController extends ViolationController {
 	public function Check($userKey='')
 	{
 		$this->VerifyKey($userKey);
+		$this->config = $this->GetConfig($userkey);
 		//get user information
 		$ip = $this->GetUserIp();
-		$info = [
-			'fullUrl' => Request::get('fullUrl'),
-			'userAgent' => Request::get('userAgent')
-		];
+		$info = Request::all();
 		if (!empty($ip['string']))
 		{
 			try {
@@ -42,7 +39,8 @@ class ViolationCheckController extends ViolationController {
 			} catch (\Exception $e) {}
 		}
 
-		//try to Log traffic here as well
+		//try to Log traffic here as well for monitoring pages per minute and pages per session?
+		$this->LogRequest($ip['binary'], $ip['string']);
 		//=======================
 
 		$violations = [];
@@ -58,15 +56,7 @@ class ViolationCheckController extends ViolationController {
 
 	}
 
-	/**
-	 * gets the current config for the given website (userkey)
-	 */
-	private function GetConfig($userKey='')
-	{
-		$config = UserConfig::where('userKey', $userKey)->first();
-		if (empty($config)) return false;
-		return json_decode($config->config, 1);
-	}
+	
 
 	/**
 	 * compose command/response for JS lib to follow

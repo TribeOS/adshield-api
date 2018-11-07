@@ -50,7 +50,10 @@ class ApiReferrerController extends BaseController
 			$stat->LogStat($hash, urldecode($fullUrl), $result, $source, $subSource, $userAgent, $userKey);
 		}
 		else if ($result == self::STATUS_SAFE)
-		{}
+		{
+			//log this stat as well and mark as SAFE?
+			// $stat->LogStat($hash, urldecode($fullUrl), $result, $source, $subSource, $userAgent, $userKey);
+		}
 		echo json_encode(array('result'=>"$result"));
 		VisualizerController::BroadcastStats();
 	}
@@ -151,15 +154,15 @@ class ApiReferrerController extends BaseController
 
 		$data = json_encode($data);
 
-		$params = array(
+		$params = [
 			CURLOPT_RETURNTRANSFER => true,
 			CURLOPT_POST => 1,
 			CURLOPT_POSTFIELDS => $data,
-			CURLOPT_HTTPHEADER => array(
+			CURLOPT_HTTPHEADER => [	
                 "Content-Type: application/json",
                 'Content-Length: ' . strlen($data)
-            )
-		);
+            ]
+		];
 
 		$req = curl_init($gsb_url);
 		curl_setopt_array($req, $params);

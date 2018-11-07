@@ -8,6 +8,8 @@ use App\Http\Controllers\Adshield\Protection\IpInfoController;
 use App\Model\Violation;
 use App\Model\ViolationInfo;
 use App\Model\ViolationIp;
+use App\Model\UserConfig;
+use App\Model\ViolationRequestLog;
 use DB;
 
 use App\Http\Controllers\Adshield\Violations\ViolationUserAgentController;
@@ -15,6 +17,7 @@ use App\Http\Controllers\Adshield\Violations\ViolationIPController;
 use App\Http\Controllers\Adshield\Violations\ViolationDataCenterController;
 use App\Http\Controllers\Adshield\Violations\ViolationBlockedCountryController;
 use App\Http\Controllers\Adshield\Violations\ViolationSuspiciousUAController;
+use App\Http\Controllers\Adshield\Violations\ViolationBrowserIntegrityCheckController;
 
 
 /**
@@ -38,9 +41,13 @@ class ViolationController extends BaseController {
 
 	//we use this to indicate if the log has created a new violation record and/or new info record
 	private $newViolationInfoRecord = false, $newViolationIp= false;
+	
 	//we store the current time and use for all logs on the current request
 	//to make sure they all have the same date/time
 	private $currentTime = '';
+
+	//website's config
+	protected $config = [];
 
 	function __construct() {
 		//used for testing data
@@ -48,6 +55,18 @@ class ViolationController extends BaseController {
 		//we store the current date/time upon arrival of request
 		$this->currentTime = gmdate("Y-m-d H:i:s");
 	}
+
+
+	/**
+	 * gets the current config for the given website (userkey)
+	 */
+	protected function GetConfig($userKey='')
+	{
+		$config = UserConfig::where('userKey', $userKey)->first();
+		if (empty($config)) return false;
+		return json_decode($config->config, 1);
+	}
+
 
 	/**
 	 * get user IP via ApiStatController's method.
@@ -129,6 +148,18 @@ class ViolationController extends BaseController {
 			$violations[] = self::V_SUSPICIOUS_UA;
 		}
 
+		//check browser integrity
+		if (ViolationBrowserIntegrityCheckController::hasViolation($data)) {
+			$this->doLog($userKey, $ip, $ipStr, self::V_BROWSER_INTEGRITY, $data);
+			$violations[] = self::V_BROWSER_INTEGRITY;
+		}
+
+		//check aggregator user agent
+		if (ViolationAggregatorUserAgentController::hasViolation($data)) {
+			$this->doLog($userKey, $ip, $ipStr, self::V_AGGREGATOR_UA, $data);
+			$violations[] = self::V_AGGREGATOR_UA;
+		}
+
 		if ($violationType !== self::V_NONE) {
 			$this->doLog($userKey, $ip, $ipStr, $violationType, $data);
 			$violations[] = $violationType;
@@ -205,6 +236,24 @@ class ViolationController extends BaseController {
 		if (empty($userKey)) die($msg);
 		$website = DB::table('userWebsites')->where('userKey', $userKey)->first();
 		if (empty($website)) die($msg);
+	}
+
+
+	protected function LogRequest($ipBinary, $ipString)
+	{
+		//store violation ip if non-existent
+		$ip = ViolationIp::where('ip', $ip)->first();
+		if (empty($ip))
+		{
+			$ip = new ViolationIp();
+			$ip->ip = $ip;
+			$ip->ipStr = $ipStr;
+			$ip->save();
+		}
+		$log = new ViolationRequestLog();
+		$log->ip = $ip->id;
+		$log->createdOn = gmdate("Y-m-d H:i:s");
+		$log->save();
 	}
 
 }

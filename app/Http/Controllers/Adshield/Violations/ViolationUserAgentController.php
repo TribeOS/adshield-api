@@ -22,6 +22,7 @@ class ViolationUserAgentController extends ViolationController {
 	 */
 	public static function hasViolation($userAgent='', $newViolationId=0)
 	{
+		//TODO: might need to improve this to check only certain violations by the user agent and not all violations/stats 
 		$violation = DB::table("trViolationInfo")
 			->join("trViolations", function($join) use($userAgent, $newViolationId) {
 				$join->on("trViolations.violationInfo", "=", "trViolationInfo.id")
