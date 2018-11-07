@@ -26,7 +26,13 @@ class ViolationUserAgentController extends ViolationController {
 		$violation = DB::table("trViolationInfo")
 			->join("trViolations", function($join) use($userAgent, $newViolationId) {
 				$join->on("trViolations.violationInfo", "=", "trViolationInfo.id")
-					->where("trViolations.id", "<>", $newViolationId);
+					->where("trViolations.id", "<>", $newViolationId)
+					->whereIn("trViolations.violation", [
+						self::V_BROWSER_INTEGRITY,
+						self::V_PAGES_PER_MINUTE_EXCEED,
+						self::V_BLOCKED_COUNTRY,
+						self::V_JS_CHECK_FAILED
+					]);
 			})
 			->where('userAgent', '=', $userAgent)
 			->first();
