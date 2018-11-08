@@ -17,7 +17,6 @@ class ViolationPagesPerMinuteController extends ViolationController {
 	 */
 	public static function hasViolation($ip, $data, $config)
 	{
-		echo "test";
 		$max = self::MaxPagesPerMinute;
 		if (!empty($config['RequestStat']['pagesPerMinute'])) $max = $config['RequestStat']['pagesPerMinute'];
 		if (self::hasExceed($ip, $data, $max)) return true;
@@ -37,7 +36,7 @@ class ViolationPagesPerMinuteController extends ViolationController {
 				$join->on("trViolationIps.id", "=", "trViolationLog.ip")
 					->where("trViolationIps.ip", "=", $ip);
 			})
-			->where("trViolationIps.createdOn", ">=", "DATE_SUB(NOW(), INTERVAL 1 MINUTE)")
+			->where("trViolationLog.createdOn", ">=", "DATE_SUB(NOW(), INTERVAL 1 MINUTE)")
 			->count();
 		//if user has exceeded, lets remove its logs from the database
 		//and issue a ViolationLog for exceeding the pages per minute rule

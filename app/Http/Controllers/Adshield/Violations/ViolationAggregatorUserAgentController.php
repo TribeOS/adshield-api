@@ -17,7 +17,7 @@ class ViolationAggregatorUserAgentController extends ViolationController {
 	 */
 	public static function hasViolation($data)
 	{
-		if (self::isRobot($data['userAgent'])) return true;
+		if (self::isRobot(isset($data['userAgent']) ? $data['userAgent'] : "")) return true;
 		return false;
 	}
 
