@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
+use Response;
 
 use App\Http\Controllers\Adshield\LoginController;
 use App\Model\User;
@@ -79,16 +80,17 @@ class UserWebsitesController extends Controller
 
         try {
             $record = new UserWebsite();
-            $record->userId = $user->id;
             $record->accountId = $user->accountId;
             $record->userKey = $userKey;
             $record->domain = $domain;
             $record->createdOn = gmdate('Y-m-d H:i:s');
+            $record->status = 1;
             $record->save();
         } catch (\Exception $e) {
-            return [false, $e->getMessage()];
+            return response($e->getMessage(), 500);
         }
-        return true;
+        
+        return response($record, 200);
     }
 
 }
