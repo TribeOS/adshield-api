@@ -164,7 +164,7 @@ class ViolationController extends BaseController {
 		}
 
 		//check pages per minute 
-		if (ViolationPagesPerMinuteController::hasViolation($ip, $data, $this->config)) {
+		if (ViolationPagesPerMinuteController::hasViolation($userKey, $ip, $data, $this->config)) {
 			$this->doLog($userKey, $ip, $ipStr, self::V_PAGES_PER_MINUTE_EXCEED, $data);
 			$violations[] = self::V_PAGES_PER_MINUTE_EXCEED;
 		}
