@@ -17,6 +17,7 @@ class ViolationPagesPerMinuteController extends ViolationController {
 	 */
 	public static function hasViolation($ip, $data, $config)
 	{
+		echo "test";
 		$max = self::MaxPagesPerMinute;
 		if (!empty($config['RequestStat']['pagesPerMinute'])) $max = $config['RequestStat']['pagesPerMinute'];
 		if (self::hasExceed($ip, $data, $max)) return true;
@@ -40,9 +41,9 @@ class ViolationPagesPerMinuteController extends ViolationController {
 			->count();
 		//if user has exceeded, lets remove its logs from the database
 		//and issue a ViolationLog for exceeding the pages per minute rule
-		var_dump($logCount);
 		if ($logCount > $max) 
-		{	 
+		{
+			//TODO: confirm if we need to delete logs
 			DB::table("trViolationLog")
 				->where("userKey", $data['userKey'])
 				->delete();
