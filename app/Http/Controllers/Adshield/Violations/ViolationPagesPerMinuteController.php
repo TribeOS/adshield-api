@@ -10,16 +10,16 @@ use DB;
  */
 class ViolationPagesPerMinuteController extends ViolationController {
 
-	const MaxPagesPerMinute = 10; //needs to be set from db
+	const MaxPagesPerMinute = 30; //needs to be set from db
 
 	/**
 	 * check if user has exceeded the pages per minute limit
 	 */
-	public static function hasViolation($data, $config)
+	public static function hasViolation($ip, $data, $config)
 	{
 		$max = self::MaxPagesPerMinute;
 		if (!empty($config['RequestStat']['pagesPerMinute'])) $max = $config['RequestStat']['pagesPerMinute'];
-		if (self::hasExceed($data, $max)) return true;
+		if (self::hasExceed($ip, $data, $max)) return true;
 		return false;
 	}
 
@@ -27,19 +27,29 @@ class ViolationPagesPerMinuteController extends ViolationController {
 	/**
 	 * check if user has exceeded the max number of page request per minute
 	 */
-	private static function hasExceed($data, $max)
+	private static function hasExceed($ip, $data, $max)
 	{
-		//TODO: 
 		// check against logs for the past 1 minute if records exceed for this IP on this website
 		// only consider check after the last time the user has a pagesPerMinute violation, otherwise don't filter logs
-
+		$logCount = DB::table("trViolationLog")
+			->join("trViolationIps", function($join) use($ip) {
+				$join->on("trViolationIps.id", "=", "trViolationLog.ip")
+					->where("trViolationIps.ip", "=", $ip);
+			})
+			->where("trViolationIps.createdOn", ">=", "DATE_SUB(NOW(), INTERVAL 1 MINUTE)")
+			->count();
 		//if user has exceeded, lets remove its logs from the database
 		//and issue a ViolationLog for exceeding the pages per minute rule
-		/*
-		DB::table("trViolationLog")
-			->where("userKey", $data['userKey'])
-			->delete();
-		*/
+		var_dump($logCount);
+		if ($logCount > $max) 
+		{	 
+			DB::table("trViolationLog")
+				->where("userKey", $data['userKey'])
+				->delete();
+			return true;
+		}
+
+		return false;
 	}
 
 }

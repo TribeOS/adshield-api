@@ -18,6 +18,7 @@ use App\Http\Controllers\Adshield\Violations\ViolationDataCenterController;
 use App\Http\Controllers\Adshield\Violations\ViolationBlockedCountryController;
 use App\Http\Controllers\Adshield\Violations\ViolationSuspiciousUAController;
 use App\Http\Controllers\Adshield\Violations\ViolationBrowserIntegrityCheckController;
+use App\Http\Controllers\Adshield\Violations\ViolationPagesPerMinuteController;
 
 
 /**
@@ -158,6 +159,12 @@ class ViolationController extends BaseController {
 		if (ViolationAggregatorUserAgentController::hasViolation($data)) {
 			$this->doLog($userKey, $ip, $ipStr, self::V_AGGREGATOR_UA, $data);
 			$violations[] = self::V_AGGREGATOR_UA;
+		}
+
+		//check pages per minute 
+		if (ViolationPagesPerMinuteController::hasViolation($ip, $data, $this->config)) {
+			$this->doLog($userKey, $ip, $ipStr, self::V_PAGES_PER_MINUTE_EXCEED, $data);
+			$violations[] = self::V_PAGES_PER_MINUTE_EXCEED;
 		}
 
 		if ($violationType !== self::V_NONE) {

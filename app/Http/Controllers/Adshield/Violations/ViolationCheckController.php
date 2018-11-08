@@ -40,7 +40,7 @@ class ViolationCheckController extends ViolationController {
 		}
 
 		//try to Log traffic here as well for monitoring pages per minute and pages per session?
-		// $this->LogRequest($ip['binary'], $ip['string']);
+		$this->LogRequest($ip['binary'], $ip['string']);
 		//=======================
 
 		$violations = [];
