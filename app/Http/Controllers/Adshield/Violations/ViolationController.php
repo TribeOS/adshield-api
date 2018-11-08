@@ -114,7 +114,9 @@ class ViolationController extends BaseController {
 
 
 		//check if useragent has an existing violation
-		if (ViolationUserAgentController::hasViolation($data['userAgent'], $newViolationId)) {
+		if (ViolationUserAgentController::hasViolation(
+				isset($data['userAgent']) ? $data['userAgent'] : '', $newViolationId)
+			) {
 			$this->doLog($userKey, $ip, $ipStr, self::V_KNOWN_VIOLATOR_UA, $data);
 			$violations[] = self::V_KNOWN_VIOLATOR_UA;
 		}

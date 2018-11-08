@@ -45,13 +45,13 @@ class ViolationCheckController extends ViolationController {
 
 		$violations = [];
 		//call other logs to perform logging
-		try {
+		// try {
 			$violations = $this->logViolation($userKey, $ip['binary'], $ip['string'], ViolationController::V_NONE, $info);
 			//get config and return action for JS lib to perform
-		} catch (\Exception $e) {
-			echo $e->getMessage();
-			die();
-		}
+		// } catch (\Exception $e) {
+		// 	$e->printStackTrace();
+		// 	die();
+		// }
 
 		return $this->Response($userKey, $violations, $info);
 

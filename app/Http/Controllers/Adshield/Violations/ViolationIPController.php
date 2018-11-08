@@ -19,7 +19,7 @@ class ViolationIPController extends ViolationController {
 	public static function hasViolation($ip='')
 	{
 		$violation = DB::table("trViolationIps")
-			->join("trViolations", function($join) use($userAgent, $ip) {
+			->join("trViolations", function($join) use($ip) {
 				$join->on("trViolations.ip", "=", "trViolationIps.id")
 					->where("trViolationIps.ip", "=", $ip)
 					->whereIn("trViolations.violation", [
