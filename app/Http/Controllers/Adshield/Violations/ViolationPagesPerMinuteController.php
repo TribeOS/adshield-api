@@ -32,9 +32,10 @@ class ViolationPagesPerMinuteController extends ViolationController {
 		// check against logs for the past 1 minute if records exceed for this IP on this website
 		// only consider check after the last time the user has a pagesPerMinute violation, otherwise don't filter logs
 		$logCount = DB::table("trViolationLog")
-			->join("trViolationIps", function($join) use($ip) {
+			->join("trViolationIps", function($join) use($ip, $data) {
 				$join->on("trViolationIps.id", "=", "trViolationLog.ip")
-					->where("trViolationIps.ip", "=", $ip);
+					->where("trViolationIps.ip", "=", $ip)
+					->where("trViolationIps.userKey", "=", $data['userKey']);
 			})
 			->where("trViolationLog.createdOn", ">=", "DATE_SUB(NOW(), INTERVAL 1 MINUTE)")
 			->count();

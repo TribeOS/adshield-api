@@ -248,7 +248,7 @@ class ViolationController extends BaseController {
 	}
 
 
-	protected function LogRequest($ipBinary, $ipStr)
+	protected function LogRequest($ipBinary, $ipStr, $userKey)
 	{
 		//store violation ip if non-existent
 		$ip = ViolationIp::where('ip', $ipBinary)->first();
@@ -262,6 +262,7 @@ class ViolationController extends BaseController {
 		$log = new ViolationRequestLog();
 		$log->ip = $ip->id;
 		$log->createdOn = gmdate("Y-m-d H:i:s");
+		$log->userKey = $userKey;
 		$log->save();
 	}
 
