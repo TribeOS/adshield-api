@@ -39,9 +39,15 @@ class ViolationPagesPerMinuteController extends ViolationController {
 
 		//check if ip and userkey last log was more than 1 minute ago, remove all logs
 		$lastWasPast = DB::table("trViolationLog")
+			->join("trViolationIps", function($join) use($ip, $userKey) {
+				$join->on("trViolationIps.id", "=", "trViolationLog.ip")
+					->where("trViolationIps.ip", "=", $ip)
+					->where("trViolationLog.userKey", "=", $userKey);
+			})
 			->select(DB::raw("
 				IF(MAX(createdOn) < DATE_SUB(NOW(), INTERVAL 1 MINUTE), 1, 0) AS oldLogs
 			"))
+			->where("");
 			->first();
 		if ($lastWasPast->oldLogs == 1) self::removeLogs($ip, $userKey);
 		// check against logs for the past 1 minute if records exceed for this IP on this website
