@@ -37,6 +37,7 @@ class ViolationPagesPerMinuteController extends ViolationController {
 	private static function hasExceed($userKey, $ip, $data, $max)
 	{
 
+
 		//check if ip and userkey last log was more than 1 minute ago, remove all logs
 		$lastWasPast = DB::table("trViolationLog")
 			->join("trViolationIps", function($join) use($ip, $userKey) {
@@ -44,9 +45,9 @@ class ViolationPagesPerMinuteController extends ViolationController {
 					->where("trViolationIps.ip", "=", $ip)
 					->where("trViolationLog.userKey", "=", $userKey);
 			})
-			->select(DB::raw("
+			->selectRaw("
 				IF(MAX(createdOn) < DATE_SUB(NOW(), INTERVAL 1 MINUTE), 1, 0) AS oldLogs
-			"))
+			")
 			->first();
 		if ($lastWasPast->oldLogs == 1) self::removeLogs($ip, $userKey);
 		// check against logs for the past 1 minute if records exceed for this IP on this website
@@ -74,13 +75,11 @@ class ViolationPagesPerMinuteController extends ViolationController {
 
 	private static function removeLogs($ip, $userKey)
 	{
-		DB::table("trViolationLog")
-			->join("trViolationIps", function($join) use($ip, $userKey) {
-				$join->on("trViolationIps.id", "=", "trViolationLog.ip")
-					->where("trViolationIps.ip", "=", $ip)
-					->where("trViolationLog.userKey", "=", $userKey);
-			})
-			->delete("trViolationLog.*");
+		DB::delete("DELETE trViolationLog.* FROM trViolationLog
+			INNER JOIN trViolationIps ON
+				trViolationLog.ip = trViolationIps.id
+				AND trViolationIps.ip = ?
+				AND trViolationlog.userKey = ?", [$ip, $userKey]);
 	}
 
 }
