@@ -32,10 +32,10 @@ class ViolationBrowserIntegrityCheckController extends ViolationController {
 	 */
 	private static function isBadBot($userAgent)
 	{
-		$badAgent = DB::table('badAgents')
-			->where($userAgent, 'like', "CONCAT('%', phrase, '%')")
-			->first();
-		if (!empty($badAgent)) return true;
+		// $badAgent = DB::table('badAgents')
+		// 	->whereRaw("? LIKE CONCAT('%', phrase, '%')", [$userAgent])
+		// 	->first();
+		// if (!empty($badAgent)) return true;
 
 		$knownAgent = DB::table("knownAgents")
 			->where("uaString", "like", '%' . trim($userAgent) . '%')

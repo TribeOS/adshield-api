@@ -13,6 +13,13 @@ class ViolationPagesPerMinuteController extends ViolationController {
 	const MaxPagesPerMinute = 10; //needs to be set from db
 
 	/**
+	 * TODO:::
+	 * we use this structure for config
+	 * RequestStat : { pagesPerMinute : 10, pagesPerSession : 10, etc... }
+	 * save this structure along with the website config as a json object
+	 */
+
+	/**
 	 * check if user has exceeded the pages per minute limit
 	 */
 	public static function hasViolation($userKey, $ip, $data, $config)
@@ -36,7 +43,7 @@ class ViolationPagesPerMinuteController extends ViolationController {
 				IF(MAX(createdOn) < DATE_SUB(NOW(), INTERVAL 1 MINUTE), 1, 0) AS oldLogs
 			"))
 			->first();
-		if ($lastWasPast->oldLogs == 1) self::removeLogs($userKey);
+		if ($lastWasPast->oldLogs == 1) self::removeLogs($ip, $userKey);
 		// check against logs for the past 1 minute if records exceed for this IP on this website
 		// only consider check after the last time the user has a pagesPerMinute violation, otherwise don't filter logs
 		$logCount = DB::table("trViolationLog")
@@ -53,18 +60,22 @@ class ViolationPagesPerMinuteController extends ViolationController {
 		if ($logCount > $max) 
 		{
 			//TODO: confirm if we need to delete logs
-			self::removeLogs($userKey);
+			self::removeLogs($ip, $userKey);
 			return true;
 		}
 
 		return false;
 	}
 
-	private static function removeLogs($userKey)
+	private static function removeLogs($ip, $userKey)
 	{
 		DB::table("trViolationLog")
-			->where("userKey", $userKey)
-			->delete();
+			->join("trViolationIps", function($join) use($ip, $userKey) {
+				$join->on("trViolationIps.id", "=", "trViolationLog.ip")
+					->where("trViolationIps.ip", "=", $ip)
+					->where("trViolationLog.userKey", "=", $userKey);
+			})
+			->delete("trViolationLog.*");
 	}
 
 }
