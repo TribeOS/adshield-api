@@ -47,7 +47,6 @@ class ViolationPagesPerMinuteController extends ViolationController {
 			->select(DB::raw("
 				IF(MAX(createdOn) < DATE_SUB(NOW(), INTERVAL 1 MINUTE), 1, 0) AS oldLogs
 			"))
-			->where("");
 			->first();
 		if ($lastWasPast->oldLogs == 1) self::removeLogs($ip, $userKey);
 		// check against logs for the past 1 minute if records exceed for this IP on this website
