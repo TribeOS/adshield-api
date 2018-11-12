@@ -9,15 +9,12 @@ use App\Model\ViolationIp;
 /**
  * check the user agent for any known aggregator user agents
  */
-class ViolationPagesPerMinuteController extends ViolationController {
+class ViolationPagesPerSessionController extends ViolationController {
 
-	const MaxPagesPerMinute = 15; //needs to be set from db
+	const MaxPagesPerSession = 30; //needs to be set from db
 
 	/**
-	 * TODO:::
-	 * we use this structure for config
-	 * RequestStat : { pagesPerMinute : 10, pagesPerSession : 10, etc... }
-	 * save this structure along with the website config as a json object
+	 * Uses the same config structure with PagesPerMinute code (they share the same category/config container)
 	 */
 
 	/**
@@ -25,8 +22,8 @@ class ViolationPagesPerMinuteController extends ViolationController {
 	 */
 	public static function hasViolation($userKey, $ip, $data, $config)
 	{
-		$max = self::MaxPagesPerMinute;
-		if (!empty($config['RequestStat']['pagesPerMinute'])) $max = $config['RequestStat']['pagesPerMinute'];
+		$max = self::MaxPagesPerSession;
+		if (!empty($config['RequestStat']['pagesPerSession'])) $max = $config['RequestStat']['pagesPerSession'];
 		if (self::hasExceed($userKey, $ip, $data, $max)) return true;
 		return false;
 	}
