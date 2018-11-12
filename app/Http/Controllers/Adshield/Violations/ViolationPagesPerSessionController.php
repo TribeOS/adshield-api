@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Adshield\Violations;
 use App\Http\Controllers\Adshield\Violations\ViolationController;
 use DB;
 use App\Model\ViolationIp;
+use App\Model\ViolationSession;
 
 /**
  * check the user agent for any known aggregator user agents
@@ -12,10 +13,12 @@ use App\Model\ViolationIp;
 class ViolationPagesPerSessionController extends ViolationController {
 
 	const MaxPagesPerSession = 30; //needs to be set from db
+	const SessionTimeout = 300; //how long (in seconds) is the allowed interval for each request to be considered as a new session
 
 	/**
 	 * Uses the same config structure with PagesPerMinute code (they share the same category/config container)
 	 */
+	
 
 	/**
 	 * check if user has exceeded the pages per minute limit
@@ -35,50 +38,54 @@ class ViolationPagesPerSessionController extends ViolationController {
 	private static function hasExceed($userKey, $ip, $data, $max)
 	{
 		date_default_timezone_set("UTC");
-		$ipId = ViolationIp::where("ip", $ip)->first();
-		$lastDate = DB::select("
-			SELECT createdOn FROM trViolationLog
-			WHERE userKey = ? AND ip = ?
-			ORDER BY createdOn DESC
-			LIMIT 2, 1", [$userKey, $ipId->id]);
+		//LOGIC
+		//how to determine what a session is? (start/end) 
+		//(we set a specific time/seconds/minutes on what is considered as a session/new session)
+		//- sessions are saved on table as per IP and userkey
+		//- for each request :
+		//	- check for existing session for this user/website 
+		//	(existing session that is within the allowed time for one session e.g. 10 mins request interval to consider as new session?)
+		//	IMPT::: need to consider how much time we allow to consider the request as a new session?
+		//	
+		//	- NONE : create a new session entry 
+		//	- YES : check if current session is considered as a continuation of existing session. (session expired/not expired)
+		//		- EXPIRED : delete old session, create new session entry
+		//		- NOT EXPIRED : we update the number of pages/request with +1. check if total pages/request for the current session has exceeded the current max pages per session config.
+		//			- EXCEED : hasExceed() returns TRUE (this will log a pagesPerSessionExceed violation)
+		
+		//	TEST CODE
+		$violationIp = ViolationIp::where("ip", $ip)->first();
+		$session = ViolationSession::where([
+			'ip' => $violationIp->id,
+			'userKey' => $userKey
+		])->first();
 
-		if (!empty($lastDate)) 
+		if (empty($session))
 		{
-			$lastDate = $lastDate[0]->createdOn;
-			if (strtotime($lastDate) < strtotime("1 minute ago")) self::removeLogs($ip, $userKey, $lastDate);
+			//create new session
+			$session = new ViolationSession();
+			$session->ip = $violationIp->id;
+			$session->userKey = $userKey;
+			$session->createdOn = gmdate("Y-m-d H:i:s");
+			$session->pages = 1;
 		}
-		// check against logs for the past 1 minute if records exceed for this IP on this website
-		// only consider check after the last time the user has a pagesPerMinute violation, otherwise don't filter logs
-		$logCount = DB::table("trViolationLog")
-			->join("trViolationIps", function($join) use($ip, $userKey) {
-				$join->on("trViolationIps.id", "=", "trViolationLog.ip")
-					->where("trViolationIps.ip", "=", $ip)
-					->where("trViolationLog.userKey", "=", $userKey);
-			})
-			->where("trViolationLog.createdOn", ">=", "DATE_SUB(NOW(), INTERVAL 1 MINUTE)")
-			->count();
+		else if (time() - strtotime($session->createdOn) >  self::SessionTimeout)
+		{
+			//session expired, create/update into new session record
+			$session->createdOn = gmdate("Y-m-d H:i:s");
+			$session->pages = 1;
+		}
+		else
+		{
+			//in session (not expired)
+			$session->pages ++;
+			if ($session->pages >= $max) return true;
+		}
 
-		//if user has exceeded, lets remove its logs from the database
-		//and issue a ViolationLog for exceeding the pages per minute rule
-		if ($logCount > $max) 
-		{
-			//TODO: confirm if we need to delete logs
-			self::removeLogs($ip, $userKey);
-			return true;
-		}
 
 		return false;
 	}
 
-	private static function removeLogs($ip, $userKey, $lastDate=null)
-	{
-		$where = '';
-		if ($lastDate !== null) $where = " AND trViolationLog.createdOn <= '$lastDate'";
-		DB::delete("DELETE trViolationLog.* FROM trViolationLog
-			INNER JOIN trViolationIps ON
-				trViolationLog.ip = trViolationIps.id
-				AND trViolationIps.ip = ?
-				AND trViolationLog.userKey = ? $where", [$ip, $userKey]);
-	}
+
 
 }

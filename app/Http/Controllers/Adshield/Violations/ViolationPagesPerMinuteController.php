@@ -66,7 +66,7 @@ class ViolationPagesPerMinuteController extends ViolationController {
 		if ($logCount > $max) 
 		{
 			//TODO: confirm if we need to delete logs
-			self::removeLogs($ip, $userKey);
+			// self::removeLogs($ip, $userKey);
 			return true;
 		}
 
