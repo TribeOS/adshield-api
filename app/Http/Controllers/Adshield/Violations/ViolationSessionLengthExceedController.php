@@ -8,11 +8,11 @@ use App\Model\ViolationIp;
 use App\Model\ViolationSession;
 
 /**
- * check the user agent for any known aggregator user agents
+ * Class for checking if session exceeds the allowed maximum session length (in seconds)
  */
-class ViolationPagesPerMinuteController extends ViolationController {
+class ViolationSessionLengthExceedController extends ViolationController {
 
-	const MaxPagesPerMinute = 15; //needs to be set from db
+	const MaxSessionLength = 900; //maximum allowed session length in seconds
 
 	/**
 	 * TODO:::
@@ -22,21 +22,21 @@ class ViolationPagesPerMinuteController extends ViolationController {
 	 */
 
 	/**
-	 * check if user has exceeded the pages per minute limit
+	 * check if we exceed the maximum session length 
 	 */
 	public static function hasViolation($config)
 	{
-		$max = self::MaxPagesPerMinute;
-		if (!empty($config['RequestStat']['pagesPerMinute'])) $max = $config['RequestStat']['pagesPerMinute'];
+		$max = self::MaxSessionLength;
+		if (!empty($config['RequestStat']['maxSessionLength'])) $max = $config['RequestStat']['maxSessionLength'];
 		if (self::hasExceed($max)) return true;
 		return false;
 	}
 
 
 	/**
-	 * check if user has exceeded the max number of page request per minute
+	 * check if session exceeds the given maximum session length
 	 */
-	private static function hasExceed( $max)
+	private static function hasExceed($max)
 	{
 		date_default_timezone_set("UTC");
 		$sessionId = self::GetSession();
@@ -46,14 +46,10 @@ class ViolationPagesPerMinuteController extends ViolationController {
 			->where("sessionId", $sessionId)
 			->count();
 		//get total time elapsed
-		$totalMinutes = time() - strtotime($violationSession->createdOn); //get the difference in Seconds
-		$totalMinutes = ceil($totalMinutes / 60); //convert it to Minutes
-		if ($totalMinutes < 1) $totalMinutes = 1;
-		//get average page per minute
-		$pagePerMinute = $totalPages / $totalMinutes;
+		$totalSeconds = time() - strtotime($violationSession->createdOn); //get the difference in Seconds
 
 		//if user has exceeded issue a ViolationLog for exceeding the pages per minute rule
-		if ($pagePerMinute > $max) return true;
+		if ($totalSeconds > $max) return true;
 		return false;
 	}
 

@@ -20,6 +20,7 @@ use App\Http\Controllers\Adshield\Violations\ViolationBlockedCountryController;
 use App\Http\Controllers\Adshield\Violations\ViolationSuspiciousUAController;
 use App\Http\Controllers\Adshield\Violations\ViolationBrowserIntegrityCheckController;
 use App\Http\Controllers\Adshield\Violations\ViolationPagesPerMinuteController;
+use App\Http\Controllers\Adshield\Violations\ViolationSessionLengthExceedController;
 
 
 /**
@@ -39,6 +40,7 @@ class ViolationController extends BaseController {
 	const V_BLOCKED_COUNTRY = 'BLOCKED_COUNTRY';
 	const V_AGGREGATOR_UA = 'AGGREGATOR_UA';
 	const V_KNOWN_VIOLATOR_AUTO_TOOL = 'KNOWN_VIOLATOR_AUTO_TOOL';
+	const V_SESSION_LENGTH_EXCEED = 'SESSION_LENGTH_EXCEED';
 	const V_NONE = 'none'; //pass this to logViolation()'s violationType to perform other passive checks only
 
 	//session name for storing cross object data
@@ -98,6 +100,8 @@ class ViolationController extends BaseController {
 
 	/**
 	 * subclass access to log save function
+	 * this method performs most of the violation checks and creates a log for each violations
+	 * this returns all the violations and positive checks in an Array[]
 	 * @param  [type] $userKey       [description]
 	 * @param  [type] $ip            [description]
 	 * @param  [type] $ipStr         [description]
@@ -187,6 +191,13 @@ class ViolationController extends BaseController {
 		{
 			$this->doLog($userKey, $ip, $ipStr, self::V_PAGES_PER_MINUTE_EXCEED, $data);
 			$violations[] = self::V_PAGES_PER_MINUTE_EXCEED;
+		}
+
+		//check session length
+		if (ViolationSessionLengthExceedController::hasViolation($this->config)) 
+		{
+			$this->doLog($userKey, $ip, $ipStr, self::V_SESSION_LENGTH_EXCEED, $data);
+			$violations[] = self::V_SESSION_LENGTH_EXCEED;
 		}
 
 		if ($violationType !== self::V_NONE) {

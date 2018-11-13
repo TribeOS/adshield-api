@@ -11,7 +11,7 @@ use App\Model\ViolationRequestLog;
 date_default_timezone_set("UTC");
 
 /**
- * check the user agent for any known aggregator user agents
+ * Class for checking if we exceeded the maximum pages per session allowed
  */
 class ViolationPagesPerSessionController extends ViolationController {
 
