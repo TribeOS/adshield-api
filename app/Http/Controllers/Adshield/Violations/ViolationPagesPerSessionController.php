@@ -16,7 +16,7 @@ date_default_timezone_set("UTC");
 class ViolationPagesPerSessionController extends ViolationController {
 
 	const MaxPagesPerSession = 30; //needs to be set from db
-	const SessionTimeout = 30; //how long (in seconds) is the allowed interval for each request to be considered as a new session
+	const SessionTimeout = 300; //how long (in seconds) is the allowed interval for each request to be considered as a new session
 
 	/**
 	 * Uses the same config structure with PagesPerMinute code (they share the same category/config container)
