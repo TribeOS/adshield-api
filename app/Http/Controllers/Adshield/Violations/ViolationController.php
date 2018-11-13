@@ -273,19 +273,9 @@ class ViolationController extends BaseController {
 		if (empty($website)) die($msg);
 	}
 
-
 	protected function LogRequest($ipBinary, $ipStr, $userKey, $data)
 	{
 		$infoId = $this->getInfoId($data);
-		//store violation ip if non-existent
-		$ip = ViolationIp::where('ip', $ipBinary)->first();
-		if (empty($ip))
-		{
-			$ip = new ViolationIp();
-			$ip->ip = $ipBinary;
-			$ip->ipStr = $ipStr;
-			$ip->save();
-		}
 		$log = new ViolationRequestLog();
 		$log->createdOn = gmdate("Y-m-d H:i:s");
 		$log->sessionId = self::GetSession();

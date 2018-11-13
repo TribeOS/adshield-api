@@ -59,11 +59,24 @@ class ViolationPagesPerSessionController extends ViolationController {
 		return $session;
 	}
 
-	public static function StartSession($ip, $userKey)
+	private function GetIpId($ipBinary, $ipStr)
 	{
-		$violationIp = ViolationIp::where("ip", $ip)->first();
+		$ip = ViolationIp::where('ip', $ipBinary)->first();
+		if (empty($ip))
+		{
+			$ip = new ViolationIp();
+			$ip->ip = $ipBinary;
+			$ip->ipStr = $ipStr;
+			$ip->save();
+		}
+		return $ip->id;
+	}
+
+	public static function StartSession($ip, $ipStr, $userKey)
+	{
+		$ipId = self::GetIpId($ip, $ipStr);
 		$session = ViolationSession::where([
-			'ip' => $violationIp->id,
+			'ip' => $ipId,
 			'userKey' => $userKey
 		])
 		->orderBy('createdOn', 'desc')
@@ -73,13 +86,13 @@ class ViolationPagesPerSessionController extends ViolationController {
 		if (empty($session))
 		{
 			//create new session
-			$session = self::CreateSession($violationIp->id, $userKey);
+			$session = self::CreateSession($ipId, $userKey);
 		}
 		//check if session is more than the allowed session interval time (continuation of session)
 		else if (time() - strtotime($session->updatedOn) >=  self::SessionTimeout)
 		{
 			//session expired, create/update into new session record
-			$session = self::CreateSession($violationIp->id, $userKey);
+			$session = self::CreateSession($ipId, $userKey);
 		}
 		//session is still active, +1 to session's pages count, then check if we've exceeded the limit
 		else
