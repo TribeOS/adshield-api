@@ -12,7 +12,7 @@ use App\Model\ViolationSession;
  */
 class ViolationPagesPerMinuteController extends ViolationController {
 
-	const MaxPagesPerMinute = 15; //needs to be set from db
+	const MaxPagesPerMinute = 30; //needs to be set from db
 
 	/**
 	 * TODO:::
