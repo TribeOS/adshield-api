@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Adshield\Violations;
 use App\Http\Controllers\Adshield\Violations\ViolationController;
 use DB;
 use App\Model\ViolationIp;
+use App\Model\ViolationSession;
 
 /**
  * check the user agent for any known aggregator user agents
@@ -38,41 +39,32 @@ class ViolationPagesPerMinuteController extends ViolationController {
 	private static function hasExceed($userKey, $ip, $data, $max)
 	{
 		date_default_timezone_set("UTC");
-		$ipId = ViolationIp::where("ip", $ip)->first();
-		$lastDate = DB::select("
-			SELECT createdOn FROM trViolationLog
-			WHERE userKey = ? AND ip = ?
-			ORDER BY createdOn DESC
-			LIMIT 2, 1", [$userKey, $ipId->id]);
-
-		if (!empty($lastDate)) 
-		{
-			$lastDate = $lastDate[0]->createdOn;
-			if (strtotime($lastDate) < strtotime("1 minute ago")) self::removeLogs($ip, $userKey, $lastDate);
-		}
-		// check against logs for the past 1 minute if records exceed for this IP on this website
-		// only consider check after the last time the user has a pagesPerMinute violation, otherwise don't filter logs
-		$logCount = DB::table("trViolationLog")
-			->join("trViolationIps", function($join) use($ip, $userKey) {
-				$join->on("trViolationIps.id", "=", "trViolationLog.ip")
-					->where("trViolationIps.ip", "=", $ip)
-					->where("trViolationLog.userKey", "=", $userKey);
-			})
-			->where("trViolationLog.createdOn", ">=", "DATE_SUB(NOW(), INTERVAL 1 MINUTE)")
+		$sessionId = self::GetSession();
+		$violationSession = ViolationSession::where("id", $sessionId)->first();
+		//get total pages (or request) for this session
+		$totalPages = DB::table("trViolationLog")
+			->where("sessionId", $sessionId)
 			->count();
+		//get total time elapsed
+		$totalMinutes = time() - strtotime($violationSession->createdOn); //get the difference in Seconds
+		$totalMinutes = ceil($totalMinutes / 60); //convert it to Minutes
+		if ($totalMinutes < 1) $totalMinutes = 1;
+		//get average page per minute
+		$pagePerMinute = $totalPages / $totalMinutes;
 
 		//if user has exceeded, lets remove its logs from the database
 		//and issue a ViolationLog for exceeding the pages per minute rule
-		if ($logCount > $max) 
+		if ($pagePerMinute > $max) 
 		{
-			//TODO: confirm if we need to delete logs
-			// self::removeLogs($ip, $userKey);
 			return true;
 		}
 
 		return false;
 	}
 
+	/**
+	 * do we need to remove all logs or just leave it there?
+	 */
 	private static function removeLogs($ip, $userKey, $lastDate=null)
 	{
 		$where = '';

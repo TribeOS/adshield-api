@@ -6,6 +6,8 @@ use App\Http\Controllers\Adshield\Violations\ViolationController;
 use DB;
 use Request;
 
+use App\Http\Controllers\Adshield\Violations\ViolationPagesPerSessionController;
+
 /**
  * MAIN handler for checking violations.
  * this will handle the call made by our JS library
@@ -40,8 +42,10 @@ class ViolationCheckController extends ViolationController {
 			} catch (\Exception $e) {}
 		}
 
+		//start the session (this is used on pages per minute and pages per session functions/checks and logs)
+		ViolationPagesPerSessionController::StartSession($ip['binary'], $userKey);
 		//try to Log traffic here as well for monitoring pages per minute and pages per session?
-		$this->LogRequest($ip['binary'], $ip['string'], $userKey);
+		$this->LogRequest($ip['binary'], $ip['string'], $userKey, $info);
 		//=======================
 
 		$violations = [];
@@ -58,7 +62,6 @@ class ViolationCheckController extends ViolationController {
 
 	}
 
-	
 
 	/**
 	 * compose command/response for JS lib to follow
@@ -69,7 +72,6 @@ class ViolationCheckController extends ViolationController {
 		$config = $this->GetConfig($userKey);
 		//get the config for that violation
 		//return signal/action for JS to interpret and perform frontend functions
-
 		return null;
 	}
 

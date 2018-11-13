@@ -11,6 +11,7 @@ use App\Model\ViolationIp;
 use App\Model\UserConfig;
 use App\Model\ViolationRequestLog;
 use DB;
+use Session;
 
 use App\Http\Controllers\Adshield\Violations\ViolationUserAgentController;
 use App\Http\Controllers\Adshield\Violations\ViolationIPController;
@@ -39,6 +40,9 @@ class ViolationController extends BaseController {
 	const V_AGGREGATOR_UA = 'AGGREGATOR_UA';
 	const V_KNOWN_VIOLATOR_AUTO_TOOL = 'KNOWN_VIOLATOR_AUTO_TOOL';
 	const V_NONE = 'none'; //pass this to logViolation()'s violationType to perform other passive checks only
+
+	//session name for storing cross object data
+	const SESSION_ID_NAME = 'V_SESSION_NAME_NEEDED';
 
 	//we use this to indicate if the log has created a new violation record and/or new info record
 	private $newViolationInfoRecord = false, $newViolationIp= false;
@@ -107,7 +111,8 @@ class ViolationController extends BaseController {
 		$violations = [];
 
 		//check if IP has an existing violation
-		if (ViolationIPController::hasViolation($ip)) {
+		if (ViolationIPController::hasViolation($ip)) 
+		{
 			$newViolationId = $this->doLog($userKey, $ip, $ipStr, self::V_KNOWN_VIOLATOR, $data);
 			$violations[] = self::V_KNOWN_VIOLATOR;
 		}
@@ -116,13 +121,15 @@ class ViolationController extends BaseController {
 		//check if useragent has an existing violation
 		if (ViolationUserAgentController::hasViolation(
 				isset($data['userAgent']) ? $data['userAgent'] : '', $newViolationId)
-			) {
+			) 
+		{
 			$this->doLog($userKey, $ip, $ipStr, self::V_KNOWN_VIOLATOR_UA, $data);
 			$violations[] = self::V_KNOWN_VIOLATOR_UA;
 		}
 
 		//check if IP belongs to a data center IP range
-		if (ViolationDataCenterController::hasViolation($ip)) {
+		if (ViolationDataCenterController::hasViolation($ip)) 
+		{
 			$this->doLog($userKey, $ip, $ipStr, self::V_KNOWN_DC, $data);
 			$violations[] = self::V_KNOWN_DC;
 		}
@@ -130,7 +137,8 @@ class ViolationController extends BaseController {
 		//check for blocked country
 		if (ViolationJSCheckFailedController::hasViolation(
 				isset($data['jsCheck']) ? $data['jsCheck'] : false)
-			) {
+			) 
+		{
 			$this->doLog($userKey, $ip, $ipStr, self::V_JS_CHECK_FAILED, $data);
 			$violations[] = self::V_JS_CHECK_FAILED;
 		}
@@ -138,7 +146,8 @@ class ViolationController extends BaseController {
 		//check for blocked country
 		if (ViolationBlockedCountryController::hasViolation(
 				isset($data['country']) ? $data['country'] : '')
-			) {
+			) 
+		{
 			$this->doLog($userKey, $ip, $ipStr, self::V_BLOCKED_COUNTRY, $data);
 			$violations[] = self::V_BLOCKED_COUNTRY;
 		}
@@ -146,25 +155,36 @@ class ViolationController extends BaseController {
 		//check for suspiciouse user agent
 		if (ViolationSuspiciousUAController::hasViolation(
 				isset($data['userAgent']) ? $data['userAgent'] : '')
-			) {
+			) 
+		{
 			$this->doLog($userKey, $ip, $ipStr, self::V_SUSPICIOUS_UA, $data);
 			$violations[] = self::V_SUSPICIOUS_UA;
 		}
 
 		//check browser integrity
-		if (ViolationBrowserIntegrityCheckController::hasViolation($data)) {
+		if (ViolationBrowserIntegrityCheckController::hasViolation($data)) 
+		{
 			$this->doLog($userKey, $ip, $ipStr, self::V_BROWSER_INTEGRITY, $data);
 			$violations[] = self::V_BROWSER_INTEGRITY;
 		}
 
 		//check aggregator user agent
-		if (ViolationAggregatorUserAgentController::hasViolation($data)) {
+		if (ViolationAggregatorUserAgentController::hasViolation($data)) 
+		{
 			$this->doLog($userKey, $ip, $ipStr, self::V_AGGREGATOR_UA, $data);
 			$violations[] = self::V_AGGREGATOR_UA;
 		}
 
+		//check pages per session
+		if (ViolationPagesPerSessionController::hasViolation($userKey, $ip, $data, $this->config)) 
+		{
+			$this->doLog($userKey, $ip, $ipStr, self::V_PAGES_PER_SESSION_EXCEED, $data);
+			$violations[] = self::V_PAGES_PER_SESSION_EXCEED;
+		}
+
 		//check pages per minute 
-		if (ViolationPagesPerMinuteController::hasViolation($userKey, $ip, $data, $this->config)) {
+		if (ViolationPagesPerMinuteController::hasViolation($userKey, $ip, $data, $this->config)) 
+		{
 			$this->doLog($userKey, $ip, $ipStr, self::V_PAGES_PER_MINUTE_EXCEED, $data);
 			$violations[] = self::V_PAGES_PER_MINUTE_EXCEED;
 		}
@@ -179,18 +199,10 @@ class ViolationController extends BaseController {
 
 
 	/**
-	 * performs the actual saving of log
-	 * @param  [type] $userKey       [description]
-	 * @param  [type] $ip            [description]
-	 * @param  [type] $ipStr         [description]
-	 * @param  [type] $violationType [description]
-	 * @param  [type] $data          [description]
-	 * @return [type]                [description]
+	 * check if info exists, if so use its id. otherwise create new entry.
 	 */
-	private function doLog($userKey, $ip, $ipStr, $violationType, $data)
+	private function getInfoId($data)
 	{
-		$infoId = 0;
-		//check if info exists, if so use its id. otherwise create new entry.
 		$info = DB::table("trViolationInfo")
 			->where([
 				'userAgent' => !empty($data['userAgent']) ? $data['userAgent'] : '',
@@ -210,7 +222,21 @@ class ViolationController extends BaseController {
 			$info->save();
 			$this->newViolationInfoRecord = true;
 		}
-		$infoId = $info->id;
+		return $info->id;
+	}
+
+	/**
+	 * performs the actual saving of log
+	 * @param  [type] $userKey       [description]
+	 * @param  [type] $ip            [description]
+	 * @param  [type] $ipStr         [description]
+	 * @param  [type] $violationType [description]
+	 * @param  [type] $data          [description]
+	 * @return [type]                [description]
+	 */
+	private function doLog($userKey, $ip, $ipStr, $violationType, $data)
+	{
+		$infoId = $this->getInfoId($data);
 
 		//store violation ip if non-existent
 		$violationIp = ViolationIp::where('ip', $ip)->first();
@@ -248,8 +274,9 @@ class ViolationController extends BaseController {
 	}
 
 
-	protected function LogRequest($ipBinary, $ipStr, $userKey)
+	protected function LogRequest($ipBinary, $ipStr, $userKey, $data)
 	{
+		$infoId = $this->getInfoId($data);
 		//store violation ip if non-existent
 		$ip = ViolationIp::where('ip', $ipBinary)->first();
 		if (empty($ip))
@@ -260,10 +287,28 @@ class ViolationController extends BaseController {
 			$ip->save();
 		}
 		$log = new ViolationRequestLog();
-		$log->ip = $ip->id;
 		$log->createdOn = gmdate("Y-m-d H:i:s");
-		$log->userKey = $userKey;
+		$log->sessionId = self::GetSession();
+		$log->infoId = $infoId;
 		$log->save();
+	}
+
+	/**
+	 * sets/stores the ViolationSessionID
+	 * this is used by pages per minute and pages per session functions
+	 */
+	public static function SetSession($sessionId)
+	{
+		session([self::SESSION_ID_NAME => $sessionId]);
+	}
+
+	/**
+	 * gets the stored violation session ID
+	 * this is used by pages per minute and pages per session functions
+	 */
+	public static function GetSession()
+	{
+		return session(self::SESSION_ID_NAME);
 	}
 
 }
