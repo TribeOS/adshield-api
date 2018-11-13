@@ -59,7 +59,7 @@ class ViolationPagesPerSessionController extends ViolationController {
 		return $session;
 	}
 
-	private function GetIpId($ipBinary, $ipStr)
+	private static function GetIpId($ipBinary, $ipStr)
 	{
 		$ip = ViolationIp::where('ip', $ipBinary)->first();
 		if (empty($ip))
