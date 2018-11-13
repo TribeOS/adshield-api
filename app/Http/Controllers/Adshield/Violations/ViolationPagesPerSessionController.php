@@ -15,7 +15,7 @@ date_default_timezone_set("UTC");
  */
 class ViolationPagesPerSessionController extends ViolationController {
 
-	const MaxPagesPerSession = 30; //needs to be set from db
+	const MaxPagesPerSession = 60; //needs to be set from db
 	const SessionTimeout = 300; //how long (in seconds) is the allowed interval for each request to be considered as a new session
 
 	/**
@@ -48,6 +48,11 @@ class ViolationPagesPerSessionController extends ViolationController {
 	}
 
 
+	/**
+	 * creates a session record 
+	 * @param [type] $ipId    [description]
+	 * @param [type] $userKey [description]
+	 */
 	public static function CreateSession($ipId, $userKey)
 	{
 		$session = new ViolationSession();
@@ -59,6 +64,12 @@ class ViolationPagesPerSessionController extends ViolationController {
 		return $session;
 	}
 
+
+	/**
+	 * gets the IP id if it already exists, creates if it not
+	 * @param [type] $ipBinary [description]
+	 * @param [type] $ipStr    [description]
+	 */
 	private static function GetIpId($ipBinary, $ipStr)
 	{
 		$ip = ViolationIp::where('ip', $ipBinary)->first();
@@ -72,6 +83,14 @@ class ViolationPagesPerSessionController extends ViolationController {
 		return $ip->id;
 	}
 
+
+	/**
+	 * starts the session for this user/website pair
+	 * we create a session OR continue a pre existing session given it hasn't expired yet
+	 * @param [type] $ip      [description]
+	 * @param [type] $ipStr   [description]
+	 * @param [type] $userKey [description]
+	 */
 	public static function StartSession($ip, $ipStr, $userKey)
 	{
 		$ipId = self::GetIpId($ip, $ipStr);
@@ -103,6 +122,7 @@ class ViolationPagesPerSessionController extends ViolationController {
 		}
 		self::SetSession($session->id);
 	}
+
 
 
 }
