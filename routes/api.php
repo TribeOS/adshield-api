@@ -59,7 +59,7 @@ Route::post('checkurl', ['as' => 'AdshieldCheckUrl', 'uses' => 'Adshield\ApiRefe
 /**
  * violations api endpoint
  */
-Route::any('v/{userKey?}', ['as' => 'CheckViolation', 'uses' => 'Adshield\Violations\ViolationCheckController@Check'])
+Route::post('v/{userKey?}', ['as' => 'CheckViolation', 'uses' => 'Adshield\Violations\ViolationCheckController@Check'])
 	->where('userKey', '[a-zA-Z0-9]+')->middleware('api.access');
 
 /**
