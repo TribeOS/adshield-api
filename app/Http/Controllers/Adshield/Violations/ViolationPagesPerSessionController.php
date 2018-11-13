@@ -26,7 +26,7 @@ class ViolationPagesPerSessionController extends ViolationController {
 	/**
 	 * check if user has exceeded the pages per minute limit
 	 */
-	public static function hasViolation($userKey, $ip, $data, $config)
+	public static function hasViolation($config)
 	{
 		$max = self::MaxPagesPerSession;
 		if (!empty($config['RequestStat']['pagesPerSession'])) $max = $config['RequestStat']['pagesPerSession'];
