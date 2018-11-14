@@ -179,6 +179,13 @@ class ViolationController extends BaseController {
 			$violations[] = self::V_AGGREGATOR_UA;
 		}
 
+		//check if this is an automation tool
+		if (ViolationAutomationToolController::hasViolation($data)) 
+		{
+			$this->doLog($userKey, $ip, $ipStr, self::V_KNOWN_VIOLATOR_AUTO_TOOL, $data);
+			$violations[] = self::V_KNOWN_VIOLATOR_AUTO_TOOL;
+		}
+
 		//check pages per session
 		if (ViolationPagesPerSessionController::hasViolation($this->config)) 
 		{

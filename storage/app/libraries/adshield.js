@@ -612,6 +612,7 @@ AdShield = function()
             userAgent : navigator.userAgent,
             jsCheck : false,
             badBot : false,
+            isAuto : false,
         }
         if (refererUrl.indexOf("://") > -1) { domain = refererUrl.split('/')[2]; }
         else { domain = refererUrl.split('/')[0]; }
@@ -623,6 +624,9 @@ AdShield = function()
 
         try {
             arg.badBot = self.isBadBot();
+        } catch (e) {}
+        try {
+            arg.isAuto : self.isAuto();
         } catch (e) {}
 
         self.httpPost(self.urls.vlog + "/" + self.UserKey, arg, function(response) {
@@ -673,6 +677,22 @@ AdShield = function()
         // let ua = navigator.userAgent;
         
         // return ua.match(exr) !== null;
+        return false;
+    }
+
+    /**
+     * try to check common signatures for automation tools
+     * @return {Boolean} [description]
+     */
+    self.isAuto = function() {
+        if (window.callPhantom || window._phantom) return true;
+        if (!(navigator.plugins instanceof PluginArray) || navigator.plugins.length == 0) return true;
+        if (/PhantomJS/.test(window.navigator.userAgent)) return true;
+        if (!Function.prototype.bind) return true;
+        if (Function.prototype.bind.toString().replace(/bind/g, 'Error') != Error.toString()) return true;
+        if (Function.prototype.toString.toString().replace(/toString/g, 'Error') != Error.toString()) return true;
+        if (navigator.webdriver == true) return true;
+        if (window.document.documentElement.getAttribute("webdriver")) return true;
         return false;
     }
 
