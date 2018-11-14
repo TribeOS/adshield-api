@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 
+date_default_timezone_set("UTC");
 
 class ApiStatController extends BaseController
 {
