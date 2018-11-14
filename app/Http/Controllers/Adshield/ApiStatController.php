@@ -189,23 +189,29 @@ class ApiStatController extends BaseController
 	 * 2. get transactions count for every given interval (total every 2 seconds)
 	 */
 	public static function GetTotalTransactionsSince(
-		$userKey=null,$timeElapsed="2 seconds ago", $returnData=false, $interval=2
+		$userKey=null, $timeElapsed="2 seconds ago", $returnData=false, $interval=2
 	)
 	{
 		$params = [
 			gmdate("Y-m-d H:i:s", strtotime($timeElapsed)),
 			gmdate("Y-m-d H:i:s", strtotime("now")),
 		];
-		$data = DB::table("asStat")->whereBetween("date_added", $params)
-			->select(DB::raw("COUNT(*) AS total"));
+		// $data = DB::table("asStat")->whereBetween("date_added", $params)
+		// 	->select(DB::raw("COUNT(*) AS total"));
+		$data = DB::table("trViolationLog")
+			->join("trViolationSession", "trViolationSession.id", "=", "trViolationLog.sessionId")
+			->whereBetween("trViolationLog.createdOn", $params)
+			->selectRaw("COUNT(*) AS total");
 
 		if ($returnData)
 		{
-			$data->select(DB::RAW("COUNT(*) AS total, UNIX_TIMESTAMP(date_added) DIV $interval AS d, TIME(date_added) AS dOn"))
+			// $data->selectRaw("COUNT(*) AS total, UNIX_TIMESTAMP(date_added) DIV $interval AS d, TIME(date_added) AS dOn")
+			$data->selectRaw("COUNT(*) AS total, UNIX_TIMESTAMP(trViolationLog.createdOn) DIV $interval AS d, TIME(trViolationLog.createdOn) AS dOn")
 				->groupBy(DB::RAW("d"));
 		}
 
-		if (!empty($userKey)) $data->where("userKey", $userKey);
+		// if (!empty($userKey)) $data->where("userKey", $userKey);
+		if (!empty($userKey)) $data->where("trViolationSession.userKey", $userKey);
 
 		if ($returnData)
 		{
