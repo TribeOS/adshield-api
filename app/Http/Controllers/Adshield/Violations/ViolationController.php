@@ -291,6 +291,7 @@ class ViolationController extends BaseController {
 		$log->createdOn = gmdate("Y-m-d H:i:s");
 		$log->sessionId = self::GetSession();
 		$log->infoId = $infoId;
+		$log->url = isset($data['visitUrl']) ? $data['visitUrl'] : '';
 		$log->save();
 	}
 

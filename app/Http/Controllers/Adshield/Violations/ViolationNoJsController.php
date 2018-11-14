@@ -20,6 +20,7 @@ class ViolationNoJsController extends ViolationController {
 			'userAgent' => empty($_SERVER['HTTP_USER_AGENT']) ? '' : $_SERVER['HTTP_USER_AGENT'],
 			'fullUrl' => '',
 			'jsCheck' => true,
+			'userKey' => $userKey
 		];
 		if (!empty($ip['string']))
 		{
@@ -29,6 +30,9 @@ class ViolationNoJsController extends ViolationController {
 				$info['city'] = $ipInfo['city'];
 			} catch (\Exception $e) {}
 		}
+
+		ViolationPagesPerSessionController::StartSession($ip['binary'], $ip['string'], $userKey);
+		$this->LogRequest($ip['binary'], $ip['string'], $userKey, $info);
 
 		//save user info and violation
 		try {
