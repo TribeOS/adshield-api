@@ -21,6 +21,7 @@ use App\Http\Controllers\Adshield\Violations\ViolationSuspiciousUAController;
 use App\Http\Controllers\Adshield\Violations\ViolationBrowserIntegrityCheckController;
 use App\Http\Controllers\Adshield\Violations\ViolationPagesPerMinuteController;
 use App\Http\Controllers\Adshield\Violations\ViolationSessionLengthExceedController;
+use App\Http\Controllers\Adshield\Violations\ViolationAutomationToolController;
 
 
 /**
