@@ -28,7 +28,6 @@ class ViolationUserAgentController extends ViolationController {
 					->where("trViolations.id", "<>", $newViolationId)
 					->whereIn("trViolations.violation", [
 						self::V_BROWSER_INTEGRITY,
-						self::V_BLOCKED_COUNTRY,
 						self::V_JS_CHECK_FAILED
 					]);
 			})
