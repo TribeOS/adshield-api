@@ -189,13 +189,13 @@ class ApiStatController extends BaseController
 	 * 2. get transactions count for every given interval (total every 2 seconds)
 	 */
 	public static function GetTotalTransactionsSince(
-		$userKey=null, $timeElapsed="2 seconds ago", $returnData=false, $interval=2
+		$userKey=null, $timeElapsed="3 seconds ago", $returnData=false, $interval=2
 	)
 	{
 		date_default_timezone_set("UTC");
 		$params = [
 			gmdate("Y-m-d H:i:s", strtotime($timeElapsed)),
-			gmdate("Y-m-d H:i:s", time()),
+			gmdate("Y-m-d H:i:s", time())
 		];
 		// $data = DB::table("asStat")->whereBetween("date_added", $params)
 		// 	->select(DB::raw("COUNT(*) AS total"));
