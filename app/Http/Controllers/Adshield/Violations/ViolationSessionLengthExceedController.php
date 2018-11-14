@@ -12,7 +12,7 @@ use App\Model\ViolationSession;
  */
 class ViolationSessionLengthExceedController extends ViolationController {
 
-	const MaxSessionLength = 900; //maximum allowed session length in seconds
+	const MaxSessionLength = 1800; //maximum allowed session length in seconds
 
 	/**
 	 * TODO:::
