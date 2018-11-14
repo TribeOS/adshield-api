@@ -626,7 +626,7 @@ AdShield = function()
             arg.badBot = self.isBadBot();
         } catch (e) {}
         try {
-            arg.isAuto : self.isAuto();
+            arg.isAuto = self.isAuto();
         } catch (e) {}
 
         self.httpPost(self.urls.vlog + "/" + self.UserKey, arg, function(response) {
