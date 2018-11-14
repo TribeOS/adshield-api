@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 
-date_default_timezone_set("UTC");
 
 class ApiStatController extends BaseController
 {
@@ -193,9 +192,10 @@ class ApiStatController extends BaseController
 		$userKey=null, $timeElapsed="2 seconds ago", $returnData=false, $interval=2
 	)
 	{
+		date_default_timezone_set("UTC");
 		$params = [
 			gmdate("Y-m-d H:i:s", strtotime($timeElapsed)),
-			gmdate("Y-m-d H:i:s", strtotime("now")),
+			gmdate("Y-m-d H:i:s", time()),
 		];
 		// $data = DB::table("asStat")->whereBetween("date_added", $params)
 		// 	->select(DB::raw("COUNT(*) AS total"));
