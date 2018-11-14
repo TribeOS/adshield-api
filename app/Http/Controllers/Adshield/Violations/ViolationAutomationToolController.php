@@ -41,7 +41,7 @@ class ViolationAutomationToolController extends ViolationController {
 		$acceptEncoding = isset($headers['Accept-Encoding']) ? $headers['Accept-Encoding'] : '';
 		if (strtolower($acceptEncoding) == 'gzip') $score ++;
 		$userAgent = isset($headers['User-Agent']) ? $headers['User-Agent'] : '';
-		if (strpos('PhantomJS', $userAgent) !== false) $score ++;
+		if (strpos($userAgent, 'PhantomJS') !== false) $score ++;
 
 		return $score > 2;
 	}
