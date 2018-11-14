@@ -4,12 +4,14 @@ namespace App\Http\Controllers\Adshield\Violations;
 
 use App\Http\Controllers\Adshield\Violations\ViolationController;
 use DB;
+use Request;
 
 /**
  * Class for checking if request/origin came from an automation tool like
  * phantomjs, slimerjs, selenium, etc...
  */
 class ViolationAutomationToolController extends ViolationController {
+
 
 	/**
 	 * check if request triggers any known automation tool signature
@@ -34,16 +36,16 @@ class ViolationAutomationToolController extends ViolationController {
 	private static function isPhantomJS($data)
 	{
 		$score = 0;
-		$headers = getallheaders();
-		if (array_search('Host', array_keys($headers)) == count($headers) - 1) $score ++;
-		$connection = isset($headers['Connection']) ? $headers['Connection'] : '';
+		$headers = Request::header();
+		if (array_search('host', array_keys($headers)) == count($headers) - 1) $score ++;
+		$connection = Request::header('connection', '');
 		if ($connection !== strtolower($connection) && $connection !== strtoupper($connection)) $score ++;
-		$acceptEncoding = isset($headers['Accept-Encoding']) ? $headers['Accept-Encoding'] : '';
+		$acceptEncoding = Request::header('accept-encoding', '');
 		if (strtolower($acceptEncoding) == 'gzip') $score ++;
-		$userAgent = isset($headers['User-Agent']) ? $headers['User-Agent'] : '';
+		$userAgent = Request::header('user-agent', '');
 		if (strpos($userAgent, 'PhantomJS') !== false) $score ++;
-
 		return $score > 2;
 	}
+
 
 }
