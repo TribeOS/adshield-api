@@ -44,7 +44,7 @@ class ViolationAutomationToolController extends ViolationController {
 		if (strtolower($acceptEncoding) == 'gzip') $score ++;
 		$userAgent = Request::header('user-agent', '');
 		if (strpos($userAgent, 'PhantomJS') !== false) $score ++;
-		return $score > 2;
+		return $score == 4;
 	}
 
 
