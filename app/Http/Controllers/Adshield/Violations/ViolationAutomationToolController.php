@@ -38,7 +38,8 @@ class ViolationAutomationToolController extends ViolationController {
 		if (array_search('Host', array_keys($headers)) == count($headers) - 1) $score ++;
 		$connection = isset($headers['Connection']) ? $headers['Connection'] : '';
 		if ($connection !== strtolower($connection) && $connection !== strtoupper($connection)) $score ++;
-		if (strtolower($headers['Accept-Encoding']) == 'gzip') $score ++;
+		$acceptEncoding = isset($headers['Accept-Encoding']) ? $headers['Accept-Encoding'] : '';
+		if (strtolower($acceptEncoding) == 'gzip') $score ++;
 		if (strpos('PhantomJS', $headers['User-Agent']) !== false) $score ++;
 
 		return $score > 2;
