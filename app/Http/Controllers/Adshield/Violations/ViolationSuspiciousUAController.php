@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Adshield\Violations;
 
 use App\Http\Controllers\Adshield\Violations\ViolationController;
 use DB;
+use Request;
 
 /**
  * checks the passed user agent for irregularities
