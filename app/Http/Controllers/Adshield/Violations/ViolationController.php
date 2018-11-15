@@ -45,7 +45,7 @@ class ViolationController extends BaseController {
 	const V_SESSION_LENGTH_EXCEED = 'SESSION_LENGTH_EXCEED';
 	const V_BAD_UA = 'BAD_USER_AGENT';
 	const V_UNCLASSIFIED_UA = 'UNCLASSIFIED_USER_AGENT';
-	const V_IS_BOT = 'IS_BOT';
+	const V_IS_BOT = 'AUTOMATED_BROWSER';
 	const V_NONE = 'none'; //pass this to logViolation()'s violationType to perform other passive checks only
 
 	//session name for storing cross object data
