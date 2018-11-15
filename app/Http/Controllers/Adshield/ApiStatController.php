@@ -186,7 +186,7 @@ class ApiStatController extends BaseController
 
 	/**
 	 * 1. get count of all stats that were saved for the past x seconds
-	 * 2. get transactions count for every given interval (total every 2 seconds)
+	 * 2. get transactions count for every given interval (total every x seconds)
 	 */
 	public static function GetTotalTransactionsSince(
 		$userKey=null, $timeElapsed="3 seconds ago", $returnData=false, $interval=2
