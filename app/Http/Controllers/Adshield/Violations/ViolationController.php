@@ -44,6 +44,7 @@ class ViolationController extends BaseController {
 	const V_KNOWN_VIOLATOR_AUTO_TOOL = 'KNOWN_VIOLATOR_AUTO_TOOL';
 	const V_SESSION_LENGTH_EXCEED = 'SESSION_LENGTH_EXCEED';
 	const V_BAD_UA = 'BAD_USER_AGENT';
+	const V_UNCLASSIFIED_UA = 'UNCLASSIFIED_USER_AGENT';
 	const V_NONE = 'none'; //pass this to logViolation()'s violationType to perform other passive checks only
 
 	//session name for storing cross object data
@@ -58,6 +59,13 @@ class ViolationController extends BaseController {
 
 	//website's config
 	protected $config = [];
+
+	//flag for indicating current traffic is/was considered a bot (useful for checks that depends on whether a traffic is a bot or not)
+	private $isBot = false;
+
+	//current user agent classification based on ongoing checks. (used by checker for unclassifiedUserAgent: see logViolation() code
+	private $userAgentClassification = null;
+
 
 	function __construct() {
 		//used for testing data
@@ -132,6 +140,7 @@ class ViolationController extends BaseController {
 		{
 			$this->doLog($userKey, $ip, $ipStr, self::V_KNOWN_VIOLATOR_UA, $data);
 			$violations[] = self::V_KNOWN_VIOLATOR_UA;
+			$this->userAgentClassification = self::V_KNOWN_VIOLATOR_UA;
 		}
 
 		//check if IP belongs to a data center IP range
@@ -146,6 +155,7 @@ class ViolationController extends BaseController {
 				isset($data['jsCheck']) ? $data['jsCheck'] : false)
 			) 
 		{
+			$this->isBot = true;
 			$this->doLog($userKey, $ip, $ipStr, self::V_JS_CHECK_FAILED, $data);
 			$violations[] = self::V_JS_CHECK_FAILED;
 		}
@@ -171,8 +181,17 @@ class ViolationController extends BaseController {
 		//check browser integrity
 		if (ViolationBrowserIntegrityCheckController::hasViolation($data)) 
 		{
+			$this->isBot = true;
 			$this->doLog($userKey, $ip, $ipStr, self::V_BROWSER_INTEGRITY, $data);
 			$violations[] = self::V_BROWSER_INTEGRITY;
+		}
+
+		//check if this is an automation tool
+		if (ViolationAutomationToolController::hasViolation($data)) 
+		{
+			$this->isBot = true;
+			$this->doLog($userKey, $ip, $ipStr, self::V_KNOWN_VIOLATOR_AUTO_TOOL, $data);
+			$violations[] = self::V_KNOWN_VIOLATOR_AUTO_TOOL;
 		}
 
 		//check aggregator user agent
@@ -180,20 +199,15 @@ class ViolationController extends BaseController {
 		{
 			$this->doLog($userKey, $ip, $ipStr, self::V_AGGREGATOR_UA, $data);
 			$violations[] = self::V_AGGREGATOR_UA;
+			$this->userAgentClassification = self::V_AGGREGATOR_UA;
 		}
 
 		//check if bad user agent
 		if (ViolationBadAgentController::hasViolation($data)) 
 		{
-			$this->doLog($userKey, $ip, $ipStr, self::V_AGGREGATOR_UA, $data);
-			$violations[] = self::V_AGGREGATOR_UA;
-		}
-
-		//check if this is an automation tool
-		if (ViolationAutomationToolController::hasViolation($data)) 
-		{
-			$this->doLog($userKey, $ip, $ipStr, self::V_KNOWN_VIOLATOR_AUTO_TOOL, $data);
-			$violations[] = self::V_KNOWN_VIOLATOR_AUTO_TOOL;
+			$this->doLog($userKey, $ip, $ipStr, self::V_BAD_UA, $data);
+			$violations[] = self::V_BAD_UA;
+			$this->userAgentClassification = self::V_BAD_UA;
 		}
 
 		//check pages per session
@@ -217,7 +231,16 @@ class ViolationController extends BaseController {
 			$violations[] = self::V_SESSION_LENGTH_EXCEED;
 		}
 
-		if ($violationType !== self::V_NONE) {
+		//log/check if this is an unclassified user agent (probably bot but UA didn't fit any checks we have)
+		if ($this->isBot && $this->userAgentClassification == null)
+		{
+			$this->doLog($userKey, $ip, $ipStr, self::V_UNCLASSIFIED_UA, $data);
+			$violations[] = self::V_UNCLASSIFIED_UA;
+		}
+
+		//indicate if we want to save the original Class caller/request's Log
+		if ($violationType !== self::V_NONE)
+		{
 			$this->doLog($userKey, $ip, $ipStr, $violationType, $data);
 			$violations[] = $violationType;
 		}

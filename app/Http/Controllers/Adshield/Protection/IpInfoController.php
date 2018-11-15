@@ -43,6 +43,11 @@ class IpInfoController extends BaseController
 			$info = json_decode($info->rawInfo, true);
 		}
 
+		if (!isset($info['city'])) $info['city'] = '';
+		if (!isset($info['country'])) $info['country'] = '';
+		if (!isset($info['org'])) $info['org'] = '';
+		if (!isset($info['isp'])) $info['isp'] = '';
+
 		return $info;
 	}
 

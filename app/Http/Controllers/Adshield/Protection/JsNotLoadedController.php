@@ -14,6 +14,11 @@ use App\Model\Violation;
 class JsNotLoadedController extends BaseController
 {
 
+	private $labels = [
+		ViolationController::V_KNOWN_VIOLATOR_AUTO_TOOL => 'Automated Browser',
+		ViolationController::V_SESSION_LENGTH_EXCEED => 'Session Length Exceed'
+	];
+
 	public function getList()
 	{
 		$page = Input::get('page', 0);
@@ -53,25 +58,30 @@ class JsNotLoadedController extends BaseController
 					->where("trViolationIps.ip", "=", inet_pton($ip));
 			})
 			->select(DB::raw("violation, COUNT(*) AS total"))
-			->whereIn("violation", [ViolationController::V_NO_JS])
+			->whereIn("violation", [
+				ViolationController::V_KNOWN_VIOLATOR_AUTO_TOOL,
+				ViolationController::V_SESSION_LENGTH_EXCEED,
+			])
 			->groupBy("violation")
 			->get();
 
-		//TEST
-		$data = [$violation[0]->total, 0];
-
 		$info = IpInfoController::GetIpInfo($ip);
 		$graphData = [
-			'data' => $data,
-			'label' => ['Automated Browsers', 'Rate Unlimited'],
+			'data' => [],
+			'label' => [],
 			'info' => [
 				'ip' => $ip,
-				'loc' => (isset($info['city']) ? $info['city'] : '') . ', ' . (isset($info['country']) ? $info['country'] : ''),
-				'org' => isset($info['org']) ? $info['org'] : '',
-				'isp' => isset($info['isp']) ? $info['isp'] : ''
+				'loc' => $info['city'] . ', ' . $info['country'],
+				'org' => $info['org'],
+				'isp' => $info['isp']
 			]
 		];
 
+		foreach($violation as $v)
+		{
+			$graphData['data'][] = $v->total;
+			$graphData['label'][] = $this->labels[$v->violation];
+		}
 
 		return response()->json(['id'=>0, 'graphData' => $graphData]);
 	}

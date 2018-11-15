@@ -13,6 +13,10 @@ use App\Http\Controllers\Adshield\Violations\ViolationController;
 class KnownViolatorUserAgentController extends BaseController
 {
 
+	private $labels = [
+		ViolationController::V_KNOWN_VIOLATOR => 'Known Signatures'
+	];
+
 	public function getList()
 	{
 		$page = Input::get('page', 0);
@@ -51,18 +55,17 @@ class KnownViolatorUserAgentController extends BaseController
 				$join->on("trViolationIps.id", "=", "trViolations.ip")
 					->where("trViolationIps.ip", "=", inet_pton($ip));
 			})
-			->select(DB::raw("violation, COUNT(*) AS total"))
-			->whereIn("violation", [ViolationController::V_KNOWN_VIOLATOR_UA])
+			->selectRaw("violation, COUNT(*) AS total")
+			->whereIn("violation", [
+				ViolationController::V_KNOWN_VIOLATOR
+			])
 			->groupBy("violation")
 			->get();
 
-		//TEST
-		$data = [$violation[0]->total];
-
 		$info = IpInfoController::GetIpInfo($ip);
 		$graphData = [
-			'data' => $data,
-			'label' => ['Known Signatures'],
+			'data' => [],
+			'label' => [],
 			'info' => [
 				'ip' => $ip,
 				'loc' => $info['city'] . ', ' . $info['country'],
@@ -70,6 +73,12 @@ class KnownViolatorUserAgentController extends BaseController
 				'isp' => $info['isp']
 			]
 		];
+
+		foreach($violation as $v)
+		{
+			$graphData['data'][] = $v->total;
+			$graphData['label'][] = $this->labels[$v->violation];
+		}
 
 
 		return response()->json(['id'=>0, 'graphData' => $graphData]);

@@ -7,12 +7,17 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use DB;
 use Illuminate\Support\Facades\Input;
 
-use App\Http\Controllers\Adshield\ApiStatController;
 use App\Http\Controllers\Adshield\Violations\ViolationController;
 
 
 class IpViolatorListController extends BaseController
 {
+
+	private $labels = [
+		ViolationController::V_KNOWN_VIOLATOR => 'Identities', 
+		ViolationController::V_KNOWN_VIOLATOR_UA => 'Known Signatures', 
+		ViolationController::V_SESSION_LENGTH_EXCEED => 'Session Length Exceed'
+	];
 
 	public function getList()
 	{
@@ -44,6 +49,7 @@ class IpViolatorListController extends BaseController
 
 	public function getGraphData()
 	{
+
 		$filter = Input::get("filter", []);
 		$ip = $filter['ip'];
 
@@ -53,17 +59,18 @@ class IpViolatorListController extends BaseController
 					->where("trViolationIps.ip", "=", inet_pton($ip));
 			})
 			->select(DB::raw("violation, COUNT(*) AS total"))
-			->whereIn("violation", [ViolationController::V_KNOWN_VIOLATOR])
+			->whereIn("violation", [
+				ViolationController::V_KNOWN_VIOLATOR,
+				ViolationController::V_KNOWN_VIOLATOR_UA,
+				ViolationController::V_SESSION_LENGTH_EXCEED,
+			])
 			->groupBy("violation")
 			->get();
 
-		//TEST
-		$data = [$violation[0]->total, 0, 0];
-
 		$info = IpInfoController::GetIpInfo($ip);
 		$graphData = [
-			'data' => $data,
-			'label' => ['Identities', 'Known Signatures', 'Session Length Exceed'],
+			'data' => [],
+			'label' => [],
 			'info' => [
 				'ip' => $ip,
 				'loc' => $info['city'] . ', ' . $info['country'],
@@ -72,6 +79,11 @@ class IpViolatorListController extends BaseController
 			]
 		];
 
+		foreach($violation as $v)
+		{
+			$graphData['data'][] = $v->total;
+			$graphData['label'][] = $this->labels[$v->violation];
+		}
 
 		return response()->json(['id'=>0, 'graphData' => $graphData]);
 	}

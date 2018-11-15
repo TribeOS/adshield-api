@@ -7,65 +7,44 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 
-date_default_timezone_set("America/New_York");
+use App\Http\Controllers\Adshield\Violations\ViolationController;
 
 
 class BrowserIntegrityCheckController extends BaseController
 {
 
+	private $labels = [
+		ViolationController::V_KNOWN_VIOLATOR => 'Identities', 
+		ViolationController::V_KNOWN_VIOLATOR_UA => 'Known Signatures', 
+		ViolationController::V_SESSION_LENGTH_EXCEED => 'Session Length Exceed'
+	];
+	
 	public function getList()
 	{
-		// $page = Input::get('page', 0);
-		// $limit = Input::get('limit', 10);
-		// $sortBy = Input::get('sortBy', 'last_updated');
-		// $sortDir = Input::get('sortDir', 'DESC');
+		$page = Input::get('page', 0);
+		$limit = Input::get('limit', 10);
+		$filter = Input::get('filter', []);
 
-		// $filter = Input::get('filter', []);
+		$data = DB::table("trViolations")
+			->join("trViolationIps", "trViolationIps.id", "=", "trViolations.ip")
+			->select(DB::raw("ipStr AS ip, COUNT(*) as total"))
+			->groupBy('ipStr')
+			->where('violation', ViolationController::V_BROWSER_INTEGRITY)
+			->where('userKey', $filter['userKey'])
+			->orderBy('ipStr', 'asc');
 
-		// $data = DB::table("asListIp")
-		// 	->join('asStatInfo', 'asListIp.ip', '=', 'asStatInfo.ip')
-		// 	->leftJoin('asStat', function($join) use($filter) {
-		// 		$join->on('asStat.info_id', '=', 'asStatInfo.id');
-		// 		if (!empty($filter['duration']) && $filter['duration'] > 0)
-		// 		{
-		// 			$duration = $filter['duration'];
-		// 			$join->where("asStat.date_added", ">=", "DATE_SUB(NOW(), INTERVAL $duration DAY)");
-		// 		}
-		// 	})
-		// 	->select(DB::raw("asListIp.ip, COUNT(*) as total"))
-		// 	->take($limit)->skip($page * $limit)
-		// 	->groupBy('asListIp.ip')
-		// 	->orderBy($sortBy, $sortDir);
+		if (!empty($filter['duration']) && $filter['duration'] > 0)
+		{
+			$duration = $filter['duration'];
+			$data->where("createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
+		}
 
-		// if (!empty($filter['dateFrom']) && !empty($filter['dateTo']))
-		// 	$data->whereBetween("last_updated", [$filter['dateFrom'], $filter['dateTo']]);
+		$data = $data->paginate($limit);
+		$data->appends([
+			'limit' => $limit
+		]);
 
-		// if ($filter['status'] !== null) $data->where("status", $filter['status']);
-		// if (!empty($filter['ip']))
-		// {
-		// 	try {
-		// 		$ip = inet_pton($filter['ip']);
-		// 		$data->where("asListIp.ip", inet_pton($filter['ip']));
-		// 	} catch (Exception $e) {}
-		// }
-
-		// $data = $data->paginate($limit);
-		// foreach($data as $d)
-		// {
-		// 	$d->ip = ApiStatController::IPFromBinaryString($d->ip);
-		// }
-
-		// $data->appends([
-		// 	'sortBy' => $sortBy,
-		// 	'sortDir' => $sortDir,
-		// 	'limit' => $limit
-		// ]);
-		
-		$data = [];
-		$data = DummyDataController::GetIps(Input::get('limit', 10), Input::get('page', 1));
-
-		return response()->json(['id' => 0, 'listData' => $data])
-			->header('Content-Type', 'application/vnd.api+json');
+		return response()->json(['id' => 0, 'listData' => $data]);
 	}
 
 	public function getGraphData()
@@ -73,13 +52,24 @@ class BrowserIntegrityCheckController extends BaseController
 		$filter = Input::get("filter", []);
 		$ip = $filter['ip'];
 
-		//generate dummy data by random
-		$data = DummyDataController::IpGetGraphData(3);
+		$violation = DB::table("trViolations")
+			->join("trViolationIps", function($join) use($ip) {
+				$join->on("trViolationIps.id", "=", "trViolations.ip")
+					->where("trViolationIps.ip", "=", inet_pton($ip));
+			})
+			->select(DB::raw("violation, COUNT(*) AS total"))
+			->whereIn("violation", [
+				ViolationController::V_KNOWN_VIOLATOR,
+				ViolationController::V_KNOWN_VIOLATOR_UA,
+				ViolationController::V_SESSION_LENGTH_EXCEED,
+			])
+			->groupBy("violation")
+			->get();
 
 		$info = IpInfoController::GetIpInfo($ip);
 		$graphData = [
-			'data' => $data[$ip]['violations'],
-			'label' => ['Identities', 'Known Signatures', 'Session Length Exceeded'],
+			'data' => [],
+			'label' => [],
 			'info' => [
 				'ip' => $ip,
 				'loc' => $info['city'] . ', ' . $info['country'],
@@ -88,9 +78,13 @@ class BrowserIntegrityCheckController extends BaseController
 			]
 		];
 
+		foreach($violation as $v)
+		{
+			$graphData['data'][] = $v->total;
+			$graphData['label'][] = $this->labels[$v->violation];
+		}
 
-		return response()->json(['id'=>0, 'graphData' => $graphData])
-			->header('Content-Type', 'application/vnd.api+json');
+		return response()->json(['id'=>0, 'graphData' => $graphData]);
 	}
 	
 }

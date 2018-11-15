@@ -7,116 +7,54 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 
-date_default_timezone_set("America/New_York");
+use App\Http\Controllers\Adshield\Violations\ViolationController;
 
 
 class ProtectionOverviewController extends BaseController
 {
 
+	private $labels = [
+		ViolationController::V_KNOWN_VIOLATOR => 'Known Violators',
+		ViolationController::V_JS_CHECK_FAILED => 'Javascript Check Failed',
+		ViolationController::V_NO_JS => 'Javascript Not Loaded',
+		ViolationController::V_KNOWN_VIOLATOR_UA => 'Known Violator User Agent',
+		ViolationController::V_KNOWN_DC => 'Known Violator Data Center'
+	];
+
 	public function getList()
 	{
-		// $page = Input::get('page', 0);
-		// $limit = Input::get('limit', 10);
-		// $sortBy = Input::get('sortBy', 'last_updated');
-		// $sortDir = Input::get('sortDir', 'DESC');
-
-		// $filter = Input::get('filter', []);
-
-		// $data = DB::table("asListIp")
-		// 	->join('asStatInfo', 'asListIp.ip', '=', 'asStatInfo.ip')
-		// 	->leftJoin('asStat', function($join) use($filter) {
-		// 		$join->on('asStat.info_id', '=', 'asStatInfo.id');
-		// 		if (!empty($filter['duration']) && $filter['duration'] > 0)
-		// 		{
-		// 			$duration = $filter['duration'];
-		// 			$join->where("asStat.date_added", ">=", "DATE_SUB(NOW(), INTERVAL $duration DAY)");
-		// 		}
-		// 	})
-		// 	->select(DB::raw("asListIp.ip, COUNT(*) as total"))
-		// 	->take($limit)->skip($page * $limit)
-		// 	->groupBy('asListIp.ip')
-		// 	->orderBy($sortBy, $sortDir);
-
-		// if (!empty($filter['dateFrom']) && !empty($filter['dateTo']))
-		// 	$data->whereBetween("last_updated", [$filter['dateFrom'], $filter['dateTo']]);
-
-		// if ($filter['status'] !== null) $data->where("status", $filter['status']);
-		// if (!empty($filter['ip']))
-		// {
-		// 	try {
-		// 		$ip = inet_pton($filter['ip']);
-		// 		$data->where("asListIp.ip", inet_pton($filter['ip']));
-		// 	} catch (Exception $e) {}
-		// }
-
-		// $data = $data->paginate($limit);
-		// foreach($data as $d)
-		// {
-		// 	$d->ip = ApiStatController::IPFromBinaryString($d->ip);
-		// }
-
-		// $data->appends([
-		// 	'sortBy' => $sortBy,
-		// 	'sortDir' => $sortDir,
-		// 	'limit' => $limit
-		// ]);
-		
 	
-		$data = [];
-		$data = DummyDataController::GetIps(Input::get('limit', 10), Input::get('page', 1));
-
-		return response()->json(['id' => 0, 'listData' => $data])
-			->header('Content-Type', 'application/vnd.api+json');
 	}
 
 	public function getGraphData()
 	{
 		$filter = Input::get("filter", []);
-		//get stat access with the given ip.
-		// $data = DB::table('asStat')
-		// 	->join('asStatInfo', 'asStat.info_id', '=', 'asStatInfo.id')
-		// 	->join('asListIp', function($join) use($filter) {
-		// 		$join->on('asListIp.ip', '=', 'asStatInfo.ip');
-		// 		if (!empty($filter['ip'])) $join->where('asListIp.ip', '=', inet_pton($filter['ip']));
-		// 	})
-		// 	->select(DB::raw('COUNT(*) AS total'))
-		// 	->groupBy(['asListIp.ip'])
-		// 	// ->orderBy('added_on', 'asc')
-		// 	->take(30);
-
-		// if (!empty($filter['dateFrom']) && !empty($filter['dateTo']))
-		// {
-		// 	$data->whereBetween("asStat.date_added", [$filter['dateFrom'], $filter['dateTo']]);
-		// }
-
-		// if (!empty($filter['ip'])) $data->where('asListIp.ip', inet_pton($filter['ip']));
-		// if (!empty($filter['status'])) $data->where('asListIp.status', $filter['status']);
-
-		// $data = $data->get();
-		// $graphData = ['dates' => [], 'totals' => []];
-		// foreach($data as $d) {
-		// 	// $graphData['dates'][] = $d->added_on;
-		// 	$graphData['totals'][] = $d->total;
-		// };
 		
+		$data = DB::table('trViolations')
+			->where('userKey', $filter['userKey'])
+			->selectRaw("violation, COUNT(*) AS total")
+			->groupBy('violation')
+			->whereIn('violation', [
+				ViolationController::V_KNOWN_VIOLATOR,
+				ViolationController::V_JS_CHECK_FAILED,
+				ViolationController::V_NO_JS,
+				ViolationController::V_KNOWN_VIOLATOR_UA,
+				ViolationController::V_KNOWN_DC
+			]);
 
-		//generate dummy data by random
-		$graphData = [
-			'data' => [
-				DummyDataController::ApplyDuration(8938, false), 
-				DummyDataController::ApplyDuration(7730, false), 
-				DummyDataController::ApplyDuration(7600, false), 
-				DummyDataController::ApplyDuration(7508, false), 
-				DummyDataController::ApplyDuration(4750, false)
-			],
-			'label' => [
-				'Known Violators',
-				'Javascript Check Failed',
-				'Javascript Not Loaded',
-				'Known Violator User Agent',
-				'Known Violator Data Center'
-			],
-		];
+		if (!empty($filter['duration']) && $filter['duration'] > 0)
+		{
+			$duration = $filter['duration'];
+			$data->where("createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
+		}
+
+		$data = $data->get();
+		$graphData = ['data' => [], 'label' => []];
+		foreach($data as $d)
+		{
+			$graphData['data'][] = $d->total;
+			$graphData['label'][] = $this->labels[$d->violation];
+		}
 
 
 		return response()->json(['id'=>0, 'graphData' => $graphData])
