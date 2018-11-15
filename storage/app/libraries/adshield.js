@@ -686,13 +686,13 @@ AdShield = function()
      */
     self.isAuto = function() {
         if (window.callPhantom || window._phantom) return true;
-        if (!(navigator.plugins instanceof PluginArray) || navigator.plugins.length == 0) return true;
         if (/PhantomJS/.test(window.navigator.userAgent)) return true;
         if (!Function.prototype.bind) return true;
         if (Function.prototype.bind.toString().replace(/bind/g, 'Error') != Error.toString()) return true;
         if (Function.prototype.toString.toString().replace(/toString/g, 'Error') != Error.toString()) return true;
         if (navigator.webdriver == true) return true;
         if (window.document.documentElement.getAttribute("webdriver")) return true;
+        // if (!(navigator.plugins instanceof PluginArray) || navigator.plugins.length == 0) return true;
         return false;
     }
 
