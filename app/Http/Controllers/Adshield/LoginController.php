@@ -22,6 +22,8 @@ class LoginController extends Controller
 
     /**
      * handles log in from ember js
+     * Stores the accesstoken to the database. token is sha1($token) for security purpose
+     * all succeeding access/comparisons to accessToken would need to be hashed sha1()
      */
     public function login()
     {
@@ -40,7 +42,7 @@ class LoginController extends Controller
         $response['access_token'] = $token;
         $response['username'] = $user->username;
         $response['id'] = $user->id;
-        $this->saveToken($token, $user);
+        $this->saveToken(sha1($token), $user);
 
         $response['websites'] = UserWebsitesController::getUserWebsites($user->acountId);
 
@@ -52,7 +54,7 @@ class LoginController extends Controller
     private function saveToken($token, $user)
     {
         DB::table("accessTokens")
-            ->where("userId", $user->id)
+            ->where("expiresOn", "<", gmdate("Y-m-d H:i:s"))
             ->delete();
 
         DB::table("accessTokens")
@@ -72,7 +74,7 @@ class LoginController extends Controller
         if (empty($token)) return response("Invalid request", 401);
 
         DB::table("accessTokens")
-            ->where("accessToken", $token)
+            ->where("accessToken", sha1($token))
             ->delete();
 
         return response()->json(['success' => true])
@@ -85,7 +87,7 @@ class LoginController extends Controller
         $result = DB::table("accessTokens")
             ->join("users", "users.id", "=", "accessTokens.userId")
             ->where("users.username", $username)
-            ->where("accessTokens.accessToken", $token)
+            ->where("accessTokens.accessToken", sha1($token))
             ->where("accessTokens.expiresOn", ">", date("Y-m-d H:i:s", strtotime("24 hours ago")))
             ->first();
 
@@ -101,7 +103,7 @@ class LoginController extends Controller
      */
     public static function getUserIdFromToken($token, $all=false)
     {
-        $result = DB::table("accessTokens")->where("accessToken", $token)->first();
+        $result = DB::table("accessTokens")->where("accessToken", sha1($token))->first();
         if (!$all) return $result->userId;
         return $result;
     }
@@ -116,8 +118,8 @@ class LoginController extends Controller
         $token = $request->bearerToken();
         $result = DB::table("accessTokens")
             ->join("users", "users.id", "=", "accessTokens.userId")
-            ->where("accessTokens.accessToken", $token)
-            ->where("accessTokens.expiresOn", ">", date("Y-m-d H:i:s", strtotime("24 hours ago")))
+            ->where("accessTokens.accessToken", sha1($token))
+            ->where("accessTokens.expiresOn", ">", gmdate("Y-m-d H:i:s", strtotime("24 hours ago")))
             ->first();
 
         $valid = true;
