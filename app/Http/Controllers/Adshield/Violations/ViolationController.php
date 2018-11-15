@@ -22,6 +22,7 @@ use App\Http\Controllers\Adshield\Violations\ViolationBrowserIntegrityCheckContr
 use App\Http\Controllers\Adshield\Violations\ViolationPagesPerMinuteController;
 use App\Http\Controllers\Adshield\Violations\ViolationSessionLengthExceedController;
 use App\Http\Controllers\Adshield\Violations\ViolationAutomationToolController;
+use App\Http\Controllers\Adshield\Violations\ViolationBadAgentController;
 
 
 /**
@@ -42,6 +43,7 @@ class ViolationController extends BaseController {
 	const V_AGGREGATOR_UA = 'AGGREGATOR_UA';
 	const V_KNOWN_VIOLATOR_AUTO_TOOL = 'KNOWN_VIOLATOR_AUTO_TOOL';
 	const V_SESSION_LENGTH_EXCEED = 'SESSION_LENGTH_EXCEED';
+	const V_BAD_UA = 'BAD_USER_AGENT';
 	const V_NONE = 'none'; //pass this to logViolation()'s violationType to perform other passive checks only
 
 	//session name for storing cross object data
@@ -175,6 +177,13 @@ class ViolationController extends BaseController {
 
 		//check aggregator user agent
 		if (ViolationAggregatorUserAgentController::hasViolation($data)) 
+		{
+			$this->doLog($userKey, $ip, $ipStr, self::V_AGGREGATOR_UA, $data);
+			$violations[] = self::V_AGGREGATOR_UA;
+		}
+
+		//check if bad user agent
+		if (ViolationBadAgentController::hasViolation($data)) 
 		{
 			$this->doLog($userKey, $ip, $ipStr, self::V_AGGREGATOR_UA, $data);
 			$violations[] = self::V_AGGREGATOR_UA;

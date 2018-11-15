@@ -18,8 +18,9 @@ class ViolationSuspiciousUAController extends ViolationController {
 	 */
 	public static function hasViolation($userAgent)
 	{
-		$serverUserAgent = $_SERVER['HTTP_USER_AGENT'];
-		return $userAgent !== $serverUserAgent;
+		if ($userAgent !== $_SERVER['HTTP_USER_AGENT']) return true;
+		if ($userAgent !== Request::header('user-agent', '')) return true;
+		return false;
 	}
 
 }
