@@ -15,7 +15,7 @@ class JsNotLoadedController extends BaseController
 {
 
 	private $labels = [
-		ViolationController::V_KNOWN_VIOLATOR_AUTO_TOOL => 'Automated Browser',
+		ViolationController::V_IS_BOT => 'Automated Browser',
 		ViolationController::V_SESSION_LENGTH_EXCEED => 'Session Length Exceed'
 	];
 
@@ -59,7 +59,7 @@ class JsNotLoadedController extends BaseController
 			})
 			->select(DB::raw("violation, COUNT(*) AS total"))
 			->whereIn("violation", [
-				ViolationController::V_KNOWN_VIOLATOR_AUTO_TOOL,
+				ViolationController::V_IS_BOT,
 				ViolationController::V_SESSION_LENGTH_EXCEED,
 			])
 			->groupBy("violation")
