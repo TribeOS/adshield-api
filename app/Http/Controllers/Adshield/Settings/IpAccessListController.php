@@ -39,14 +39,15 @@ class IpAccessListController extends BaseController
 			->selectRaw("ipStr, trViolationLog.createdOn, trViolationLog.url");
 
 		if (!empty($filter['dateFrom']) && !empty($filter['dateTo']))
+		{
 			// $data->whereBetween("asStat.date_added", [
 			$data->whereBetween("trViolationLog.createdOn", [
-				date("Y-m-d 00:00:00", strtotime($filter['dateFrom'])), 
+				gmdate("Y-m-d 00:00:00", strtotime($filter['dateFrom'])), 
 				date("Y-m-d 23:59:59", strtotime($filter['dateTo']))
 			]);
+		}
 
-		if (!empty($filter['userKey'])) $data->where('userKey', $filter['userKey']);
-
+		// echo $data->toSql();exit;
 		$data = $data->paginate($limit);
 		// foreach($data as $d)
 		// {
