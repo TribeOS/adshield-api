@@ -29,7 +29,7 @@ class UserWebsitesController extends Controller
 
         if ($request->isMethod('get'))
         {
-            return $this->getWebsites($user->accountId);
+            return $this->getWebsites($user->accountId, $request);
         }
         else if ($request->isMethod('post'))
         {
@@ -56,8 +56,20 @@ class UserWebsitesController extends Controller
     /**
      * get all websites belonging to this user (for public call)
      */
-    private function getWebsites($accountId)
+    private function getWebsites($accountId, $request)
     {
+        if ($request->get('page'))
+        {
+            $limit = $request->get('limit', 10);
+            $page = $request->get('page', 0);
+            $data = UserWebsite::where("accountId", $accountId);
+            $data = $data->paginate($limit);
+            $data->appends([
+                'limit' => $limit
+            ]);
+
+            return response()->json(['id' => 0, 'listData' => $data]);
+        }
         $websites = UserWebsite::where("accountId", $accountId)->get();
         return $websites;
     }
