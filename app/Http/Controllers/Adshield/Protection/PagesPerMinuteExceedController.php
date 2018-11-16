@@ -16,7 +16,7 @@ class PagesPerMinuteExceedController extends BaseController
 
 	private $labels = [
 		ViolationController::V_IS_BOT => 'Automated Browsers',  
-		ViolationController::V_PAGES_PER_MINUTE_EXCEED => 'Pages Per Minute Exceed'
+		ViolationController::V_PAGES_PER_MINUTE_EXCEED => 'Pages Per Minute Exceed',
 		ViolationController::V_PAGES_PER_SESSION_EXCEED => 'Pages Per Session Exceeded'
 	];
 
