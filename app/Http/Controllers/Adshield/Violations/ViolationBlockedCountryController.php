@@ -21,7 +21,7 @@ class ViolationBlockedCountryController extends ViolationController {
 		$violation = DB::table('asBlockedCountries')
 			->join('countries', function($join) use($userKey, $country) {
 				$join->on('countries.id', '=', 'asBlockedCountries.country')
-					->where('countries.countryName', '=', '$country')
+					->whereRaw('UCASE(countries.countryName) = ?', [strtoupper($country)])
 					->where('asBlockedCountries.userKey', '=', $userKey);
 			})
 			->first();

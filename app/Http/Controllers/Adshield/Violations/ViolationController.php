@@ -27,6 +27,7 @@ use App\Http\Controllers\Adshield\Violations\ViolationBadAgentController;
 
 /**
  * main class for violations controllers
+ * All violation classes are sub classes of this
  */
 class ViolationController extends BaseController {
 
