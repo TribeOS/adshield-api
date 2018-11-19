@@ -23,6 +23,7 @@ use App\Http\Controllers\Adshield\Violations\ViolationPagesPerMinuteController;
 use App\Http\Controllers\Adshield\Violations\ViolationSessionLengthExceedController;
 use App\Http\Controllers\Adshield\Violations\ViolationAutomationToolController;
 use App\Http\Controllers\Adshield\Violations\ViolationBadAgentController;
+use App\Http\Controllers\Adshield\Violations\AutomatedTrafficCheckController;
 
 
 /**
@@ -243,7 +244,7 @@ class ViolationController extends BaseController {
 		if ($this->isBot)
 		{
 			$this->doLog($userKey, $ip, $ipStr, self::V_IS_BOT, $data);
-			$violations[] = self::V_IS_BOT;	
+			$violations[] = self::V_IS_BOT;
 		}
 
 		//indicate if we want to save the original Class caller/request's Log
@@ -360,5 +361,8 @@ class ViolationController extends BaseController {
 	{
 		return session(self::SESSION_ID_NAME);
 	}
+
+
+	
 
 }
