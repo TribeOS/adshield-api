@@ -137,13 +137,14 @@ class ViolationController extends BaseController {
 
 
 		//check if useragent has an existing violation
-		if (ViolationUserAgentController::hasViolation(
+		if ($trafficName = ViolationUserAgentController::hasViolation(
 				isset($data['userAgent']) ? $data['userAgent'] : '', $newViolationId)
 			) 
 		{
-			$this->doLog($userKey, $ip, $ipStr, self::V_KNOWN_VIOLATOR_UA, $data);
+			$id = $this->doLog($userKey, $ip, $ipStr, self::V_KNOWN_VIOLATOR_UA, $data);
 			$violations[] = self::V_KNOWN_VIOLATOR_UA;
 			$this->userAgentClassification = self::V_KNOWN_VIOLATOR_UA;
+			AutomatedTrafficCheckController::logAutomatedTraffic($id, $data, $trafficName);
 		}
 
 		//check if IP belongs to a data center IP range
@@ -190,27 +191,30 @@ class ViolationController extends BaseController {
 		}
 
 		//check if this is an automation tool
-		if (ViolationAutomationToolController::hasViolation($data)) 
+		if ($botName = ViolationAutomationToolController::hasViolation($data)) 
 		{
 			$this->isBot = true;
-			$this->doLog($userKey, $ip, $ipStr, self::V_KNOWN_VIOLATOR_AUTO_TOOL, $data);
+			$id = $this->doLog($userKey, $ip, $ipStr, self::V_KNOWN_VIOLATOR_AUTO_TOOL, $data);
 			$violations[] = self::V_KNOWN_VIOLATOR_AUTO_TOOL;
+			AutomatedTrafficCheckController::logAutomatedTraffic($id, $data, $botName);
 		}
 
 		//check aggregator user agent
-		if (ViolationAggregatorUserAgentController::hasViolation($data)) 
+		if ($botName = ViolationAggregatorUserAgentController::hasViolation($data)) 
 		{
-			$this->doLog($userKey, $ip, $ipStr, self::V_AGGREGATOR_UA, $data);
+			$id = $this->doLog($userKey, $ip, $ipStr, self::V_AGGREGATOR_UA, $data);
 			$violations[] = self::V_AGGREGATOR_UA;
 			$this->userAgentClassification = self::V_AGGREGATOR_UA;
+			AutomatedTrafficCheckController::logAutomatedTraffic($id, $data, $botName);
 		}
 
 		//check if bad user agent
-		if (ViolationBadAgentController::hasViolation($data)) 
+		if ($botName = ViolationBadAgentController::hasViolation($data)) 
 		{
-			$this->doLog($userKey, $ip, $ipStr, self::V_BAD_UA, $data);
+			$id = $this->doLog($userKey, $ip, $ipStr, self::V_BAD_UA, $data);
 			$violations[] = self::V_BAD_UA;
 			$this->userAgentClassification = self::V_BAD_UA;
+			AutomatedTrafficCheckController::logAutomatedTraffic($id, $data, $botName);
 		}
 
 		//check pages per session
@@ -237,8 +241,9 @@ class ViolationController extends BaseController {
 		//log/check if this is an unclassified user agent (probably bot but UA didn't fit any checks we have)
 		if ($this->isBot && $this->userAgentClassification == null)
 		{
-			$this->doLog($userKey, $ip, $ipStr, self::V_UNCLASSIFIED_UA, $data);
+			$id = $this->doLog($userKey, $ip, $ipStr, self::V_UNCLASSIFIED_UA, $data);
 			$violations[] = self::V_UNCLASSIFIED_UA;
+			AutomatedTrafficCheckController::logAutomatedTraffic($id, $data);
 		}
 
 		if ($this->isBot)

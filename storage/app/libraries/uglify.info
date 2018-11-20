@@ -1,4 +1,4 @@
-uglifyjs adshield.js -o adshield.min.js --source-map "filename='script.min.js.map'" -m
+uglifyjs adshield.js -o adshield.min.js --source-map "script.min.js.map" -m
 
 
 ***OLD

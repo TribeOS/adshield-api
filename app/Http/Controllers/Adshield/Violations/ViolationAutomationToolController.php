@@ -20,8 +20,8 @@ class ViolationAutomationToolController extends ViolationController {
 	{
 		//if JS passes this request as an automation tool we assume it is an automation tool otherwise, perform the other tests!!!
 		$isAuto = isset($data['isAuto']) ? $data['isAuto'] : false;
-		if ($isAuto) return true;
-		if (self::isPhantomJS($data)) return true;
+		if ($isAuto !== false) return $isAuto;
+		if (self::isPhantomJS($data)) return 'PhantomJS';
 		return false;
 	}
 

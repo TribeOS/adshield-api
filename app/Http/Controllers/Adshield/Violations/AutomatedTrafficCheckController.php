@@ -17,11 +17,19 @@ class AutomatedTrafficCheckController extends ViolationController {
 	/**
 	 * main logging function for the identified automated traffic
 	 */
-	public static logAutomatedTraffic($violationLogId, $data=[])
+	public static function logAutomatedTraffic($violationLogId, $data=[], $trafficName=null)
 	{
 		$headers = Request::header();
 
-		$name = self::IdentifyName($data, $headers);
+		//perform traffic name determination 
+		if ($trafficName == null || $trafficName == 'n/a')
+		{
+			$name = self::IdentifyName($data, $headers);
+		}
+		else 
+		{
+			$name = $trafficName;
+		}
 		self::LogTrafficName($name, $violationLogId);
 	}
 
@@ -34,7 +42,14 @@ class AutomatedTrafficCheckController extends ViolationController {
 	 */
 	private static function IdentifyName($data, $headers)
 	{
-		//TODO::
+		$userAgent = Request::header('user-agent', '');
+
+		//detect which automatic traffic this is
+
+
+		//detect which browser request looks like
+		$browser = self::DetectBrowser($userAgent);
+		if (!empty($browser)) return "Reporting as $browser";
 	}
 	
 
@@ -45,8 +60,55 @@ class AutomatedTrafficCheckController extends ViolationController {
 	 */
 	private static function LogTrafficName($name, $violationLogId)
 	{
-		// TODO
-		// DB::table("trVaiolation")
+		DB::table("trViolationAutoTraffic")
+			->insert([
+				'trafficName' => $name,
+				'violationId' => $violationLogId
+			]);
+	}
+
+
+	/**
+	 * detect which browser the request came from (appears to be)
+	 * via its user agent string
+	 * @param [type] $userAgent [description]
+	 */
+	private static function DetectBrowser($userAgent)
+	{
+		$arr_browsers = ["Firefox", "Chrome", "Safari", "Opera", 
+                    "MSIE", "Trident", "Edge"];
+
+        $user_browser = '';
+		foreach ($arr_browsers as $browser)
+		{
+		    if (strpos($userAgent, $browser) !== false)
+		    {
+		        $user_browser = $browser;
+		        break;
+		    }   
+		}
+		 
+		switch ($user_browser) {
+		    case 'MSIE':
+		        $user_browser = 'Internet Explorer';
+		        break;
+		 
+		    case 'Trident':
+		        $user_browser = 'Internet Explorer';
+		        break;
+		 
+		    case 'Edge':
+		        $user_browser = 'Internet Explorer';
+		        break;
+		}
+
+		return $user_browser;
+	}
+
+
+	private static function DetectBot($userAgent)
+	{
+
 	}
 
 }
