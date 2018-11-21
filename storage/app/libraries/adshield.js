@@ -685,14 +685,13 @@ AdShield = function()
      * @return {Boolean} [description]
      */
     self.isAuto = function() {
-        if (window.callPhantom || window._phantom) return true;
-        if (/PhantomJS/.test(window.navigator.userAgent)) return true;
-        if (!Function.prototype.bind) return true;
-        if (Function.prototype.bind.toString().replace(/bind/g, 'Error') != Error.toString()) return true;
-        if (Function.prototype.toString.toString().replace(/toString/g, 'Error') != Error.toString()) return true;
-        if (navigator.webdriver == true) return true;
-        if (window.document.documentElement.getAttribute("webdriver")) return true;
-        // if (!(navigator.plugins instanceof PluginArray) || navigator.plugins.length == 0) return true;
+        if (window.callPhantom || window._phantom) return "PhantomJS";
+        if (/PhantomJS/.test(window.navigator.userAgent)) return "PhantomJS";
+        if (!Function.prototype.bind) return "PhantomJS";
+        if (Function.prototype.bind.toString().replace(/bind/g, 'Error') != Error.toString()) return "PhantomJS";
+        if (Function.prototype.toString.toString().replace(/toString/g, 'Error') != Error.toString()) return "PhantomJS";
+        if (navigator.webdriver == true) return "Selenium";
+        if (window.document.documentElement.getAttribute("webdriver")) return "Selenium";
         return false;
     }
 

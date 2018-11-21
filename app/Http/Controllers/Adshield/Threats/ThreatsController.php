@@ -4,12 +4,12 @@ namespace App\Http\Controllers\Adshield\Threats;
 
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
-use Illuminate\Support\Facades\DB;
+use DB;
 use Illuminate\Support\Facades\Input;
 
 use App\Http\Controllers\Adshield\Protection\DummyDataController;
 
-date_default_timezone_set("America/New_York");
+use App\Http\Controllers\Adshield\Violations\ViolationController;
 
 
 class ThreatsController extends BaseController
@@ -17,48 +17,124 @@ class ThreatsController extends BaseController
 
 	public function getGraphData()
 	{
-		$days = Input::get("days", 7);
+		$filter = Input::get("filter", []);
 
 		$graphData = [
-			'automatedTrafficClassification' => $this->getAutomatedTrafficClassification($days),
-			'topThreatsByCountry' => $this->getTopThreatsByCountry($days),
-			'threatsAverted' => $this->getThreatsAverted($days)
+			'automatedTrafficClassification' => $this->getAutomatedTrafficClassification($filter),
+			'topThreatsByCountry' => $this->getTopThreatsByCountry($filter),
+			'threatsAverted' => $this->getThreatsAverted($filter)
 		];
-
-		$graphData['automatedTrafficClassification'] = DummyDataController::ApplyDuration($graphData['automatedTrafficClassification']);
-		$graphData['topThreatsByCountry'] = DummyDataController::ApplyDuration($graphData['topThreatsByCountry']);
-		$graphData['threatsAverted'] = DummyDataController::ApplyDuration($graphData['threatsAverted']);
-
 		return response()->json(['id'=>0, 'graphData' => $graphData])
 			->header('Content-Type', 'application/vnd.api+json');
 	}
 
 
-	private function getAutomatedTrafficClassification($days)
+	private function getAutomatedTrafficClassification($filter)
 	{
-		$data = [
-			'data' => [29, 11, 90, 17],
-			'label' => ['Unclassified User Agent', 'Bad User Agent', 'Known Violator User Agent', 'Aggregator User Agent']
+
+		$labels = [
+			ViolationController::V_UNCLASSIFIED_UA => 'Unclassified User Agent',
+			ViolationController::V_BAD_UA => 'Bad User Agent',
+			ViolationController::V_KNOWN_VIOLATOR_UA => 'Known Violator User Agent',
+			ViolationController::V_AGGREGATOR_UA => 'Aggregator User Agent',
 		];
-		return $data;
+
+		$data = DB::table('trViolations')
+			->where('userKey', $filter['userKey'])
+			->selectRaw("violation, COUNT(*) AS total")
+			->groupBy('violation')
+			->whereIn('violation', [
+				ViolationController::V_UNCLASSIFIED_UA,
+				ViolationController::V_BAD_UA,
+				ViolationController::V_KNOWN_VIOLATOR_UA,
+				ViolationController::V_AGGREGATOR_UA
+			]);
+
+		if (!empty($filter['duration']) && $filter['duration'] > 0)
+		{
+			$duration = $filter['duration'];
+			$data->where("createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
+		}
+
+		$data = $data->get();
+		$graphData = ['data' => [], 'label' => []];
+		foreach($data as $d)
+		{
+			$graphData['data'][] = $d->total;
+			$graphData['label'][] = $labels[$d->violation];
+		}
+
+		return $graphData;
 	}
 
-	private function getTopThreatsByCountry($days)
+	private function getTopThreatsByCountry($filter)
 	{
-		$data = [
-			'data' => [19, 42, 12, 18, 21],
-			'label' => ['United Sates', 'France', 'China', 'Germany', 'Poland']
-		];
-		return $data;
+		$data = DB::table("trViolations")
+			->join("trViolationInfo", function($join) use($filter) {
+				$join->on("trViolations.violationInfo", "=", "trViolationInfo.id")
+					->where("trViolations.userKey", $filter['userKey']);
+
+			})
+			->selectRaw("country, COUNT(*) AS total")
+			->groupBy("country")
+			->orderby("total", "DESC")
+			->take(5);
+	
+		if (!empty($filter['duration']) && $filter['duration'] > 0)
+		{
+			$duration = $filter['duration'];
+			$data->where("createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
+		}
+
+		$data = $data->get();
+		$graphData = ['data' => [], 'label' => []];
+		foreach($data as $d)
+		{
+			$graphData['data'][] = $d->total;
+			$graphData['label'][] = !empty($d->country) ? $d->country : "N/A" ;
+		}
+
+		return $graphData;
 	}
 
-	private function getThreatsAverted($days)
+	private function getThreatsAverted($filter)
 	{
-		$data = [
-			'data' => [60, 84, 49, 28, 65],
-			'label' => ['Known Violators', 'Javascript Check Failed', 'Javascript Not Loaded', 'Known Violator User Agent', 'Bad User Agent']
+		//TEMPORARY
+		//we're using the threats classification for now since we don't have data/logic for recording "threats averted" activity.
+		
+		$labels = [
+			ViolationController::V_UNCLASSIFIED_UA => 'Unclassified User Agent',
+			ViolationController::V_BAD_UA => 'Bad User Agent',
+			ViolationController::V_KNOWN_VIOLATOR_UA => 'Known Violator User Agent',
+			ViolationController::V_AGGREGATOR_UA => 'Aggregator User Agent',
 		];
-		return $data;
+
+		$data = DB::table('trViolations')
+			->where('userKey', $filter['userKey'])
+			->selectRaw("violation, COUNT(*) AS total")
+			->groupBy('violation')
+			->whereIn('violation', [
+				ViolationController::V_UNCLASSIFIED_UA,
+				ViolationController::V_BAD_UA,
+				ViolationController::V_KNOWN_VIOLATOR_UA,
+				ViolationController::V_AGGREGATOR_UA
+			]);
+
+		if (!empty($filter['duration']) && $filter['duration'] > 0)
+		{
+			$duration = $filter['duration'];
+			$data->where("createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
+		}
+
+		$data = $data->get();
+		$graphData = ['data' => [], 'label' => []];
+		foreach($data as $d)
+		{
+			$graphData['data'][] = $d->total;
+			$graphData['label'][] = $labels[$d->violation];
+		}
+
+		return $graphData;
 	}
 
 
@@ -68,6 +144,8 @@ class ThreatsController extends BaseController
 		function createData($name, $class, $noRequests) {
 			return ['name' => $name, 'classification' => $class, 'pageRequests' => $noRequests];
 		}
+
+		$filter = Input::get("filter", []);
 
 		$data = [];
 
@@ -83,10 +161,7 @@ class ThreatsController extends BaseController
 			createData('cURL', 'Known Violator User Agent', DummyDataController::ApplyDuration(282))
 		];
 
-		$data['botsByClassification'] = [
-			'data' => [72, 53, 98, 55],
-			'label' => ['Unclassified User Agent', 'Bad User Agent', 'Known Violator User Agent', 'Aggregator User Agent']
-		];
+		$data['botsByClassification'] = $this->getMostFrequentBots($filter);
 		$data['mostFrequentBots'] = [
 			'data' => [7, 99, 60, 10, 36],
 			'label' => ['Uncategorized Bot', 'SEMRush', 'Reporting as Firefox', 'Reporting as Chrome', 'Reporting as Internets']
@@ -97,6 +172,78 @@ class ThreatsController extends BaseController
 
 		return response()->json(['id'=>0, 'pageData' => $data])
 			->header('Content-Type', 'application/vnd.api+json');
+	}
+
+	private function getAutomatedTrafficList($filter)
+	{
+
+		$data = DB::table('trViolations')
+			->join('trViolationAutoTraffic', function($join) {
+				$join->on('trViolationAutoTraffic.violationId', '=', 'trViolations.id');
+			})
+			->where('userKey', $filter['userKey'])
+			->selectRaw("violation, COUNT(*) AS total")
+			->groupBy('violation', 'trafficName')
+			->whereIn('violation', [
+				ViolationController::V_UNCLASSIFIED_UA,
+				ViolationController::V_BAD_UA,
+				ViolationController::V_KNOWN_VIOLATOR_UA,
+				ViolationController::V_AGGREGATOR_UA
+			])
+			->orderBy('trafficName');
+
+		if (!empty($filter['duration']) && $filter['duration'] > 0)
+		{
+			$duration = $filter['duration'];
+			$data->where("createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
+		}
+
+		$data = $data->get();
+		$graphData = ['data' => [], 'label' => []];
+		foreach($data as $d)
+		{
+			$graphData['data'][] = $d->total;
+			$graphData['label'][] = $labels[$d->violation];
+		}
+
+		return $graphData;
+	}
+
+	private function getMostFrequentBots($filter)
+	{
+		$labels = [
+			ViolationController::V_UNCLASSIFIED_UA => 'Unclassified User Agent', 
+			ViolationController::V_BAD_UA => 'Bad User Agent', 
+			ViolationController::V_KNOWN_VIOLATOR_UA => 'Known Violator User Agent', 
+			ViolationController::V_AGGREGATOR_UA => 'Aggregator User Agent'
+		];
+
+		$data = DB::table('trViolations')
+			->where('userKey', $filter['userKey'])
+			->selectRaw("violation, COUNT(*) AS total")
+			->groupBy('violation')
+			->whereIn('violation', [
+				ViolationController::V_UNCLASSIFIED_UA,
+				ViolationController::V_BAD_UA,
+				ViolationController::V_KNOWN_VIOLATOR_UA,
+				ViolationController::V_AGGREGATOR_UA
+			]);
+
+		if (!empty($filter['duration']) && $filter['duration'] > 0)
+		{
+			$duration = $filter['duration'];
+			$data->where("createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
+		}
+
+		$data = $data->get();
+		$graphData = ['data' => [], 'label' => []];
+		foreach($data as $d)
+		{
+			$graphData['data'][] = $d->total;
+			$graphData['label'][] = $labels[$d->violation];
+		}
+
+		return $graphData;
 	}
 
 

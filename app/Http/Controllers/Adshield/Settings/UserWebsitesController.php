@@ -60,14 +60,16 @@ class UserWebsitesController extends Controller
     {
         if ($request->get('page'))
         {
-            //return paginated result
-            $data = UserWebsite::where("accountId", $accountId)
-                ->orderBy('domain', 'asc');
-            $data = $data->paginate(10);
-            return response()->json(['id' => 0, 'listData' => $data])
-                ->header('Content-Type', 'application/vnd.api+json');
-        }
+            $limit = $request->get('limit', 10);
+            $page = $request->get('page', 0);
+            $data = UserWebsite::where("accountId", $accountId);
+            $data = $data->paginate($limit);
+            $data->appends([
+                'limit' => $limit
+            ]);
 
+            return response()->json(['id' => 0, 'listData' => $data]);
+        }
         $websites = UserWebsite::where("accountId", $accountId)->get();
         return $websites;
     }

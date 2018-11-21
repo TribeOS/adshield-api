@@ -16,8 +16,9 @@ class ViolationAggregatorUserAgentController extends ViolationController {
 	 * bot/spam/crawler based on data like user agent and other request data and headers
 	 */
 	public static function hasViolation($data)
-	{
-		if (self::isRobot(isset($data['userAgent']) ? $data['userAgent'] : "")) return true;
+	{	
+		$botname = self::isRobot(isset($data['userAgent']) ? $data['userAgent'] : "");
+		if ($botname !== false) return $botname;
 		return false;
 	}
 
@@ -29,11 +30,13 @@ class ViolationAggregatorUserAgentController extends ViolationController {
 	private static function isRobot($userAgent)
 	{
 		$knownAgent = DB::table("knownAgents")
+			->select("description")
 			->where("uaString", "like", '%' . trim($userAgent) . '%')
 			->where('type', 'like', '%R%')
 			->first();
 
-		return !empty($knownAgent);
+		if (!empty($knownAgent)) return $knownAgent->description;
+		return false;
 	}
 
 }
