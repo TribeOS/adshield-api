@@ -43,13 +43,15 @@ class AutomatedTrafficCheckController extends ViolationController {
 	private static function IdentifyName($data, $headers)
 	{
 		$userAgent = Request::header('user-agent', '');
-
 		//detect which automatic traffic this is
 
 
 		//detect which browser request looks like
 		$browser = self::DetectBrowser($userAgent);
 		if (!empty($browser)) return "Reporting as $browser";
+
+		//if we can't detect which known automated traffic this is
+		return "Uncategorized Bot";
 	}
 	
 
