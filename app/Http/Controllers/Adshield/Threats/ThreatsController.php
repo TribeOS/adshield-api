@@ -312,19 +312,34 @@ class ThreatsController extends BaseController
 
 	public function getSuspiciousCountries()
 	{
-		function generateData($country, $noRequests) {
-			return ['country' => $country, 'noRequests' => $noRequests];
-		}
-		$data = [
-			generateData('United States', DummyDataController::ApplyDuration(4983)),
-			generateData('France', DummyDataController::ApplyDuration(1342)),
-			generateData('China', DummyDataController::ApplyDuration(8732)),
-			generateData('Germany', DummyDataController::ApplyDuration(4723)),
-			generateData('Australia', DummyDataController::ApplyDuration(3417)),
-			generateData('Mexico', DummyDataController::ApplyDuration(1832))
-		];
+		$page = Request::get("page", 0);
+		$limit = Request::get("limit", 10);
+		$filter = Request::get("filter", []);
+		$showTable = Request::get("showTable", "false");
 
-		return response()->json(['id'=>0, 'pageData' => $data])
+		$data = DB::table("trViolations")
+			->join("asIpCachedInfo", function($join) use($filter) {
+				$join->on("asIpCachedInfo.id", "=", "trViolations.ip");
+				if (!empty($filter['userKey'])) $join->where("trViolations.userKey", "=", $filter['userKey']);
+			});
+
+		if ($showTable == "false")
+		{
+			//get map details
+			$data = $data->selectRaw("COUNT(*) AS noRequests, rawInfo, country")
+				->groupBy("country", "rawInfo")
+				->get();
+
+			return response()->json(['id' => 0, 'pageData' => $data]);
+		}
+
+		$data->selectRaw("COUNT(*) AS noRequests, country")
+			->orderBy("country")
+			->groupBy("country");
+
+		$data = $data->paginate($limit);
+
+		return response()->json(['id'=>0, 'listData' => $data, 'pageData' => []])
 			->header('Content-Type', 'application/vnd.api+json');			
 	}
 
