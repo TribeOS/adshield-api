@@ -26,8 +26,13 @@ class ApiAuth
 
         if (empty($access)) 
         {
-            $response = "Invalid acces or session has already expired. Try loggin in again.";
-            return response($response, 401);
+            $error = [
+                'errors' => [
+                    'msg' => "Invalid access or session has already expired. Try loggin in again."
+                ]
+            ];
+            return response()->json($error)
+                ->header('Content-Type', 'application/vnd.api+json');
         }
 
         // $key = $request->route('apikey');

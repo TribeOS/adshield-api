@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Adshield\Threats;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use DB;
-use Illuminate\Support\Facades\Input;
+use Request;
 
 use App\Http\Controllers\Adshield\Protection\DummyDataController;
 
@@ -15,9 +15,16 @@ use App\Http\Controllers\Adshield\Violations\ViolationController;
 class ThreatsController extends BaseController
 {
 
+	const labels = [
+			ViolationController::V_UNCLASSIFIED_UA => 'Unclassified User Agent', 
+			ViolationController::V_BAD_UA => 'Bad User Agent', 
+			ViolationController::V_KNOWN_VIOLATOR_UA => 'Known Violator User Agent', 
+			ViolationController::V_AGGREGATOR_UA => 'Aggregator User Agent'
+		];
+
 	public function getGraphData()
 	{
-		$filter = Input::get("filter", []);
+		$filter = Request::get("filter", []);
 
 		$graphData = [
 			'automatedTrafficClassification' => $this->getAutomatedTrafficClassification($filter),
@@ -145,20 +152,17 @@ class ThreatsController extends BaseController
 			return ['name' => $name, 'classification' => $class, 'pageRequests' => $noRequests];
 		}
 
-		$filter = Input::get("filter", []);
+		$filter = Request::get("filter", []);
 
 		$data = [];
 
 		$data['automatedTrafficList'] = [
 			'total' => 5
 		];
-		$data['automatedTrafficList']['data'] = $this->getAutomatedTrafficList($filter);
+		$data['automatedTrafficList'] = $this->getAutomatedTrafficList($filter);
 
-		$data['botsByClassification'] = $this->getMostFrequestBots($filter);
-		$data['mostFrequentBots'] = [
-			'data' => [7, 99, 60, 10, 36],
-			'label' => ['Uncategorized Bot', 'SEMRush', 'Reporting as Firefox', 'Reporting as Chrome', 'Reporting as Internets']
-		];
+		$data['botsByClassification'] = $this->getMostFrequentBotsClassification($filter);
+		$data['mostFrequentBots'] = $this->getMostFrequentBots($filter);
 
 		$data['botsByClassification'] = DummyDataController::ApplyDuration($data['botsByClassification']);
 		$data['mostFrequentBots'] = DummyDataController::ApplyDuration($data['mostFrequentBots']);
@@ -168,29 +172,46 @@ class ThreatsController extends BaseController
 	}
 
 
+	/**
+	 * get automated traffic classification and listing
+	 */
 	private function getAutomatedTrafficList($filter)
 	{
-		$data = [
-			createData('SEMRush', 'Bad User Agent',	DummyDataController::ApplyDuration(335)),
-			createData('Reporting as Firefox', 'Unclassified User Agent', DummyDataController::ApplyDuration(495)),
-			createData('Reporting as Chrome', 'Unclassified User Agent', DummyDataController::ApplyDuration(200)),
-			createData('Reporting as Internet Explorer 9', 'Bad User Agent', DummyDataController::ApplyDuration(198)),
-			createData('MJ12bot', 'Known Violator User Agent', DummyDataController::ApplyDuration(378)),
-			createData('cURL', 'Known Violator User Agent', DummyDataController::ApplyDuration(282))
-		];
+		$limit = Request::get('limit', 10);
+		$page = Request::get('page', 10);
 
+		$data = DB::table('trViolations')
+			->join('trViolationAutoTraffic', function($join) use($filter) {
+				$join->on('trViolationAutoTraffic.violationId', '=', 'trViolations.id')
+					->where('userKey', '=', $filter['userKey'])
+					->whereIn('violation', [
+						ViolationController::V_UNCLASSIFIED_UA,
+						ViolationController::V_BAD_UA,
+						ViolationController::V_KNOWN_VIOLATOR_UA,
+						ViolationController::V_AGGREGATOR_UA
+					]);
+			})
+			->selectRaw("trafficName AS name, violation AS classification, COUNT(*) AS pageRequests")
+			->groupBy('violation', 'trafficName')
+			->orderBy('trafficName');
+
+		if (!empty($filter['duration']) && $filter['duration'] > 0)
+		{
+			$duration = $filter['duration'];
+			$data->where("trViolations.createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
+		}
+
+		$data = $data->paginate($limit);
 		return $data;
 	}
 
 
-	private function getMostFrequestBots($filter)
+	/**
+	 * get the traffic considered as bots grouped into violation classification 
+	 * (for user agents only or what the system considers automated traffic)
+	 */
+	private function getMostFrequentBotsClassification($filter)
 	{
-		$labels = [
-			ViolationController::V_UNCLASSIFIED_UA => 'Unclassified User Agent', 
-			ViolationController::V_BAD_UA => 'Bad User Agent', 
-			ViolationController::V_KNOWN_VIOLATOR_UA => 'Known Violator User Agent', 
-			ViolationController::V_AGGREGATOR_UA => 'Aggregator User Agent'
-		];
 
 		$data = DB::table('trViolations')
 			->where('userKey', $filter['userKey'])
@@ -201,7 +222,8 @@ class ThreatsController extends BaseController
 				ViolationController::V_BAD_UA,
 				ViolationController::V_KNOWN_VIOLATOR_UA,
 				ViolationController::V_AGGREGATOR_UA
-			]);
+			])
+			->orderBy("total", "desc");
 
 		if (!empty($filter['duration']) && $filter['duration'] > 0)
 		{
@@ -214,27 +236,73 @@ class ThreatsController extends BaseController
 		foreach($data as $d)
 		{
 			$graphData['data'][] = $d->total;
-			$graphData['label'][] = $labels[$d->violation];
+			$graphData['label'][] = self::labels[$d->violation];
 		}
 
 		return $graphData;
 	}
 
 
+	/**
+	 * get the traffic considered as bots grouped into violation classification 
+	 * (for user agents only or what the system considers automated traffic)
+	 */
+	private function getMostFrequentBots($filter)
+	{
+
+		$data = DB::table('trViolations')
+			->join('trViolationAutoTraffic', function($join) use($filter) {
+				$join->on('trViolationAutoTraffic.violationId', '=', 'trViolations.id')
+					->where('userKey', '=', $filter['userKey'])
+					->whereIn('violation', [
+						ViolationController::V_UNCLASSIFIED_UA,
+						ViolationController::V_BAD_UA,
+						ViolationController::V_KNOWN_VIOLATOR_UA,
+						ViolationController::V_AGGREGATOR_UA
+					]);
+			})
+			->selectRaw("trafficName, COUNT(*) AS total")
+			->groupBy("trafficName")
+			->orderBy("total", "desc");
+
+		if (!empty($filter['duration']) && $filter['duration'] > 0)
+		{
+			$duration = $filter['duration'];
+			$data->where("createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
+		}
+
+		$data = $data->get();
+		$graphData = ['data' => [], 'label' => []];
+		foreach($data as $d)
+		{
+			$graphData['data'][] = $d->total;
+			$graphData['label'][] = $d->trafficName;
+		}
+
+		return $graphData;
+	}
+
+
+	/**
+	 * get violations/threats by internet organization.
+	 * Org data is based on the info fetched for the origin IP
+	 */
 	public function getTrafficByOrganization()
 	{
-		function generateData($org, $total, $topCountry) {
-			return ['organization' => $org, 'total' => $total, 'country' => $topCountry];
-		}
-		$data = [];
-		$data['total'] = 5;
-		$data['data'] = [
-			generateData('OVH SAS', DummyDataController::ApplyDuration(10643), 'France'),
-			generateData('Advanced Hosters B.V.', DummyDataController::ApplyDuration(5602), 'Netherlands'),
-			generateData('Zscaler', DummyDataController::ApplyDuration(3326), 'United States'),
-			generateData('Amazon.com', DummyDataController::ApplyDuration(1922), 'United States'),
-			generateData('China Telecom Guandong', DummyDataController::ApplyDuration(1754), 'China'),
-		];
+		$page = Request::get("page", 0);
+		$limit = Request::get("limit", 10);
+		$filter = Request::get("filter", []);
+
+		$data = DB::table("trViolations")
+			->join("asIpCachedInfo", function($join) use($filter) {
+				$join->on("asIpCachedInfo.id", "=", "trViolations.ip")
+					->where("trViolations.userKey", "=", $filter['userKey']);
+			})
+			->selectRaw("org AS organization, COUNT(*) AS total, country")
+			->groupBy("org", "country")
+			->orderBy("org");
+
+		$data = $data->paginate($limit);
 
 		return response()->json(['id'=>0, 'listData' => $data])
 			->header('Content-Type', 'application/vnd.api+json');		
@@ -243,19 +311,40 @@ class ThreatsController extends BaseController
 
 	public function getSuspiciousCountries()
 	{
-		function generateData($country, $noRequests) {
-			return ['country' => $country, 'noRequests' => $noRequests];
-		}
-		$data = [
-			generateData('United States', DummyDataController::ApplyDuration(4983)),
-			generateData('France', DummyDataController::ApplyDuration(1342)),
-			generateData('China', DummyDataController::ApplyDuration(8732)),
-			generateData('Germany', DummyDataController::ApplyDuration(4723)),
-			generateData('Australia', DummyDataController::ApplyDuration(3417)),
-			generateData('Mexico', DummyDataController::ApplyDuration(1832))
-		];
+		$page = Request::get("page", 0);
+		$limit = Request::get("limit", 10);
+		$filter = Request::get("filter", []);
+		$showTable = Request::get("showTable", "false");
 
-		return response()->json(['id'=>0, 'pageData' => $data])
+		$data = DB::table("trViolations")
+			->join("asIpCachedInfo", function($join) use($filter) {
+				$join->on("asIpCachedInfo.id", "=", "trViolations.ip")
+					->whereIn('violation', [
+						ViolationController::V_UNCLASSIFIED_UA,
+						ViolationController::V_BAD_UA,
+						ViolationController::V_KNOWN_VIOLATOR_UA,
+						ViolationController::V_AGGREGATOR_UA
+					]);
+				if (!empty($filter['userKey'])) $join->where("trViolations.userKey", "=", $filter['userKey']);
+			});
+
+		if ($showTable == "false")
+		{
+			//get map details
+			$data = $data->selectRaw("COUNT(*) AS noRequests, rawInfo, country")
+				->groupBy("country", "rawInfo")
+				->get();
+
+			return response()->json(['id' => 0, 'pageData' => $data]);
+		}
+
+		$data->selectRaw("COUNT(*) AS noRequests, country")
+			->orderBy("country")
+			->groupBy("country");
+
+		$data = $data->paginate($limit);
+
+		return response()->json(['id'=>0, 'listData' => $data, 'pageData' => []])
 			->header('Content-Type', 'application/vnd.api+json');			
 	}
 
