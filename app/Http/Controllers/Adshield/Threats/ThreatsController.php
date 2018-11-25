@@ -152,14 +152,7 @@ class ThreatsController extends BaseController
 		$data['automatedTrafficList'] = [
 			'total' => 5
 		];
-		$data['automatedTrafficList']['data'] = [
-			createData('SEMRush', 'Bad User Agent',	DummyDataController::ApplyDuration(335)),
-			createData('Reporting as Firefox', 'Unclassified User Agent', DummyDataController::ApplyDuration(495)),
-			createData('Reporting as Chrome', 'Unclassified User Agent', DummyDataController::ApplyDuration(200)),
-			createData('Reporting as Internet Explorer 9', 'Bad User Agent', DummyDataController::ApplyDuration(198)),
-			createData('MJ12bot', 'Known Violator User Agent', DummyDataController::ApplyDuration(378)),
-			createData('cURL', 'Known Violator User Agent', DummyDataController::ApplyDuration(282))
-		];
+		$data['automatedTrafficList']['data'] = $this->getAutomatedTrafficList($filter);
 
 		$data['botsByClassification'] = $this->getMostFrequestBots($filter);
 		$data['mostFrequentBots'] = [
@@ -173,6 +166,22 @@ class ThreatsController extends BaseController
 		return response()->json(['id'=>0, 'pageData' => $data])
 			->header('Content-Type', 'application/vnd.api+json');
 	}
+
+
+	private function getAutomatedTrafficList($filter)
+	{
+		$data = [
+			createData('SEMRush', 'Bad User Agent',	DummyDataController::ApplyDuration(335)),
+			createData('Reporting as Firefox', 'Unclassified User Agent', DummyDataController::ApplyDuration(495)),
+			createData('Reporting as Chrome', 'Unclassified User Agent', DummyDataController::ApplyDuration(200)),
+			createData('Reporting as Internet Explorer 9', 'Bad User Agent', DummyDataController::ApplyDuration(198)),
+			createData('MJ12bot', 'Known Violator User Agent', DummyDataController::ApplyDuration(378)),
+			createData('cURL', 'Known Violator User Agent', DummyDataController::ApplyDuration(282))
+		];
+
+		return $data;
+	}
+
 
 	private function getMostFrequestBots($filter)
 	{
