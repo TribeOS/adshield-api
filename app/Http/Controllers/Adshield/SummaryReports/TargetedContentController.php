@@ -5,9 +5,10 @@ namespace App\Http\Controllers\Adshield\SummaryReports;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Input;
+use Request;
 
 use App\Http\Controllers\Adshield\Protection\DummyDataController;
+use App\Http\Controllers\Adshield\Violations\ViolationController;
 
 
 class TargetedContentController extends BaseController
@@ -16,10 +17,10 @@ class TargetedContentController extends BaseController
 
 	public function getData()
 	{
-		$days = Input::get('days', 60);
+		$filter = Request::get("filter", []);
 		$data = [
-			'listData' => $this->getListData($days),
-			'responseCodesByTotalPercentage' => $this->getResponseCodesByTotalPercentage($days),
+			'listData' => $this->getListData($filter),
+			'responseCodesByTotalPercentage' => $this->getResponseCodesByTotalPercentage(0),
 		];
 
 		$data['responseCodesByTotalPercentage'] = DummyDataController::ApplyDuration($data['responseCodesByTotalPercentage']);
@@ -29,17 +30,58 @@ class TargetedContentController extends BaseController
 	}
 
 
-	private function getListData($days)
+	private function getListData($filter)
 	{
 		function generateData($name, $noRequests) {
 			return ['path' => $name, 'noRequests' => $noRequests];
 		}
-		$data = [
-			generateData('/', DummyDataController::ApplyDuration(32)),
-			generateData('/blogs.ph', DummyDataController::ApplyDuration(12)),
-			generateData('/the-perfect-image-to-kick-off-the-new-year', DummyDataController::ApplyDuration(4)),
-			generateData('/10-olympic-sports-you-didnt-know-existed/10', DummyDataController::ApplyDuration(4))
-		];
+		
+		$page = Request::get("page", 0);
+		$limit = Request::get("limit", 10);
+
+		$data = DB::table('trViolations')
+			->join('trViolationSession', function($join) use($filter) {
+				$join->on('trViolationSession.userKey', '=', 'trViolations.userKey')
+					->on('trViolationSession.ip', '=', 'trViolations.ip')
+					->where('trViolations.userKey', '=', $filter['userKey'])
+					->whereIn('trViolations.violation', [
+						ViolationController::V_UNCLASSIFIED_UA,
+						ViolationController::V_BAD_UA,
+						ViolationController::V_KNOWN_VIOLATOR_UA,
+						ViolationController::V_AGGREGATOR_UA
+					]);
+
+					if (!empty($filter['duration']) && $filter['duration'] > 0)
+					{
+						$duration = $filter['duration'];
+						$join->where("createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
+					}
+			})
+			->join('trViolationLog', function($join) use($filter) {
+				$join->on('trViolationLog.sessionId', '=', 'trViolationSession.id')
+					->on('trViolationLog.infoId', '=', 'trViolations.violationInfo')
+					->on('trViolationLog.createdOn', '=', 'trViolations.createdOn')
+					->where('trViolations.userKey', '=', $filter['userKey'])
+					->whereIn('trViolations.violation', [
+						ViolationController::V_UNCLASSIFIED_UA,
+						ViolationController::V_BAD_UA,
+						ViolationController::V_KNOWN_VIOLATOR_UA,
+						ViolationController::V_AGGREGATOR_UA
+					]);
+
+					if (!empty($filter['duration']) && $filter['duration'] > 0)
+					{
+						$duration = $filter['duration'];
+						$join->where("createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
+					}
+			})
+			->selectRaw("trViolationLog.url AS path, COUNT(*) AS noRequests")
+			->groupBy('trViolationLog.url')
+			->orderBy('trViolationLog.url', 'asc');
+
+
+		$data = $data->paginate($limit);
+
 		return $data;
 	}
 
