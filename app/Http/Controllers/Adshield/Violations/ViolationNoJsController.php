@@ -6,7 +6,7 @@ use App\Http\Controllers\Adshield\Violations\ViolationController;
 
 
 /**
- * handles No JS violation. (when JS is disabled on the server)
+ * handles No JS violation. (when JS is disabled on the client/browser)
  */
 class ViolationNoJsController extends ViolationController {
 
@@ -38,6 +38,9 @@ class ViolationNoJsController extends ViolationController {
 		try {
 			$this->logViolation($userKey, $ip['binary'], $ip['string'], ViolationController::V_NO_JS, $info);
 		} catch (\Exception $e) { }
+
+		return response('', 200)
+			->header('Cache-Control', 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0');
 	}
 
 }
