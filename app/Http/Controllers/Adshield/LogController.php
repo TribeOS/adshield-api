@@ -7,38 +7,85 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Http\Request;
+use Auth;
 
-
+use App\Model\SystemLog;
 
 class LogController extends BaseController
 {
 
+	const ACT_VIEW_REPORT = 'VIEW_REPORT';
+	const ACT_LOG_IN = 'LOG_IN';
+	const ACT_LOG_OUT = 'LOG_OUT';
+	const ACT_SAVE_SETTINGS = 'SAVE_SETTINGS';
+
+
 	public function handle(Request $request)
 	{
+
+		$userId = 0;
+        try {
+            $token = $request->bearerToken();
+            $user = LoginController::getUserIdFromToken($token, true); //get USER instead of just the id
+        } catch (Exception $e) {
+        	die($e->getMessage());
+        }
+
 		if ($request->isMethod('get'))
 		{
-			return $this->getData();
+			return $this->getList($user);
 		}
 	}
 
 
-	private function getData()
+	/**
+	 * Gets list of logs from the database,
+	 * this data is paginated, and should be interpreted accordingly in the frontend
+	 * @return [type] [description]
+	 */
+	private function getList($user)
 	{
-		$days = Input::get("duration", 7);
-		$data = [];
 
-		function generateData($action, $user, $date) {
-			return ['count' => 0, 'action' => $action, 'user' => $user, 'date' => $date];
+		$page = Input::get('page', 0);
+		$limit = Input::get('limit', 10);
+		$filter = Input::get('filter', []);
+
+		$data = DB::table("systemLog")
+			->join("users", "users.id", "=", "systemLog.userId")
+			->selectRaw("systemLog.*, username")
+			->where("systemLog.accountId", "=", $user->accountId)
+			->orderBy('systemLog.createdOn', 'desc');
+
+		if (!empty($filter['duration']) && $filter['duration'] > 0)
+		{
+			$duration = $filter['duration'];
+			$data->where("systemLog.createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
 		}
 
-		$data[] = generateData('view report', 'aman adriano', '2018-06-02 05:32:12');
-		$data[] = generateData('view report', 'aman adriano', '2018-06-04 01:17:11');
-		$data[] = generateData('view report', 'aman adriano', '2018-06-05 15:58:15');
-		$data[] = generateData('view report', 'aman adriano', '2018-06-06 18:02:32');
+		$data = $data->paginate($limit);
 
-		return response()->json(['id'=>1, 'pageData' => $data])
-			->header('Content-Type', 'application/vnd.api+json');
+		return response()->json(['id' => 0, 'listData' => $data]);
 
+	}
+
+
+	/**
+	 * creates a system log record
+	 * this would be called from the other class/objects as the event occurs
+	 * @param [type] $action  [description]
+	 * @param [type] $details [description]
+	 * @param [type] $userId  [description]
+	 * @param [type] $userKey [description]
+	 */
+	public static function Log($userId, $accountId, $action, $details)
+	{
+		$log = new SystemLog();
+		$log->action = $action;
+		$log->details = $details;
+		$log->userId = $userId;
+		$log->createdOn = gmdate("Y-m-d H:i:s");
+		$log->accountId = $accountId;
+		$log->save();
 	}
 
 }

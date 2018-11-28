@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 
 use App\Http\Controllers\Adshield\Settings\UserWebsitesController;
 use App\Model\User;
+use App\Http\Controllers\Adshield\LogController;
 
 
 class LoginController extends Controller
@@ -25,8 +26,9 @@ class LoginController extends Controller
      * Stores the accesstoken to the database. token is sha1($token) for security purpose
      * all succeeding access/comparisons to accessToken would need to be hashed sha1()
      */
-    public function login()
+    public function login(Request $request)
     {
+
         $username = Input::get("username");
         $password = Input::get("password");
 
@@ -45,6 +47,8 @@ class LoginController extends Controller
         $this->saveToken(sha1($token), $user);
 
         $response['websites'] = UserWebsitesController::getUserWebsites($user->acountId);
+
+        LogController::Log($user->id, $user->accountId, LogController::ACT_LOG_IN, '');
 
         return response()->json($response)
             ->header('Content-Type', 'application/vnd.api+json');
@@ -70,8 +74,13 @@ class LoginController extends Controller
 
     public function logout(Request $request)
     {
+
         $token = $request->bearerToken();
         if (empty($token)) return response("Invalid request", 401);
+
+        //create a log of this event
+        $user = LoginController::getUserIdFromToken($token, true);
+        LogController::Log($user->userId, $user->accountId, LogController::ACT_LOG_OUT, '');
 
         DB::table("accessTokens")
             ->where("accessToken", sha1($token))
