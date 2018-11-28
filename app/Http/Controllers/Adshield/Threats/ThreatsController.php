@@ -202,7 +202,6 @@ class ThreatsController extends BaseController
 		}
 
 		$data = $data->paginate($limit);
-
 		return $data;
 	}
 

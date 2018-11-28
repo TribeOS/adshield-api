@@ -19,6 +19,8 @@ use App\Model\UserWebsite;
 class UserWebsitesController extends Controller
 {
 
+    const MAX_KEY_CHAR = 12; //max characteres for a userkey (this is used when generating a rnadom user key)
+
     public function handle(Request $request)
     {
         $userId = 0;
@@ -34,7 +36,8 @@ class UserWebsitesController extends Controller
         else if ($request->isMethod('post'))
         {
             $website = Input::get("userWebsite");
-            return $this->create($user, $website['domain'], $website['userKey']);
+            $userKey = !empty($website['userKey']) ? $website['userKey'] : '';
+            return $this->create($user, $website['domain'], $userKey);
         }
         else if ($request->isMethod('delete'))
         {
@@ -80,14 +83,21 @@ class UserWebsitesController extends Controller
         //remove website?
     }
 
-    private function create($user, $domain, $userKey)
+    private function create($user, $domain, $userKey="")
     {
+        if (empty($userKey)) $userKey = $this->GenerateUserKey($domain);
         //check if user key is unique FIRST
         $record = UserWebsite::where("userKey", $userKey)->first();
 
         if (!empty($record)) {
             return response("The Key '$userKey' already exists.", 500)
                 ->header('Content-Type', 'text/plain');
+        }
+
+        $record = UserWebsite::where("domain", $domain)->first();
+        if (!empty($record)) {
+            return response("The domain '$domain' is already registered.", 500)
+                ->header('Contet-Type', 'text/plain');
         }
 
         try {
@@ -103,6 +113,30 @@ class UserWebsitesController extends Controller
         }
         
         return response($record, 200);
+    }
+
+
+    /**
+     * generate a UserKey from the given domain 
+     * @param [type] $domain [description]
+     */
+    private function GenerateUserKey($domain)
+    {
+        $userKey = $domain;
+        if (strpos($domain, '.') !== false)
+        {
+            $userKey = explode('.', $domain);
+            $userKey = $userKey[0]; //get the first part only.
+        }
+        $userKey = strtolower($userKey);
+        $record = UserWebsite::where("userKey", $userKey)->first();
+        if (!empty($record))
+        {
+            //key already exists, create a new one
+            $domain = str_random(self::MAX_KEY_CHAR);
+            return $this->GenerateUserKey($domain);
+        }
+        return $userKey;
     }
 
 }

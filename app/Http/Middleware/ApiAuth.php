@@ -31,8 +31,11 @@ class ApiAuth
                     'msg' => "Invalid access or session has already expired. Try loggin in again."
                 ]
             ];
-            return response()->json($error)
-                ->header('Content-Type', 'application/vnd.api+json');
+            return response(json_encode($error), 401)
+                ->header('Content-Type', 'application/vnd.api+json')
+                ->header('Access-Control-Allow-Origin', '*')
+                ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+                ->header('Access-Control-Allow-Headers', 'Authorization');
         }
 
         // $key = $request->route('apikey');
@@ -47,6 +50,7 @@ class ApiAuth
 
         return $next($request)
             ->header('Access-Control-Allow-Origin', '*')
-            ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+            ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+            ->header('Access-Control-Allow-Headers', 'Authorization');
     }
 }
