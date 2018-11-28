@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Adshield\Violations;
 use Illuminate\Routing\Controller as BaseController;
 use App\Http\Controllers\Adshield\ApiStatController;
 use App\Http\Controllers\Adshield\Protection\IpInfoController;
+use App\Http\Controllers\Adshield\VisualizerController;
 use App\Model\Violation;
 use App\Model\ViolationInfo;
 use App\Model\ViolationIp;
@@ -347,6 +348,8 @@ class ViolationController extends BaseController {
 		$log->infoId = $infoId;
 		$log->url = isset($data['visitUrl']) ? $data['visitUrl'] : '';
 		$log->save();
+		//trigger new logged data
+		VisualizerController::BroadcastStats();
 	}
 
 	/**
