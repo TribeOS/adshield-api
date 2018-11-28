@@ -55,7 +55,6 @@ class ApiReferrerController extends BaseController
 			// $stat->LogStat($hash, urldecode($fullUrl), $result, $source, $subSource, $userAgent, $userKey);
 		}
 		echo json_encode(array('result'=>"$result"));
-		VisualizerController::BroadcastStats();
 	}
 
 	/**
