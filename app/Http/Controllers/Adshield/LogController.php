@@ -7,7 +7,7 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Http\Request;
-use Auth;
+use Config;
 
 use App\Model\SystemLog;
 
@@ -15,6 +15,7 @@ class LogController extends BaseController
 {
 
 	const ACT_VIEW_REPORT = 'VIEW_REPORT';
+	const ACT_VIEW_GRAPH_IP = 'VIEW_GRAPH_FOR_IP';
 	const ACT_LOG_IN = 'LOG_IN';
 	const ACT_LOG_OUT = 'LOG_OUT';
 	const ACT_SAVE_SETTINGS = 'SAVE_SETTINGS';
@@ -86,6 +87,35 @@ class LogController extends BaseController
 		$log->createdOn = gmdate("Y-m-d H:i:s");
 		$log->accountId = $accountId;
 		$log->save();
+	}
+
+	/**
+	 * shorthand for Log() using the Config object to get the user details
+	 */
+	public static function QuickLog($action, $info=[])
+	{
+
+		$details = '';
+		switch($action)
+		{
+			case self::ACT_VIEW_REPORT:
+				$details = $info['title'] . ' for ' . $info['userKey'];
+				if (isset($info['page'])) $details .= ', Page : ' . $info['page'];
+				break;
+			case self::ACT_VIEW_GRAPH_IP:
+				$details = $info['title'] . ' Graph for ' . $info['userKey'] . ', IP : ' . $info['ip'];
+				break;
+			case self::ACT_SAVE_SETTINGS:
+				$details = $info['title'] . ' Config';
+				break;
+		}
+
+		try {
+			$user = Config::get('user', []);
+			self::Log($user->userId, $user->accountId, $action, $details);
+		} catch (Exception $e) {
+			echo $e->getMessage();
+		}
 	}
 
 }

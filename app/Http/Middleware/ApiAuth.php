@@ -4,6 +4,8 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Support\Facades\DB;
+use Config;
+
 
 class ApiAuth
 {
@@ -38,6 +40,7 @@ class ApiAuth
                 ->header('Access-Control-Allow-Headers', 'Authorization');
         }
 
+        Config::set('user', $access);
         // $key = $request->route('apikey');
         // if (empty($key)) return redirect()->route('ApiError');
 

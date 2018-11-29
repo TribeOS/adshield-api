@@ -40,20 +40,20 @@ class VisualizerController extends BaseController
 			->header('Content-Type', 'application/vnd.api+json');
 	}
 
-	public static function BroadcastStats()
+	public static function BroadcastStats($userKey, $time)
 	{
 		$self = new VisualizerController();
 		$result = [
 			'adshieldstats' => [
 				'id' => 0,
-				'stat' => $self->GetAllStatsVisualizer(),
+				'stat' => $self->GetAllStatsVisualizer(null, $time),
 				'meta' => 'general data for stats.'
 			]
 		];
 		event(new AdShieldUpdated($result));
 	}
 
-	private function GetAllStatsVisualizer($userKey=null)
+	private function GetAllStatsVisualizer($userKey=null, $time)
 	{
 		$data = [];
 		$data['stat'] = $this->GetStats($userKey,
@@ -66,7 +66,13 @@ class VisualizerController extends BaseController
 			'month' => $this->GetAdshieldTransactionSince($userKey, gmdate("Y-m-1 H:i:s", strtotime('midnight this month'))),
 		];
 
-		$data['transactionsInterval'] = $this->GetAdshieldTransactionForPastTime($userKey);
+		$data['transactionsInterval'] =$this->GetAdshieldTransactionForPastTime($userKey, $time);
+
+		// $data['transactionsInterval'] = [
+		// 	'data' => $this->GetAdshieldTransactionForPastTime($userKey),
+		// 	'userKey' => $userKey
+		// ];
+
 		$data['adClicks'] = [
 			'today' => $this->GetTotalAdClicks($userKey, gmdate("Y-m-d H:i:s", strtotime('midnight today'))),
 			'week' => $this->GetTotalAdClicks($userKey, gmdate("Y-m-d H:i:s", strtotime('midnight this week'))),
@@ -91,12 +97,9 @@ class VisualizerController extends BaseController
 	 * gets the transactions count for each $interval seconds on a $steps steps
 	 * use to populate chartJS graph
 	 */
-	public function GetAdshieldTransactionForPastTime($userKey, $interval=2, $steps=7)
+	public function GetAdshieldTransactionForPastTime($userKey, $time)
 	{
-		// $timeSince = ($interval * $steps) . ' seconds ago';
-		$timeSince = $interval . ' seconds ago';
-		$total = ApiStatController::GetTotalTransactionsSince($userKey, $timeSince);
-
+		$total = ApiStatController::GetLiveTransactions($userKey, $time);
 		return $total;
 	}
 

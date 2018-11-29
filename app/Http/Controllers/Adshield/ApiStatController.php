@@ -224,4 +224,43 @@ class ApiStatController extends BaseController
 		return $data->total;
 	}
 
+
+	/**
+	 * fetches the live data we want to show to the live transactions graph widget
+	 */
+	public static function GetLiveTransactions($userKey=null, $time)
+	{
+		/*
+		- get the last log time for the given userkey (if no userkey just get the last log before $time)
+		- get all the stats since that time up to now
+		*/
+		
+		$lastTime = DB::table("trViolationLog")
+			->join("trViolationSession", function($join) use($userKey) {
+				$join->on("trViolationSession.id", "=", "trViolationLog.sessionId");
+				if ($userKey !== null) $join->where("trViolationSession.userKey", "=", $userKey);
+			})
+			->where("trViolationLog.createdOn", "<", $time);
+			->selectRaw("MAX(trViolationLog.createdOn) AS lastTime")
+			->first();
+		if (empty($lastTime)) {
+			$lastTime = gmdate("Y-m-d H:i:s", strtotime("2 seconds ago"));
+		} else {
+			$lastTime = $lastTime->lastTime;
+		}
+
+		$params = [$lastTime, $time];
+		$data = DB::table("trViolationLog")
+			->join("trViolationSession", "trViolationSession.id", "=", "trViolationLog.sessionId")
+			->whereBetween("trViolationLog.createdOn", $params)
+			->selectRaw("COUNT(*) AS total");
+
+		// if (!empty($userKey)) $data->where("userKey", $userKey);
+		if (!empty($userKey)) $data->where("trViolationSession.userKey", $userKey);
+
+		$data = $data->first();
+		if (empty($data)) return 0;
+		return $data->total;
+	}
+
 }

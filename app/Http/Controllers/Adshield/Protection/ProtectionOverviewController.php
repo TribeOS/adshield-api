@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 
 use App\Http\Controllers\Adshield\Violations\ViolationController;
+use App\Http\Controllers\Adshield\LogController;
 
 
 class ProtectionOverviewController extends BaseController
@@ -56,6 +57,11 @@ class ProtectionOverviewController extends BaseController
 			$graphData['label'][] = $this->labels[$d->violation];
 		}
 
+
+		LogController::QuickLog(LogController::ACT_VIEW_REPORT, [
+			'title' => 'Protection Overview',
+			'userKey' => $filter['userKey']
+		]);
 
 		return response()->json(['id'=>0, 'graphData' => $graphData])
 			->header('Content-Type', 'application/vnd.api+json');

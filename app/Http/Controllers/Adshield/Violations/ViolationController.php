@@ -349,7 +349,7 @@ class ViolationController extends BaseController {
 		$log->url = isset($data['visitUrl']) ? $data['visitUrl'] : '';
 		$log->save();
 		//trigger new logged data
-		VisualizerController::BroadcastStats();
+		VisualizerController::BroadcastStats($userKey, $log->createdOn);
 	}
 
 	/**
