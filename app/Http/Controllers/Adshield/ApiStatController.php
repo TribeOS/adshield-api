@@ -243,17 +243,17 @@ class ApiStatController extends BaseController
 			->where("trViolationLog.createdOn", "<", $time)
 			->selectRaw("MAX(trViolationLog.createdOn) AS lastTime")
 			->first();
-			
+
 		if (empty($lastTime)) {
 			$lastTime = gmdate("Y-m-d H:i:s", strtotime("2 seconds ago"));
 		} else {
 			$lastTime = $lastTime->lastTime;
 		}
 
-		$params = [$lastTime, $time];
 		$data = DB::table("trViolationLog")
 			->join("trViolationSession", "trViolationSession.id", "=", "trViolationLog.sessionId")
-			->whereBetween("trViolationLog.createdOn", $params)
+			->where("trViolationLog.createdOn", ">", $lastTime)
+			->where("trViolationLog.createdOn", "<=", $time)
 			->selectRaw("COUNT(*) AS total");
 
 		// if (!empty($userKey)) $data->where("userKey", $userKey);
