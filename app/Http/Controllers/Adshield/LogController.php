@@ -61,7 +61,7 @@ class LogController extends BaseController
 		$data = DB::table("systemLog")
 			->join("users", "users.id", "=", "systemLog.userId")
 			->join("asIpCachedInfo", "asIpCachedInfo.ip", "=", "systemLog.ip")
-			->selectRaw("systemLog.*, username, ipStr, city, country")
+			->selectRaw("action, details, systemLog.createdOn, username, ipStr, city, country")
 			->where("systemLog.accountId", "=", $user->accountId)
 			->orderBy('systemLog.createdOn', 'desc');
 
@@ -72,7 +72,6 @@ class LogController extends BaseController
 		}
 
 		$data = $data->paginate($limit);
-		print_r($data);
 
 		return response()->json(['id' => 0, 'listData' => $data]);
 
