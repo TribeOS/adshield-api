@@ -240,9 +240,10 @@ class ApiStatController extends BaseController
 				$join->on("trViolationSession.id", "=", "trViolationLog.sessionId");
 				if ($userKey !== null) $join->where("trViolationSession.userKey", "=", $userKey);
 			})
-			->where("trViolationLog.createdOn", "<", $time);
+			->where("trViolationLog.createdOn", "<", $time)
 			->selectRaw("MAX(trViolationLog.createdOn) AS lastTime")
 			->first();
+			
 		if (empty($lastTime)) {
 			$lastTime = gmdate("Y-m-d H:i:s", strtotime("2 seconds ago"));
 		} else {
