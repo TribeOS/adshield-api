@@ -10,6 +10,9 @@ use Request;
 
 use App\Model\Country;
 
+use App\Http\Controllers\Adshield\LogController;
+
+
 class CountryBlockListController extends BaseController
 {
 
@@ -65,6 +68,14 @@ class CountryBlockListController extends BaseController
 			'addedOn' => gmdate("Y-m-d H:i:s"),
 			'countryBlockList' => ['country' => $id]
 		];
+
+		$country = Country::where("id", $id)->first();
+
+		LogController::QuickLog(LogController::ACT_COUNTRY_ADD, [
+			'country' => $country->countryName,
+			'userKey' => $userKey
+		]);
+
 		return response()->json($data)
 			->header('Content-Type', 'application/vnd.api+json')
 			->header('Access-Control-Allow-Headers', 'Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With');
@@ -72,7 +83,9 @@ class CountryBlockListController extends BaseController
 
 	private function remove($id)
 	{
+		// $country = Country::where("id", $id)->first();
 		DB::table("asBlockedCountries")->where("id", $id)->delete();
+
 		return response()->json([])
 			->header('Content-Type', 'application/vnd.api+json')
 			->header('Access-Control-Allow-Headers', 'Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With');

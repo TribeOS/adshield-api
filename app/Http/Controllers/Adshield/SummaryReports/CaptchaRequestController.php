@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 
 use App\Http\Controllers\Adshield\Protection\DummyDataController;
+use App\Http\Controllers\Adshield\LogController;
 
 
 class CaptchaRequestController extends BaseController
@@ -25,6 +26,11 @@ class CaptchaRequestController extends BaseController
 
 		$data['totalTrafficVsCaptcha'] = DummyDataController::ApplyDuration($data['totalTrafficVsCaptcha']);
 		$data['attemptsSolvedVsFailed'] = DummyDataController::ApplyDuration($data['attemptsSolvedVsFailed']);
+
+		// LogController::QuickLog(LogController::ACT_VIEW_REPORT, [
+		// 	'title' => 'Captcha Requests',
+		// 	'userKey' => $filter['userKey']
+		// ]);
 
 		return response()->json(['id'=>0, 'pageData' => $data])
 			->header('Content-Type', 'application/vnd.api+json');

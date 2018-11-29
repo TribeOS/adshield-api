@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Input;
 
 use App\Http\Controllers\Adshield\Violations\ViolationController;
 use App\Model\Violation;
+use App\Http\Controllers\Adshield\LogController;
 
 
 class JsNotLoadedController extends BaseController
@@ -42,6 +43,12 @@ class JsNotLoadedController extends BaseController
 		$data = $data->paginate($limit);
 		$data->appends([
 			'limit' => $limit
+		]);
+
+		LogController::QuickLog(LogController::ACT_VIEW_REPORT, [
+			'title' => 'JS Not Loaded',
+			'userKey' => $filter['userKey'],
+			'page' => $page
 		]);
 
 		return response()->json(['id' => 0, 'listData' => $data]);
@@ -82,6 +89,12 @@ class JsNotLoadedController extends BaseController
 			$graphData['data'][] = $v->total;
 			$graphData['label'][] = $this->labels[$v->violation];
 		}
+
+		LogController::QuickLog(LogController::ACT_VIEW_GRAPH_IP, [
+			'title' => 'JS Not Loaded',
+			'userKey' => $filter['userKey'],
+			'ip' => $ip
+		]);
 
 		return response()->json(['id'=>0, 'graphData' => $graphData]);
 	}

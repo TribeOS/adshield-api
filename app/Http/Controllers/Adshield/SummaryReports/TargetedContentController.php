@@ -9,6 +9,7 @@ use Request;
 
 use App\Http\Controllers\Adshield\Protection\DummyDataController;
 use App\Http\Controllers\Adshield\Violations\ViolationController;
+use App\Http\Controllers\Adshield\LogController;
 
 
 class TargetedContentController extends BaseController
@@ -81,6 +82,12 @@ class TargetedContentController extends BaseController
 
 
 		$data = $data->paginate($limit);
+
+		LogController::QuickLog(LogController::ACT_VIEW_REPORT, [
+			'title' => 'Targeted Content',
+			'userKey' => $filter['userKey'],
+			'page' => $page
+		]);
 
 		return $data;
 	}

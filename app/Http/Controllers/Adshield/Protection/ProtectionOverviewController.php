@@ -11,6 +11,7 @@ use App\Http\Controllers\Adshield\Violations\ViolationController;
 use App\Http\Controllers\Adshield\LogController;
 
 
+
 class ProtectionOverviewController extends BaseController
 {
 

@@ -15,6 +15,8 @@ use App\Http\Controllers\Adshield\LoginController;
 use App\Model\User;
 use App\Model\UserWebsite;
 
+use App\Http\Controllers\Adshield\LogController;
+
 
 class UserWebsitesController extends Controller
 {
@@ -112,6 +114,12 @@ class UserWebsitesController extends Controller
             return response($e->getMessage(), 500);
         }
         
+
+        LogController::QuickLog(LogController::ACT_WEBSITE_ADD, [
+            'userKey' => $userKey,
+            'domain' => $record->domain
+        ]);
+
         return response($record, 200);
     }
 

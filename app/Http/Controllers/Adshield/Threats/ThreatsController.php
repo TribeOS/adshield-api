@@ -10,6 +10,7 @@ use Request;
 use App\Http\Controllers\Adshield\Protection\DummyDataController;
 
 use App\Http\Controllers\Adshield\Violations\ViolationController;
+use App\Http\Controllers\Adshield\LogController;
 
 
 class ThreatsController extends BaseController
@@ -22,6 +23,10 @@ class ThreatsController extends BaseController
 			ViolationController::V_AGGREGATOR_UA => 'Aggregator User Agent'
 		];
 
+	/**
+	 * gets data for "Summary" page under Threats Summary
+	 * @return [type] [description]
+	 */
 	public function getGraphData()
 	{
 		$filter = Request::get("filter", []);
@@ -31,6 +36,12 @@ class ThreatsController extends BaseController
 			'topThreatsByCountry' => $this->getTopThreatsByCountry($filter),
 			'threatsAverted' => $this->getThreatsAverted($filter)
 		];
+
+		LogController::QuickLog(LogController::ACT_VIEW_REPORT, [
+			'title' => 'Threats Summary',
+			'userKey' => $filter['userKey']
+		]);
+
 		return response()->json(['id'=>0, 'graphData' => $graphData])
 			->header('Content-Type', 'application/vnd.api+json');
 	}
@@ -145,6 +156,10 @@ class ThreatsController extends BaseController
 	}
 
 
+	/**
+	 * Get automated traffic data under threats summary
+	 * @return [type] [description]
+	 */
 	public function getAutomatedTraffic()
 	{
 
@@ -166,6 +181,11 @@ class ThreatsController extends BaseController
 
 		$data['botsByClassification'] = DummyDataController::ApplyDuration($data['botsByClassification']);
 		$data['mostFrequentBots'] = DummyDataController::ApplyDuration($data['mostFrequentBots']);
+
+		LogController::QuickLog(LogController::ACT_VIEW_REPORT, [
+			'title' => 'Automated Traffic',
+			'userKey' => $filter['userKey']
+		]);
 
 		return response()->json(['id'=>0, 'pageData' => $data])
 			->header('Content-Type', 'application/vnd.api+json');
@@ -304,6 +324,12 @@ class ThreatsController extends BaseController
 
 		$data = $data->paginate($limit);
 
+		LogController::QuickLog(LogController::ACT_VIEW_REPORT, [
+			'title' => 'Traffic By Organization',
+			'userKey' => $filter['userKey'],
+			'page' => $page
+		]);
+
 		return response()->json(['id'=>0, 'listData' => $data])
 			->header('Content-Type', 'application/vnd.api+json');		
 	}
@@ -335,8 +361,19 @@ class ThreatsController extends BaseController
 				->groupBy("country", "rawInfo")
 				->get();
 
+			LogController::QuickLog(LogController::ACT_VIEW_REPORT, [
+				'title' => 'Suspicious Countries Map',
+				'userKey' => $filter['userKey']
+			]);
+
 			return response()->json(['id' => 0, 'pageData' => $data]);
 		}
+
+		LogController::QuickLog(LogController::ACT_VIEW_REPORT, [
+			'title' => 'Suspicious Countries',
+			'userKey' => $filter['userKey'],
+			'page' => $page
+		]);
 
 		$data->selectRaw("COUNT(*) AS noRequests, country")
 			->orderBy("country")

@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 
 use App\Http\Controllers\Adshield\Violations\ViolationController;
+use App\Http\Controllers\Adshield\LogController;
 
 
 class KnownViolatorUserAgentController extends BaseController
@@ -40,6 +41,12 @@ class KnownViolatorUserAgentController extends BaseController
 		$data = $data->paginate($limit);
 		$data->appends([
 			'limit' => $limit
+		]);
+
+		LogController::QuickLog(LogController::ACT_VIEW_REPORT, [
+			'title' => 'Known Violator User Agent',
+			'userKey' => $filter['userKey'],
+			'page' => $page
 		]);
 
 		return response()->json(['id' => 0, 'listData' => $data]);
@@ -80,6 +87,11 @@ class KnownViolatorUserAgentController extends BaseController
 			$graphData['label'][] = $this->labels[$v->violation];
 		}
 
+		LogController::QuickLog(LogController::ACT_VIEW_GRAPH_IP, [
+			'title' => 'Known Violator User Agent',
+			'userKey' => $filter['userKey'],
+			'ip' => $ip
+		]);
 
 		return response()->json(['id'=>0, 'graphData' => $graphData]);
 

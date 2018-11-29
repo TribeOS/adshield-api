@@ -24,15 +24,17 @@ class IpInfoController extends BaseController
 		$info = DB::table("asIpCachedInfo")
 			->where("ip", $ipBinary)
 			->first();
+		$id = 0;
 		if (empty($info))
 		{
 			$url = 'http://ip-api.com/json/' . $ip;
 			$response = file_get_contents($url);
 			$info = json_decode($response, true);
-			self::SaveIpInfo($ip, $info, $response);
+			$id = self::SaveIpInfo($ip, $info, $response);
 		}
 		else if (strtotime($info->updatedOn) < strtotime("15 days ago"))
 		{
+			$id = $info->id;
 			$url = 'http://ip-api.com/json/' . $ip;
 			$response = file_get_contents($url);
 			$info = json_decode($response, true);
@@ -47,6 +49,7 @@ class IpInfoController extends BaseController
 		if (!isset($info['country'])) $info['country'] = '';
 		if (!isset($info['org'])) $info['org'] = '';
 		if (!isset($info['isp'])) $info['isp'] = '';
+		$info['id'] = $id;
 
 		return $info;
 	}
@@ -61,11 +64,12 @@ class IpInfoController extends BaseController
 	 */
 	public static function SaveIpInfo($ip, $info, $response, $expired = false)
 	{
+		$id = 0;
 		//insert/replace?
 		if (!$expired)
 		{
-			DB::table("asIpCachedInfo")
-				->insert([
+			$id = DB::table("asIpCachedInfo")
+				->insertGetId([
 					'ipStr' => $ip,
 					'ip' => inet_pton($ip),
 					'org' => $info['org'] ?? '',
@@ -89,6 +93,7 @@ class IpInfoController extends BaseController
 				])
 				->where('ip', inet_pton($ip));
 		}
+		return $id;
 	}
 
 

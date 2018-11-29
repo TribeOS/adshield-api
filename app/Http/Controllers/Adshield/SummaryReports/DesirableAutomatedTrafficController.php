@@ -9,6 +9,7 @@ use Request;
 
 use App\Http\Controllers\Adshield\Protection\DummyDataController;
 use App\Http\Controllers\Adshield\Violations\ViolationController;
+use App\Http\Controllers\Adshield\LogController;
 
 
 class DesirableAutomatedTrafficController extends BaseController
@@ -57,6 +58,14 @@ class DesirableAutomatedTrafficController extends BaseController
 			->orderBy('trafficName');
 
 		$data = $data->paginate($limit);
+
+
+		LogController::QuickLog(LogController::ACT_VIEW_REPORT, [
+			'title' => 'Desirable Automated Traffic',
+			'userKey' => $filter['userKey'],
+			'page' => $page
+		]);
+
 		return $data;
 
 	}

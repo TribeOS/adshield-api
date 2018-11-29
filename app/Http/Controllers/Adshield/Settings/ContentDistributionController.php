@@ -12,6 +12,8 @@ use App\Http\Controllers\Adshield\LoginController;
 use App\Model\User;
 use App\Model\UserConfig;
 
+use App\Http\Controllers\Adshield\LogController;
+
 
 class ContentDistributionController extends Controller
 {
@@ -81,6 +83,10 @@ class ContentDistributionController extends Controller
 		$value['contentDistribution'] = $settings['pageData'];
 		$config->config = json_encode($value);
 		$config->save();
+
+		LogController::QuickLog(LogController::ACT_VIEW_GRAPH_IP, [
+			'title' => 'Content Distribution'
+		]);
 
 		return response()->json(['id'=>1, 'pageData' => $settings]);
 	}

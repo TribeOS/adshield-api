@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Config;
 
 use App\Model\SystemLog;
+use App\Http\Controllers\Adshield\Protection\IpInfoController;
+use App\Http\Controllers\Adshield\ApiStatController;
 
 class LogController extends BaseController
 {
@@ -19,6 +21,11 @@ class LogController extends BaseController
 	const ACT_LOG_IN = 'LOG_IN';
 	const ACT_LOG_OUT = 'LOG_OUT';
 	const ACT_SAVE_SETTINGS = 'SAVE_SETTINGS';
+	
+	const ACT_WEBSITE_ADD = 'WEBSITE_ADD';
+
+	const ACT_COUNTRY_ADD = "BLOCKED_COUNTRY_ADD";
+	const ACT_COUNTRY_REMOVE = "BLOCKED_COUNTRY_REMOVE";
 
 
 	public function handle(Request $request)
@@ -53,7 +60,8 @@ class LogController extends BaseController
 
 		$data = DB::table("systemLog")
 			->join("users", "users.id", "=", "systemLog.userId")
-			->selectRaw("systemLog.*, username")
+			->join("asIpCachedInfo", "asIpCachedInfo.ip", "=", "systemLog.ip")
+			->selectRaw("systemLog.*, username, ipStr, city, country")
 			->where("systemLog.accountId", "=", $user->accountId)
 			->orderBy('systemLog.createdOn', 'desc');
 
@@ -86,7 +94,20 @@ class LogController extends BaseController
 		$log->userId = $userId;
 		$log->createdOn = gmdate("Y-m-d H:i:s");
 		$log->accountId = $accountId;
+		$log->ip = self::GetIp();
 		$log->save();
+	}
+
+	/**
+	 * saves the IP information (geolocation, org, etc... from ip-api.com service)
+	 * then returns the binary IP. (this is used as an index as well for our cached IP information)
+	 */
+	private static function GetIp()
+	{
+		$ips = ApiStatController::GetIPBinary(true);
+		$ipInfo = IpInfoController::GetIpInfo($ips[1]);
+		return $ips[0];
+
 	}
 
 	/**
@@ -107,6 +128,15 @@ class LogController extends BaseController
 				break;
 			case self::ACT_SAVE_SETTINGS:
 				$details = $info['title'] . ' Config';
+				break;
+			case self::ACT_WEBSITE_ADD:
+				$details = "New website created, " . $filter['domain'] . ". UserKey : " . $info['userKey'];
+				break;
+			case self::ACT_COUNTRY_ADD:
+				$details = "Added new country, " . $info['country'] .  " to Website : " . $info['userKey'];
+				break;
+			case self::ACT_COUNTRY_REMOVE:
+				$details = "Removed country, " . $info['country'] .  " from Website : " . $info['userKey'];
 				break;
 		}
 

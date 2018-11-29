@@ -11,6 +11,8 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Adshield\LoginController;
 use App\Model\Account;
 
+use App\Http\Controllers\Adshield\LogController;
+
 
 /**
  * handles setting and fetching of account config
@@ -63,6 +65,11 @@ class AccountManagementController extends BaseController
 		$account = Account::find($accountId);
 		$account->config = json_encode($settings);
 		$account->save();
+
+		LogController::QuickLog(LogController::ACT_SAVE_SETTING, [
+			'title' => 'Account Management'
+		]);
+
 		return response()->json(['id'=>1, 'pageData' => $settings]);
 	}
 

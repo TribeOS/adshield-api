@@ -12,6 +12,8 @@ use App\Http\Controllers\Adshield\LoginController;
 use App\Model\User;
 use App\Model\UserConfig;
 
+use App\Http\Controllers\Adshield\LogController;
+
 
 class ContentProtectionController extends Controller
 {
@@ -71,6 +73,10 @@ class ContentProtectionController extends Controller
 		$value['contentProtection'] = $settings['pageData'];
 		$config->config = json_encode($value);
 		$config->save();
+
+		LogController::QuickLog(LogController::ACT_VIEW_GRAPH_IP, [
+			'title' => 'Content Protection'
+		]);
 		
 		//only one record in the database for this
 		return response()->json(['id'=>1, 'pageData' => $settings]);

@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 
 use App\Http\Controllers\Adshield\Protection\DummyDataController;
+use App\Http\Controllers\Adshield\LogController;
 
 
 class ClickFraudController extends BaseController
@@ -26,6 +27,11 @@ class ClickFraudController extends BaseController
 		$data['automatedClicksVsAdClicks'] = DummyDataController::ApplyDuration($data['automatedClicksVsAdClicks']);
 		$data['topAgencyByAutomatedClicks'] = DummyDataController::ApplyDuration($data['topAgencyByAutomatedClicks']);
 		$data['clickFraudActivity'] = DummyDataController::ApplyDuration($data['clickFraudActivity']);
+
+		// LogController::QuickLog(LogController::ACT_VIEW_REPORT, [
+		// 	'title' => 'Click Fraud',
+		// 	'userKey' => $filter['userKey']
+		// ]);
 
 		return response()->json(['id'=>0, 'pageData' => $data])
 			->header('Content-Type', 'application/vnd.api+json');
