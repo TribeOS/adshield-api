@@ -72,6 +72,7 @@ class LogController extends BaseController
 		}
 
 		$data = $data->paginate($limit);
+		print_r($data);
 
 		return response()->json(['id' => 0, 'listData' => $data]);
 
