@@ -66,7 +66,7 @@ class AccountManagementController extends BaseController
 		$account->config = json_encode($settings);
 		$account->save();
 
-		LogController::QuickLog(LogController::ACT_SAVE_SETTING, [
+		LogController::QuickLog(LogController::ACT_SAVE_SETTINGS, [
 			'title' => 'Account Management'
 		]);
 
