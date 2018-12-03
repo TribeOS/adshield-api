@@ -358,7 +358,7 @@ class ThreatsController extends BaseController
 		{
 			//get map details
 			$data = $data->selectRaw("COUNT(*) AS noRequests, rawInfo, country")
-				->groupBy("country", "asIpCachedInfo.id", "rawInfo")
+				->groupBy("country", "rawInfo")
 				->get();
 
 			LogController::QuickLog(LogController::ACT_VIEW_REPORT, [

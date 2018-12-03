@@ -32,7 +32,7 @@ class IpInfoController extends BaseController
 			$info = json_decode($response, true);
 			$id = self::SaveIpInfo($ip, $info, $response);
 		}
-		else if (strtotime($info->updatedOn) < strtotime("15 days ago"))
+		else if (strtotime($info->updatedOn) < strtotime("30 days ago"))
 		{
 			$id = $info->id;
 			$url = 'http://ip-api.com/json/' . $ip;
