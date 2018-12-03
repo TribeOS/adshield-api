@@ -343,8 +343,9 @@ class ThreatsController extends BaseController
 		$showTable = Request::get("showTable", "false");
 
 		$data = DB::table("trViolations")
+			->join("trViolationIps", "trViolationIps.id", "=", "trViolations.ip")
 			->join("asIpCachedInfo", function($join) use($filter) {
-				$join->on("asIpCachedInfo.id", "=", "trViolations.ip")
+				$join->on("asIpCachedInfo.ip", "=", "trViolationIps.ip")
 					->whereIn('violation', [
 						ViolationController::V_UNCLASSIFIED_UA,
 						ViolationController::V_BAD_UA,
@@ -353,6 +354,7 @@ class ThreatsController extends BaseController
 					]);
 				if (!empty($filter['userKey'])) $join->where("trViolations.userKey", "=", $filter['userKey']);
 			});
+
 
 		if ($showTable == "false")
 		{
