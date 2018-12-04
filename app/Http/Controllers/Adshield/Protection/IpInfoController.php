@@ -13,6 +13,8 @@ date_default_timezone_set("America/New_York");
 class IpInfoController extends BaseController
 {
 
+	const MAX_DAYS_OLD_IP = 15;
+
 	/**
 	 * gets the info of the given IP through ip-api.com service
 	 * IMPT this service has limitations. (like 100 requests per hour or something)
@@ -32,7 +34,7 @@ class IpInfoController extends BaseController
 			$info = json_decode($response, true);
 			$id = self::SaveIpInfo($ip, $info, $response);
 		}
-		else if (strtotime($info->updatedOn) < strtotime("30 days ago"))
+		else if (strtotime($info->updatedOn) < strtotime(self::MAX_DAYS_OLD_IP . " days ago"))
 		{
 			$id = $info->id;
 			$url = 'http://ip-api.com/json/' . $ip;
