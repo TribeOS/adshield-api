@@ -48,7 +48,7 @@ class VisualizerController extends BaseController
 		$result = [
 			'adshieldstats' => [
 				'id' => 0,
-				'stat' => $self->GetAllStatsVisualizer(null, $time),
+				'stat' => $self->GetAllStatsVisualizer($userKey, $time),
 				'meta' => 'general data for stats.'
 			]
 		];
@@ -57,52 +57,6 @@ class VisualizerController extends BaseController
 
 	private function GetAllStatsVisualizer($userKey=null, $time)
 	{
-		$data = [];
-		$data['stat'] = $this->GetStats($userKey,
-			gmdate("Y-m-1 H:i:s", strtotime("midnight this month")),
-			gmdate("Y-m-d H:i:s"));
-
-		$data['transactions'] = [
-			'today' => $this->GetAdshieldTransactionSince($userKey, gmdate("Y-m-d H:i:s", strtotime('midnight today'))),
-			'week' => $this->GetAdshieldTransactionSince($userKey, gmdate("Y-m-d H:i:s", strtotime('midnight this week'))),
-			'month' => $this->GetAdshieldTransactionSince($userKey, gmdate("Y-m-1 H:i:s", strtotime('midnight this month'))),
-		];
-
-		// $data['transactionsInterval'] =$this->GetAdshieldTransactionForPastTime($userKey, $time);
-
-		$transactions = $this->GetAdshieldTransactionForPastTime($userKey, $time);
-		$data['transactionsInterval'] = [
-			'data' => $transactions['data'],
-			'userKey' => $userKey,
-			'accountId' => $transactions['accountId']
-		];
-
-		$data['adClicks'] = [
-			'today' => $this->GetTotalAdClicks($userKey, gmdate("Y-m-d H:i:s", strtotime('midnight today'))),
-			'week' => $this->GetTotalAdClicks($userKey, gmdate("Y-m-d H:i:s", strtotime('midnight this week'))),
-			'month' => $this->GetTotalAdClicks($userKey, gmdate("Y-m-1 H:i:s", strtotime('midnight this month')))
-		];
-		return $data;
-	}
-
-	private function GetStats($userKey, $dateFrom, $dateTo)
-	{
-		$stats = ApiStatController::GetStats($userKey, $dateFrom, $dateTo);
-		return $stats;
-	}
-
-	private function GetAdshieldTransactionSince($userKey, $dateFrom)
-	{
-		$totalSince = ApiStatController::GetTotalTransactionsSince(null, $dateFrom);
-		return $totalSince;
-	}
-
-	/**
-	 * gets the transactions count for each $interval seconds on a $steps steps
-	 * use to populate chartJS graph
-	 */
-	public function GetAdshieldTransactionForPastTime($userKey, $time)
-	{
 		$accountId = UserWebsite::where('userKey', $userKey)->first();
 		if (empty($accountId)) {
 			$accountId = 0;
@@ -110,17 +64,52 @@ class VisualizerController extends BaseController
 			$accountId = $accountId->accountId;
 		}
 
-		$total = ApiStatController::GetLiveTransactions($userKey, $time);
-		// return $total;
-		return [
-			'data' => $total,
-			'accountId' => $accountId
+		$data = ['userKey' => $userKey, 'accountId' => $accountId];
+		$data['stat'] = $this->GetStats($accountId, $userKey,
+			gmdate("Y-m-1 H:i:s", strtotime("midnight this month")),
+			gmdate("Y-m-d H:i:s"));
+
+		$data['transactions'] = [
+			'today' => $this->GetAdshieldTransactionSince($accountId, $userKey, gmdate("Y-m-d H:i:s", strtotime('midnight today'))),
+			'week' => $this->GetAdshieldTransactionSince($accountId, $userKey, gmdate("Y-m-d H:i:s", strtotime('midnight this week'))),
+			'month' => $this->GetAdshieldTransactionSince($accountId, $userKey, gmdate("Y-m-1 H:i:s", strtotime('midnight this month'))),
 		];
+
+		$data['transactionsInterval'] =$this->GetAdshieldTransactionForPastTime($accountId, $userKey, $time);
+
+		$data['adClicks'] = [
+			'today' => $this->GetTotalAdClicks($accountId, $userKey, gmdate("Y-m-d H:i:s", strtotime('midnight today'))),
+			'week' => $this->GetTotalAdClicks($accountId, $userKey, gmdate("Y-m-d H:i:s", strtotime('midnight this week'))),
+			'month' => $this->GetTotalAdClicks($accountId, $userKey, gmdate("Y-m-1 H:i:s", strtotime('midnight this month')))
+		];
+		return $data;
 	}
 
-	private function GetTotalAdClicks($userKey, $dateFrom)
+	private function GetStats($accountId, $userKey, $dateFrom, $dateTo)
 	{
-		$clicks = AdshieldStatController::GetAdClicks($userKey, $dateFrom);
+		$stats = ApiStatController::GetStats($accountId, $userKey, $dateFrom, $dateTo);
+		return $stats;
+	}
+
+	private function GetAdshieldTransactionSince($accountId, $userKey, $dateFrom)
+	{
+		$totalSince = ApiStatController::GetTotalTransactionsSince($accountId, $userKey, $dateFrom);
+		return $totalSince;
+	}
+
+	/**
+	 * gets the transactions count for each $interval seconds on a $steps steps
+	 * use to populate chartJS graph
+	 */
+	public function GetAdshieldTransactionForPastTime($accountId, $userKey, $time)
+	{
+		$total = ApiStatController::GetLiveTransactions($accountId, $userKey, $time);
+		return $total;
+	}
+
+	private function GetTotalAdClicks($accountId, $userKey, $dateFrom)
+	{
+		$clicks = AdshieldStatController::GetAdClicks($accountId, $userKey, $dateFrom);
 		return $clicks;
 	}
 

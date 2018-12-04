@@ -275,12 +275,19 @@ class AdshieldStatController extends BaseController
 	}
 
 
-	public static function GetAdClicks($userKey, $sinceWhen='')
+	public static function GetAdClicks($accountId, $userKey, $sinceWhen='')
 	{
 		$clicks = DB::table('asLogAdClick')
 			->select(DB::raw('COUNT(*) AS total'))
 			->where("click_date", ">=", $sinceWhen);
-		if (!empty($userKey)) $clicks->where('userKey', $userKey);
+		
+		if (!empty($accountId)) {
+			$clicks->join("userWebsites", function($join) use($accountId) {
+				$join->on("asLogAdClick.userKey", "=", "userWebsites.userKey")
+					->where("userWebsites.accountId", "=", $accountId);
+			});
+		}
+
 		$clicks = $clicks->first();
 		if (empty($clicks)) return 0;
 		return $clicks->total;

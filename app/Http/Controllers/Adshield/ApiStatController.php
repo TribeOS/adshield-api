@@ -136,7 +136,7 @@ class ApiStatController extends BaseController
 	 * get stats for the given userKey. (pass blank userkey to get all stat)
 	 * number of traffic per status for the given period
 	 */
-	public static function GetStats($userKey=null, $dateFrom, $dateTo)
+	public static function GetStats($accountId=0, $userKey=null, $dateFrom, $dateTo)
 	{
 		$params = [
 			gmdate("Y-m-d H:i:s", strtotime($dateFrom)),
@@ -156,7 +156,12 @@ class ApiStatController extends BaseController
 			$data->whereBetween("date_added", $params);
 		}
 
-		if (!empty($userKey)) $data->where("userKey", $userKey);
+		if (!empty($accountId)) {
+			$data->join("userWebsites", function($join) use($accountId) {
+				$join->where("userWebsites.accountId", "=", $accountId)
+					->on("userWebsites.userKey", "=", "asStat.userKey");
+			});
+		}
 
 		$data = $data->get();
 
@@ -188,7 +193,7 @@ class ApiStatController extends BaseController
 	 * 2. get transactions count for every given interval (total every x seconds)
 	 */
 	public static function GetTotalTransactionsSince(
-		$userKey=null, $timeElapsed="3 seconds ago", $returnData=false, $interval=2
+		$accountId=0, $userKey=null, $timeElapsed="3 seconds ago", $returnData=false, $interval=2
 	)
 	{
 		date_default_timezone_set("UTC");
@@ -210,8 +215,12 @@ class ApiStatController extends BaseController
 				->groupBy(DB::RAW("d"));
 		}
 
-		// if (!empty($userKey)) $data->where("userKey", $userKey);
-		if (!empty($userKey)) $data->where("trViolationSession.userKey", $userKey);
+		if (!empty($accountId)) {
+			$data->join("userWebsites", function($join) use($accountId) {
+				$join->on("trViolationSession.userKey", "=", "userWebsites.userKey")
+					->where("userWebsites.accountId", "=", $accountId);
+			});
+		}
 
 		if ($returnData)
 		{
@@ -228,7 +237,7 @@ class ApiStatController extends BaseController
 	/**
 	 * fetches the live data we want to show to the live transactions graph widget
 	 */
-	public static function GetLiveTransactions($userKey=null, $time)
+	public static function GetLiveTransactions($accountId=0, $userKey=null, $time)
 	{
 		/*
 		- get the last log time for the given userkey (if no userkey just get the last log before $time)
@@ -256,8 +265,12 @@ class ApiStatController extends BaseController
 			->where("trViolationLog.createdOn", "<=", $time)
 			->selectRaw("COUNT(*) AS total");
 
-		// if (!empty($userKey)) $data->where("userKey", $userKey);
-		if (!empty($userKey)) $data->where("trViolationSession.userKey", $userKey);
+		if (!empty($accountId)) {
+			$data->join("userWebsites", function($join) use($accountId) {
+				$join->on("trViolationSession.userKey", "=", "userWebsites.userKey")
+					->where("userWebsites.accountId", "=", $accountId);
+			});
+		}
 
 		$data = $data->first();
 		if (empty($data)) return 0;
