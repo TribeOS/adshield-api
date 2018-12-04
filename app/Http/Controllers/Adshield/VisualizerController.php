@@ -93,7 +93,7 @@ class VisualizerController extends BaseController
 
 	private function GetAdshieldTransactionSince($userKey, $dateFrom)
 	{
-		$totalSince = ApiStatController::GetTotalTransactionsSince($userKey, $dateFrom);
+		$totalSince = ApiStatController::GetTotalTransactionsSince(null, $dateFrom);
 		return $totalSince;
 	}
 
