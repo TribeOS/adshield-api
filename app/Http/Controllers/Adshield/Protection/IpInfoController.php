@@ -83,6 +83,7 @@ class IpInfoController extends BaseController
 		else
 		{
 			DB::table("asIpCachedInfo")
+				->where('ip', inet_pton($ip))
 				->update([
 					'org' => $info['org'] ?? '',
 					'isp' => $info['isp'] ?? '',
@@ -90,8 +91,7 @@ class IpInfoController extends BaseController
 					'country' => $info['country'] ?? '',
 					'updatedOn' => gmdate("Y-m-d H:i:s"),
 					'rawInfo' => $response
-				])
-				->where('ip', inet_pton($ip));
+				]);
 		}
 		return $id;
 	}
