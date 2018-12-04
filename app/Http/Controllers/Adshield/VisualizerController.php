@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 use App\Events\AdShieldUpdated;
 
+use App\Model\UserWebsite;
+
 date_default_timezone_set("America/New_York");
 
 
@@ -66,12 +68,14 @@ class VisualizerController extends BaseController
 			'month' => $this->GetAdshieldTransactionSince($userKey, gmdate("Y-m-1 H:i:s", strtotime('midnight this month'))),
 		];
 
-		$data['transactionsInterval'] =$this->GetAdshieldTransactionForPastTime($userKey, $time);
+		// $data['transactionsInterval'] =$this->GetAdshieldTransactionForPastTime($userKey, $time);
 
-		// $data['transactionsInterval'] = [
-		// 	'data' => $this->GetAdshieldTransactionForPastTime($userKey),
-		// 	'userKey' => $userKey
-		// ];
+		$transactions = $this->GetAdshieldTransactionForPastTime($userKey, $time);
+		$data['transactionsInterval'] = [
+			'data' => $transactions['data'],
+			'userKey' => $userKey,
+			'accountId' => $transactions['accountId']
+		];
 
 		$data['adClicks'] = [
 			'today' => $this->GetTotalAdClicks($userKey, gmdate("Y-m-d H:i:s", strtotime('midnight today'))),
@@ -99,8 +103,19 @@ class VisualizerController extends BaseController
 	 */
 	public function GetAdshieldTransactionForPastTime($userKey, $time)
 	{
+		$accountId = UserWebsite::where('userKey', $userKey)->first();
+		if (empty($accountId)) {
+			$accountId = 0;
+		} else {
+			$accountId = $accountId->accountId;
+		}
+
 		$total = ApiStatController::GetLiveTransactions($userKey, $time);
-		return $total;
+		// return $total;
+		return [
+			'data' => $total,
+			'accountId' => $accountId
+		];
 	}
 
 	private function GetTotalAdClicks($userKey, $dateFrom)

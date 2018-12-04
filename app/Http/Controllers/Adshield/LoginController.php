@@ -44,6 +44,7 @@ class LoginController extends Controller
         $response['access_token'] = $token;
         $response['username'] = $user->username;
         $response['id'] = $user->id;
+        $response['accountId'] = $user->accountId;
         $this->saveToken(sha1($token), $user);
 
         $response['websites'] = UserWebsitesController::getUserWebsites($user->acountId);
