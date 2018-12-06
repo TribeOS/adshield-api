@@ -33,7 +33,7 @@ class VisualizerController extends BaseController
 		$result = [
 			'adshieldstats' => [
 				'id' => 0,
-				'stat' => $this->GetAllStatsVisualizer($userKey, gmdate("Y-m-d H:i:s")),
+				'stat' => $this->GetAllStatsVisualizer(0, $userKey, gmdate("Y-m-d H:i:s")),
 				'meta' => 'general data for stats.'
 			]
 		];
