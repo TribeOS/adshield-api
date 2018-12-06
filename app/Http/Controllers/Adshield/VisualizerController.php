@@ -44,25 +44,26 @@ class VisualizerController extends BaseController
 
 	public static function BroadcastStats($userKey, $time)
 	{
-		$self = new VisualizerController();
-		$result = [
-			'adshieldstats' => [
-				'id' => 0,
-				'stat' => $self->GetAllStatsVisualizer($userKey, $time),
-				'meta' => 'general data for stats.'
-			]
-		];
-		event(new AdShieldUpdated($result));
-	}
-
-	private function GetAllStatsVisualizer($userKey=null, $time)
-	{
 		$accountId = UserWebsite::where('userKey', $userKey)->first();
 		if (empty($accountId)) {
 			$accountId = 0;
 		} else {
 			$accountId = $accountId->accountId;
 		}
+
+		$self = new VisualizerController();
+		$result = [
+			'adshieldstats' => [
+				'id' => 0,
+				'stat' => $self->GetAllStatsVisualizer($accountId, $userKey, $time),
+				'meta' => 'general data for stats.'
+			]
+		];
+		event(new AdShieldUpdated($result, $accountId));
+	}
+
+	private function GetAllStatsVisualizer($accountId, $userKey=null, $time)
+	{
 
 		$data = ['userKey' => $userKey, 'accountId' => $accountId];
 		$data['stat'] = $this->GetStats($accountId, $userKey,
