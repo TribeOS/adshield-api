@@ -33,7 +33,7 @@ class AdShieldUpdated implements ShouldBroadcast
     public function broadcastOn()
     {
         // return new Channel('adshield.' . $this->accountId);
-        return new Channel('adshield');
+        return new Channel('adshield.1');
     }
 
 }
