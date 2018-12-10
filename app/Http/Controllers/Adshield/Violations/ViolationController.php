@@ -155,7 +155,7 @@ class ViolationController extends BaseController {
 			$violations[] = self::V_KNOWN_DC;
 		}
 
-		//check for blocked country
+		//check for JS environment check failed
 		if (ViolationJSCheckFailedController::hasViolation(
 				isset($data['jsCheck']) ? $data['jsCheck'] : false)
 			) 
@@ -167,6 +167,7 @@ class ViolationController extends BaseController {
 
 		//check for blocked country
 		if (ViolationBlockedCountryController::hasViolation(
+				$userKey,
 				isset($data['country']) ? $data['country'] : '')
 			) 
 		{
