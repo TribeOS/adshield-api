@@ -15,7 +15,7 @@ class AdShieldUpdated implements ShouldBroadcast
     use InteractsWithSockets, SerializesModels;
 
     public $stats;
-    private $accountId;
+    private $token;
 
     /**
      * Create a new event instance.
@@ -23,17 +23,17 @@ class AdShieldUpdated implements ShouldBroadcast
      * @param  \App\Order  $order
      * @return void
      */
-    public function __construct($stats, $accountId)
+    public function __construct($stats, $token)
     // public function __construct($stats, $accountId)
     {
         $this->stats = $stats;
-        $this->accountId = $accountId;
+        $this->token = $token;
     }
 
     public function broadcastOn()
     {
-        // return new Channel('adshield.' . $this->accountId);
-        return new Channel('adshield');
+        return new Channel('adshield.' . $this->token);
+        // return new Channel('adshield');
     }
 
 }

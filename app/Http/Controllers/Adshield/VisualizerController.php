@@ -44,11 +44,15 @@ class VisualizerController extends BaseController
 
 	public static function BroadcastStats($userKey, $time)
 	{
-		$accountId = UserWebsite::where('userKey', $userKey)->first();
-		if (empty($accountId)) {
+		$account = UserWebsite::where('userKey', $userKey)->first();
+		$token = DB::table("accessTokens")->where("accountId", $account->id)->first();
+		if (empty($token)) return; //no active access token, user isn't logged in. don't trigger any broadcast
+		$token = $token->accessToken;
+
+		if (empty($account)) {
 			$accountId = 0;
 		} else {
-			$accountId = $accountId->accountId;
+			$accountId = $account->accountId;
 		}
 
 		$self = new VisualizerController();
@@ -59,7 +63,7 @@ class VisualizerController extends BaseController
 				'meta' => 'general data for stats.'
 			]
 		];
-		event(new AdShieldUpdated($result, $accountId));
+		event(new AdShieldUpdated($result, $token));
 	}
 
 	private function GetAllStatsVisualizer($accountId, $userKey=null, $time)
