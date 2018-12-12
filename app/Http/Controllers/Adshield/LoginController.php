@@ -23,8 +23,6 @@ class LoginController extends Controller
 
     /**
      * handles log in from ember js
-     * Stores the accesstoken to the database. token is sha1($token) for security purpose
-     * all succeeding access/comparisons to accessToken would need to be hashed sha1()
      */
     public function login(Request $request)
     {
@@ -45,7 +43,7 @@ class LoginController extends Controller
         $response['username'] = $user->username;
         $response['id'] = $user->id;
         $response['accountId'] = $user->accountId;
-        $this->saveToken(sha1($token), $user);
+        $this->saveToken($token, $user);
 
         $response['websites'] = UserWebsitesController::getUserWebsites($user->acountId);
 
@@ -84,7 +82,7 @@ class LoginController extends Controller
         LogController::Log($user->userId, $user->accountId, LogController::ACT_LOG_OUT, '');
 
         DB::table("accessTokens")
-            ->where("accessToken", sha1($token))
+            ->where("accessToken", $token)
             ->delete();
 
         return response()->json(['success' => true])
@@ -97,7 +95,7 @@ class LoginController extends Controller
         $result = DB::table("accessTokens")
             ->join("users", "users.id", "=", "accessTokens.userId")
             ->where("users.username", $username)
-            ->where("accessTokens.accessToken", sha1($token))
+            ->where("accessTokens.accessToken", $token)
             ->where("accessTokens.expiresOn", ">", date("Y-m-d H:i:s", strtotime("24 hours ago")))
             ->first();
 
@@ -113,7 +111,7 @@ class LoginController extends Controller
      */
     public static function getUserIdFromToken($token, $all=false)
     {
-        $result = DB::table("accessTokens")->where("accessToken", sha1($token))->first();
+        $result = DB::table("accessTokens")->where("accessToken", $token)->first();
         if (!$all) return $result->userId;
         return $result;
     }
@@ -128,7 +126,7 @@ class LoginController extends Controller
         $token = $request->bearerToken();
         $result = DB::table("accessTokens")
             ->join("users", "users.id", "=", "accessTokens.userId")
-            ->where("accessTokens.accessToken", sha1($token))
+            ->where("accessTokens.accessToken", $token)
             ->where("accessTokens.expiresOn", ">", gmdate("Y-m-d H:i:s", strtotime("24 hours ago")))
             ->first();
 

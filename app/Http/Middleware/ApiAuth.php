@@ -22,7 +22,7 @@ class ApiAuth
         $token = $request->bearerToken();
 
         $access = DB::table("accessTokens")
-            ->where("accessToken", sha1($token))
+            ->where("accessToken", $token)
             ->where("expiresOn", ">", gmdate("Y-m-d H:i:s"))
             ->first();
 
