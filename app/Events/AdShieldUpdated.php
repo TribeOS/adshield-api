@@ -32,8 +32,8 @@ class AdShieldUpdated implements ShouldBroadcast
 
     public function broadcastOn()
     {
-        // return new Channel('adshield.' . $this->token);
-        return new Channel('adshield');
+        return new Channel('adshield.' . $this->token);
+        // return new Channel('adshield');
     }
 
 }
