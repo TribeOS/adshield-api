@@ -1,7 +1,7 @@
 var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
-var redis = require('ioredis');
+var redis = require('redis');
 
 //hold all channels that will be handled (this will contain all the channels all UI clients are accessing)
 var channels = {};
