@@ -18,7 +18,9 @@ io.on('connection', function(socket) {
 		//channel already exists in our list
 		if (channels.hasOwnProperty(channel)) {
 			channels[channel].listeners[socket.id] = socket;
+			console.log("Join existing channel : " + channel);
 		} else {
+			console.log("Create channel : " + channel);
 			//channel doesn't exists yet, create a new client/handler
 			channels[channel] = redis.createClient();
 			channels[channel].subscribe(channel);
@@ -31,7 +33,6 @@ io.on('connection', function(socket) {
 				}
 			});
 		}
-		console.log("Accepted at channel : " + channel);
 	});
 	
 });
