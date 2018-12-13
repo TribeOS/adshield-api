@@ -32,11 +32,6 @@ io.on('connection', function(socket) {
 			});
 		}
 	});
-
-
-	socket.on("disconnect", function() {
-		for(var i in channels[])
-	});
 	
 });
 
