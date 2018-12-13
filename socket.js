@@ -1,8 +1,7 @@
 var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
-var Redis = require('ioredis');
-var redis = new Redis();
+var redis = require('ioredis');
 
 //hold all channels that will be handled (this will contain all the channels all UI clients are accessing)
 var channels = {};
@@ -18,7 +17,7 @@ io.on('connection', function(socket) {
 	socket.on("subscribe", function(channel) {
 		//channel already exists in our list
 		if (channels.hasOwnProperty(channel)) {
-			channels[channel].listeners[socket.id] = socket;
+				
 		} else {
 			//channel doesn't exists yet, create a new client/handler
 			channels[channel] = redis.createClient();
@@ -35,9 +34,19 @@ io.on('connection', function(socket) {
 	});
 
 
+	socket.on("disconnect", function() {
+		for(var i in channels[])
+	});
 	
 });
 
+redis.subscribe('adshield', function(err, count) {
+});
+redis.on('message', function(channel, message) {
+    console.log('Message Recieved: ' + message);
+    message = JSON.parse(message);
+    io.emit(channel + ':' + message.event, message.data);
+});
 http.listen(3000, function(){
     console.log('Listening on Port 3000');
 });
