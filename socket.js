@@ -27,10 +27,10 @@ io.on('connection', function(socket) {
 			channels[channel].listeners = {};
 			channels[channel].listeners[socket.id] = socket;
 			channels[channel].on("message", function(channel, message) {
-				Object.keys(channels[channel].listeners).forEach(function(key) {
-		          	console.log("Sent on " + channel + ": " + message);
-		          	// channels[channel].listeners[key].send(message);
-		        });
+				// Object.keys(channels[channel].listeners).forEach(function(key) {
+		  //         	console.log("Sent on " + channel + ": " + message);
+		  //         	channels[channel].listeners[key].send(message);
+		  //       });
 			});
 		}
 	});
