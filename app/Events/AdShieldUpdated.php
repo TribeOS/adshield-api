@@ -23,16 +23,16 @@ class AdShieldUpdated implements ShouldBroadcast
      * @param  \App\Order  $order
      * @return void
      */
-    public function __construct($stats, $token)
+    public function __construct($stats)
     // public function __construct($stats, $accountId)
     {
         $this->stats = $stats;
-        $this->token = $token;
+        $this->token = $stats['adshieldstats']['token'];
     }
 
     public function broadcastOn()
     {
-        return new Channel('adshield.1');
+        return new Channel('adshield.' . $this->token);
         // return new Channel('adshield');
     }
 

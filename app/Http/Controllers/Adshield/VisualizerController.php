@@ -58,10 +58,11 @@ class VisualizerController extends BaseController
 			'adshieldstats' => [
 				'id' => 0,
 				'stat' => $self->GetAllStatsVisualizer($accountId, $userKey, $time),
-				'meta' => 'general data for stats.'
+				'meta' => 'general data for stats.',
+				'token' => $token
 			]
 		];
-		event(new AdShieldUpdated($result, $token));
+		event(new AdShieldUpdated($result));
 	}
 
 	private function GetAllStatsVisualizer($accountId, $userKey=null, $time)
