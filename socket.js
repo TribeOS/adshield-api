@@ -17,9 +17,11 @@ io.on('connection', function(socket) {
 	socket.on("subscribe", function(channel) {
 		//channel already exists in our list
 		if (channels.hasOwnProperty(channel)) {
+			console.log("existing channel : " + channel);
 			if (typeof channels[channel].listeners == "undefined") cahnnels[channel].listeners = {};
 			channels[channel].listeners[socket.id] = socket;
 		} else {
+			console.log("new channel : " + channel);
 			//channel doesn't exists yet, create a new client/handler
 			channels[channel] = new Redis();
 			channels[channel].subscribe(channel);
