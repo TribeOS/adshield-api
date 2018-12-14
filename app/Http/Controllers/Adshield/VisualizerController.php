@@ -7,6 +7,7 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 use App\Events\AdShieldUpdated;
+use Illuminate\Http\Request;
 
 use App\Model\UserWebsite;
 
@@ -24,8 +25,14 @@ class VisualizerController extends BaseController
 	/**
 	 * get stats from adshield stat log (count of each status for the given period)
 	 */
-	public function GetAdshieldStats()
+	public function GetAdshieldStats(Request $request)
 	{
+		try {
+            $token = $request->bearerToken();
+            $user = LoginController::getUserIdFromToken($token, true);
+        } catch (Exception $e) {}
+
+        $accountId = $user->accountId;
 		$userKey = Input::get('userKey', null);
 		$result = null;
 		
@@ -33,7 +40,7 @@ class VisualizerController extends BaseController
 		$result = [
 			'adshieldstats' => [
 				'id' => 0,
-				'stat' => $this->GetAllStatsVisualizer(0, $userKey, gmdate("Y-m-d H:i:s")),
+				'stat' => $this->GetAllStatsVisualizer($accountId, $userKey, gmdate("Y-m-d H:i:s"), true),
 				'meta' => 'general data for stats.'
 			]
 		];
@@ -65,7 +72,7 @@ class VisualizerController extends BaseController
 		event(new AdShieldUpdated($result));
 	}
 
-	private function GetAllStatsVisualizer($accountId, $userKey=null, $time)
+	private function GetAllStatsVisualizer($accountId, $userKey=null, $time, $initCall=false)
 	{
 
 		$data = ['userKey' => $userKey, 'accountId' => $accountId];
@@ -81,6 +88,8 @@ class VisualizerController extends BaseController
 
 		//we can use just the value 1 since for every hit/request we will be sending the stat update to the frontend.
 		$data['transactionsInterval'] = 1; //$this->GetAdshieldTransactionForPastTime($accountId, $userKey, $time);
+		if ($initCall) $data['transactionsInterval'] = 0; 
+
 
 		$data['adClicks'] = [
 			'today' => $this->GetTotalAdClicks($accountId, $userKey, gmdate("Y-m-d H:i:s", strtotime('midnight today'))),

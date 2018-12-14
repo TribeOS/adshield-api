@@ -156,7 +156,9 @@ class ApiStatController extends BaseController
 			$data->whereBetween("date_added", $params);
 		}
 
-		if (!empty($accountId)) {
+		if (!empty($userKey)) {
+			$data->where("asStat.userKey", $userKey);
+		} else if (!empty($accountId)) {
 			$data->join("userWebsites", function($join) use($accountId) {
 				$join->where("userWebsites.accountId", "=", $accountId)
 					->on("userWebsites.userKey", "=", "asStat.userKey");
@@ -215,7 +217,9 @@ class ApiStatController extends BaseController
 				->groupBy(DB::RAW("d"));
 		}
 
-		if (!empty($accountId)) {
+		if (!empty($userKey)) {
+			$data->where("trViolationSession.userKey", $userKey);
+		} else if (!empty($accountId)) {
 			$data->join("userWebsites", function($join) use($accountId) {
 				$join->on("trViolationSession.userKey", "=", "userWebsites.userKey")
 					->where("userWebsites.accountId", "=", $accountId);
