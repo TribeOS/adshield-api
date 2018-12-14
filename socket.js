@@ -8,11 +8,7 @@ var channels = {};
 
 io.on('connection', function(socket) {
 
-
-	//client connects
-	//wait for on("subscribe")
-	//get identifier (passed by client upon "subscribe" msg)
-	//issue redis.subscribe to the channel name with identifier
+	socket.connected_channels = {}
 
 	socket.on("subscribe", function(channel) {
 		//channel already exists in our list
@@ -35,6 +31,8 @@ io.on('connection', function(socket) {
 		        });
 			});
 		}
+
+		socket.connected_channels[channel] = channels[channel];
 	});
 
 
