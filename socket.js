@@ -23,16 +23,17 @@ io.on('connection', function(socket) {
 		} else {
 			console.log("new channel : " + channel);
 			//channel doesn't exists yet, create a new client/handler
-			channels[channel] = new Redis();
-			channels[channel].subscribe(channel);
+			channels[channel] = {};
+			channels[channel].redis = new Redis();
+			channels[channel].redis.subscribe(channel, function(err, count) {});
 			channels[channel].listeners = {};
 			channels[channel].listeners[socket.id] = socket;
-			// channels[channel].on("message", function(channel, message) {
-			// 	Object.keys(channels[channel].listeners).forEach(function(key) {
-		 //          	console.log("Sent on " + channel + ": " + message);
-		 //          	channels[channel].listeners[key].send(message);
-		 //        });
-			// });
+			channels[channel].redis.on("message", function(channel, message) {
+				Object.keys(channels[channel].listeners).forEach(function(key) {
+		          	console.log("Sent on " + channel + ": " + message);
+		          	channels[channel].listeners[key].send(message);
+		        });
+			});
 		}
 	});
 	
