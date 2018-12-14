@@ -36,6 +36,13 @@ io.on('connection', function(socket) {
 			});
 		}
 	});
+
+
+	socket.on("disconnect", function() {
+		Object.keys(socket.connected_channels).forEach(function(channel) {
+	      	delete channels[channel].listeners[socket.id];
+	    });
+	});
 	
 });
 
