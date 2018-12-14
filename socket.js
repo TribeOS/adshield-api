@@ -17,6 +17,7 @@ io.on('connection', function(socket) {
 	socket.on("subscribe", function(channel) {
 		//channel already exists in our list
 		if (channels.hasOwnProperty(channel)) {
+			if (typeof channels[channel].listeners == "undefined") cahnnels[channel].listeners = {};
 			channels[channel].listeners[socket.id] = socket;
 		} else {
 			//channel doesn't exists yet, create a new client/handler
