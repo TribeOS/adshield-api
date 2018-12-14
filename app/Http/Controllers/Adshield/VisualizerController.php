@@ -79,7 +79,8 @@ class VisualizerController extends BaseController
 			'month' => $this->GetAdshieldTransactionSince($accountId, $userKey, gmdate("Y-m-1 H:i:s", strtotime('midnight this month'))),
 		];
 
-		$data['transactionsInterval'] =$this->GetAdshieldTransactionForPastTime($accountId, $userKey, $time);
+		//we can use just the value 1 since for every hit/request we will be sending the stat update to the frontend.
+		$data['transactionsInterval'] = 1; //$this->GetAdshieldTransactionForPastTime($accountId, $userKey, $time);
 
 		$data['adClicks'] = [
 			'today' => $this->GetTotalAdClicks($accountId, $userKey, gmdate("Y-m-d H:i:s", strtotime('midnight today'))),
