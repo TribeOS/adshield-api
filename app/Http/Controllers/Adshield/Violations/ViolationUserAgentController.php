@@ -29,8 +29,7 @@ class ViolationUserAgentController extends ViolationController {
 					->whereIn("trViolations.violation", [
 						self::V_BAD_UA,
 						self::V_UNCLASSIFIED_UA,
-						self::V_AGGREGATOR_UA,
-						self::V_KNOWN_VIOLATOR_UA
+						self::V_AGGREGATOR_UA
 					])
 					->where('userAgent', '=', $userAgent);
 			})

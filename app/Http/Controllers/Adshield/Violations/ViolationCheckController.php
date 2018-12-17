@@ -7,6 +7,7 @@ use DB;
 use Request;
 
 use App\Http\Controllers\Adshield\Violations\ViolationPagesPerSessionController;
+use App\Http\Controllers\Adshield\Violations\ResponseController;
 
 /**
  * MAIN handler for checking violations.
