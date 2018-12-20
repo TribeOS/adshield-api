@@ -133,7 +133,7 @@ class ViolationController extends BaseController {
 		if (ViolationIPController::hasViolation($ip)) 
 		{
 			$newViolationId = $this->doLog($userKey, $ip, $ipStr, self::V_KNOWN_VIOLATOR, $data);
-			$violations[] = self::V_KNOWN_VIOLATOR;
+			$violations[self::V_KNOWN_VIOLATOR] = $newViolationId;
 		}
 
 
@@ -143,7 +143,7 @@ class ViolationController extends BaseController {
 			) 
 		{
 			$id = $this->doLog($userKey, $ip, $ipStr, self::V_KNOWN_VIOLATOR_UA, $data);
-			$violations[] = self::V_KNOWN_VIOLATOR_UA;
+			$violations[self::V_KNOWN_VIOLATOR_UA] = $id;
 			$this->userAgentClassification = self::V_KNOWN_VIOLATOR_UA;
 			AutomatedTrafficCheckController::logAutomatedTraffic($id, $data, $trafficName);
 		}
@@ -151,8 +151,8 @@ class ViolationController extends BaseController {
 		//check if IP belongs to a data center IP range
 		if (ViolationDataCenterController::hasViolation($ip)) 
 		{
-			$this->doLog($userKey, $ip, $ipStr, self::V_KNOWN_DC, $data);
-			$violations[] = self::V_KNOWN_DC;
+			$id = $this->doLog($userKey, $ip, $ipStr, self::V_KNOWN_DC, $data);
+			$violations[self::V_KNOWN_DC] = $id;
 		}
 
 		//check for JS environment check failed
@@ -161,8 +161,8 @@ class ViolationController extends BaseController {
 			) 
 		{
 			$this->isBot = true;
-			$this->doLog($userKey, $ip, $ipStr, self::V_JS_CHECK_FAILED, $data);
-			$violations[] = self::V_JS_CHECK_FAILED;
+			$id = $this->doLog($userKey, $ip, $ipStr, self::V_JS_CHECK_FAILED, $data);
+			$violations[self::V_JS_CHECK_FAILED] = $id;
 		}
 
 		//check for blocked country
@@ -171,8 +171,8 @@ class ViolationController extends BaseController {
 				isset($data['country']) ? $data['country'] : '')
 			) 
 		{
-			$this->doLog($userKey, $ip, $ipStr, self::V_BLOCKED_COUNTRY, $data);
-			$violations[] = self::V_BLOCKED_COUNTRY;
+			$id = $this->doLog($userKey, $ip, $ipStr, self::V_BLOCKED_COUNTRY, $data);
+			$violations[self::V_BLOCKED_COUNTRY] = $id;
 		}
 
 		//check for suspiciouse user agent
@@ -180,16 +180,16 @@ class ViolationController extends BaseController {
 				isset($data['userAgent']) ? $data['userAgent'] : '')
 			) 
 		{
-			$this->doLog($userKey, $ip, $ipStr, self::V_SUSPICIOUS_UA, $data);
-			$violations[] = self::V_SUSPICIOUS_UA;
+			$id = $this->doLog($userKey, $ip, $ipStr, self::V_SUSPICIOUS_UA, $data);
+			$violations[self::V_SUSPICIOUS_UA] = $id;
 		}
 
 		//check browser integrity
 		if (ViolationBrowserIntegrityCheckController::hasViolation($data)) 
 		{
 			$this->isBot = true;
-			$this->doLog($userKey, $ip, $ipStr, self::V_BROWSER_INTEGRITY, $data);
-			$violations[] = self::V_BROWSER_INTEGRITY;
+			$id = $this->doLog($userKey, $ip, $ipStr, self::V_BROWSER_INTEGRITY, $data);
+			$violations[self::V_BROWSER_INTEGRITY] = $id;
 		}
 
 		//check if this is an automation tool
@@ -197,7 +197,7 @@ class ViolationController extends BaseController {
 		{
 			$this->isBot = true;
 			$id = $this->doLog($userKey, $ip, $ipStr, self::V_KNOWN_VIOLATOR_AUTO_TOOL, $data);
-			$violations[] = self::V_KNOWN_VIOLATOR_AUTO_TOOL;
+			$violations[self::V_KNOWN_VIOLATOR_AUTO_TOOL] = $id;
 			AutomatedTrafficCheckController::logAutomatedTraffic($id, $data, $botName);
 		}
 
@@ -205,7 +205,7 @@ class ViolationController extends BaseController {
 		if ($botName = ViolationAggregatorUserAgentController::hasViolation($data)) 
 		{
 			$id = $this->doLog($userKey, $ip, $ipStr, self::V_AGGREGATOR_UA, $data);
-			$violations[] = self::V_AGGREGATOR_UA;
+			$violations[self::V_AGGREGATOR_UA] = $id;
 			$this->userAgentClassification = self::V_AGGREGATOR_UA;
 			AutomatedTrafficCheckController::logAutomatedTraffic($id, $data, $botName);
 		}
@@ -214,7 +214,7 @@ class ViolationController extends BaseController {
 		if ($botName = ViolationBadAgentController::hasViolation($data)) 
 		{
 			$id = $this->doLog($userKey, $ip, $ipStr, self::V_BAD_UA, $data);
-			$violations[] = self::V_BAD_UA;
+			$violations[self::V_BAD_UA] = $id;
 			$this->userAgentClassification = self::V_BAD_UA;
 			AutomatedTrafficCheckController::logAutomatedTraffic($id, $data, $botName);
 		}
@@ -222,43 +222,43 @@ class ViolationController extends BaseController {
 		//check pages per session
 		if (ViolationPagesPerSessionController::hasViolation($this->config)) 
 		{
-			$this->doLog($userKey, $ip, $ipStr, self::V_PAGES_PER_SESSION_EXCEED, $data);
-			$violations[] = self::V_PAGES_PER_SESSION_EXCEED;
+			$id = $this->doLog($userKey, $ip, $ipStr, self::V_PAGES_PER_SESSION_EXCEED, $data);
+			$violations[self::V_PAGES_PER_SESSION_EXCEED] = $id;
 		}
 
 		//check pages per minute 
 		if (ViolationPagesPerMinuteController::hasViolation($this->config)) 
 		{
-			$this->doLog($userKey, $ip, $ipStr, self::V_PAGES_PER_MINUTE_EXCEED, $data);
-			$violations[] = self::V_PAGES_PER_MINUTE_EXCEED;
+			$id = $this->doLog($userKey, $ip, $ipStr, self::V_PAGES_PER_MINUTE_EXCEED, $data);
+			$violations[self::V_PAGES_PER_MINUTE_EXCEED] = $id;
 		}
 
 		//check session length
 		if (ViolationSessionLengthExceedController::hasViolation($this->config)) 
 		{
-			$this->doLog($userKey, $ip, $ipStr, self::V_SESSION_LENGTH_EXCEED, $data);
-			$violations[] = self::V_SESSION_LENGTH_EXCEED;
+			$id = $this->doLog($userKey, $ip, $ipStr, self::V_SESSION_LENGTH_EXCEED, $data);
+			$violations[self::V_SESSION_LENGTH_EXCEED] = $id;
 		}
 
 		//log/check if this is an unclassified user agent (probably bot but UA didn't fit any checks we have)
 		if ($this->isBot && $this->userAgentClassification == null)
 		{
 			$id = $this->doLog($userKey, $ip, $ipStr, self::V_UNCLASSIFIED_UA, $data);
-			$violations[] = self::V_UNCLASSIFIED_UA;
+			$violations[self::V_UNCLASSIFIED_UA] = $id;
 			AutomatedTrafficCheckController::logAutomatedTraffic($id, $data);
 		}
 
 		if ($this->isBot)
 		{
-			$this->doLog($userKey, $ip, $ipStr, self::V_IS_BOT, $data);
-			$violations[] = self::V_IS_BOT;
+			$id = $this->doLog($userKey, $ip, $ipStr, self::V_IS_BOT, $data);
+			$violations[self::V_IS_BOT] = $id;
 		}
 
 		//indicate if we want to save the original Class caller/request's Log
 		if ($violationType !== self::V_NONE)
 		{
-			$this->doLog($userKey, $ip, $ipStr, $violationType, $data);
-			$violations[] = $violationType;
+			$id = $this->doLog($userKey, $ip, $ipStr, $violationType, $data);
+			$violations[$violationType] = $id;
 		}
 
 		return $violations;

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Adshield\Violations;
 
 use App\Model\UserConfig;
+use App\Model\ViolationResponse;
 use DB;
 
 
@@ -12,6 +13,12 @@ use DB;
  */
 class ResponseController {
 
+
+	//IMPT:: still to be decided later on
+	//response values
+	const RP_BLOCKED = 'BLOCKED';
+	const RP_ALLOWED = 'ALLOWED';
+	const RP_CAPTCHA = 'CAPTCHA';
 	
 	private $config=null;
 	private $userKey;
@@ -59,6 +66,17 @@ class ResponseController {
 	private function Captcha()
 	{
 
+	}
+
+
+	private function LogResponse($violationId, $response, $info='')
+	{
+		$log = new ViolationResponse();
+		$log->violationId = $violationId;
+		$log->createdOn = gmdate("Y-m-d H:i:s");
+		$log->responseTaken = $response;
+		$log->info = $info;
+		$log->save();
 	}
 
 	
