@@ -52,6 +52,11 @@ class ResponseController {
 		//check violations for occurence of violations with responses.
 		//compose response text
 		//return to caller
+		//
+		//we'll need a heirarchy of violations to follow, which one should be considered first to take action on before others.
+		
+		//call logging code here to log before performing the action
+		// $this->LogResponse();
 
 		return '';
 	}
