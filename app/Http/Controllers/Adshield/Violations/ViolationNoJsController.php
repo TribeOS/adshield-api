@@ -14,6 +14,7 @@ class ViolationNoJsController extends ViolationController {
 	public function log($userKey)
 	{
 		$this->VerifyKey($userKey);
+		$this->config = $this->GetConfig($userKey);
 		//get user information
 		$ip = $this->GetUserIp();
 		$info = [
@@ -31,7 +32,7 @@ class ViolationNoJsController extends ViolationController {
 			} catch (\Exception $e) {}
 		}
 
-		ViolationPagesPerSessionController::StartSession($ip['binary'], $ip['string'], $userKey);
+		ViolationPagesPerSessionController::StartSession($ip['binary'], $ip['string'], $userKey, $this->config);
 		$this->LogRequest($ip['binary'], $ip['string'], $userKey, $info);
 
 		//save user info and violation

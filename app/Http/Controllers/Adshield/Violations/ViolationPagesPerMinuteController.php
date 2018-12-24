@@ -27,7 +27,7 @@ class ViolationPagesPerMinuteController extends ViolationController {
 	public static function hasViolation($config)
 	{
 		$max = self::MaxPagesPerMinute;
-		if (!empty($config['RequestStat']['pagesPerMinute'])) $max = $config['RequestStat']['pagesPerMinute'];
+		if (!empty($config['contentProtection']['sessions']['pagesPerMinute'])) $max = $config['contentProtection']['sessions']['pagesPerMinute'];
 		if (self::hasExceed($max)) return true;
 		return false;
 	}

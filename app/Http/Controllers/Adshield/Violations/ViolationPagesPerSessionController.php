@@ -11,6 +11,7 @@ use App\Model\ViolationRequestLog;
 date_default_timezone_set("UTC");
 
 /**
+ * Main Class for Traffic Session 
  * Class for checking if we exceeded the maximum pages per session allowed
  */
 class ViolationPagesPerSessionController extends ViolationController {
@@ -29,7 +30,7 @@ class ViolationPagesPerSessionController extends ViolationController {
 	public static function hasViolation($config)
 	{
 		$max = self::MaxPagesPerSession;
-		if (!empty($config['RequestStat']['pagesPerSession'])) $max = $config['RequestStat']['pagesPerSession'];
+		if (!empty($config['contentProtection']['sessions']['pagesPerSession'])) $max = $config['contentProtection']['sessions']['pagesPerSession'];
 		if (self::hasExceed($max)) return true;
 		return false;
 	}
@@ -91,7 +92,7 @@ class ViolationPagesPerSessionController extends ViolationController {
 	 * @param [type] $ipStr   [description]
 	 * @param [type] $userKey [description]
 	 */
-	public static function StartSession($ip, $ipStr, $userKey)
+	public static function StartSession($ip, $ipStr, $userKey, $config)
 	{
 		$ipId = self::GetIpId($ip, $ipStr);
 		$session = ViolationSession::where([
@@ -101,6 +102,14 @@ class ViolationPagesPerSessionController extends ViolationController {
 		->orderBy('createdOn', 'desc')
 		->first();
 
+		$sessionTimeout = self::SessionTimeout;
+		try {
+			if (!empty($config['contentProtection']['sessions']['sessionTimeout'])) $sessionTimeout = $config['contentProtection']['sessions']['sessionTimeout'];
+		} catch (\Exception $e) {
+			echo $e->getMessage();
+			exit;
+		}
+
 		//no existing session for the given IP and userkey/website
 		if (empty($session))
 		{
@@ -108,7 +117,7 @@ class ViolationPagesPerSessionController extends ViolationController {
 			$session = self::CreateSession($ipId, $userKey);
 		}
 		//check if session is more than the allowed session interval time (continuation of session)
-		else if (time() - strtotime($session->updatedOn) >=  self::SessionTimeout)
+		else if (time() - strtotime($session->updatedOn) >=  $sessionTimeout)
 		{
 			//session expired, create/update into new session record
 			$session = self::CreateSession($ipId, $userKey);

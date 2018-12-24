@@ -27,7 +27,7 @@ class ViolationSessionLengthExceedController extends ViolationController {
 	public static function hasViolation($config)
 	{
 		$max = self::MaxSessionLength;
-		if (!empty($config['RequestStat']['maxSessionLength'])) $max = $config['RequestStat']['maxSessionLength'];
+		if (!empty($config['contentProtection']['sessions']['maxSessionLength'])) $max = $config['contentProtection']['sessions']['maxSessionLength'];
 		if (self::hasExceed($max)) return true;
 		return false;
 	}

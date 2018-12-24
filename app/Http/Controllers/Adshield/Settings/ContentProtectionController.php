@@ -49,9 +49,18 @@ class ContentProtectionController extends Controller
 				"blockReferrers" => "no",
 				"blockAnonymousProxies" => "yes"
 			],
-			"machineLearning" => []
+			"machineLearning" => [],
+			'sessions' => [
+				'maxSessionLength' => 1800,
+				'pagesPerSession' => 50,
+				'sessionTimeout' => 1800,
+				'pagesPerMinute' => 30
+			]
 		];
-		if (!empty($settings) && !empty($settings->getConfigJson('contentProtection'))) $data = $settings->getConfigJson('contentProtection');
+		if (!empty($settings) && !empty($settings->getConfigJson('contentProtection'))) 
+		{
+			$data = array_merge($data, $settings->getConfigJson('contentProtection'));
+		}
 
 		return response()->json(['id'=>1, 'pageData' => $data]);
 
@@ -74,7 +83,7 @@ class ContentProtectionController extends Controller
 		$config->config = json_encode($value);
 		$config->save();
 
-		LogController::QuickLog(LogController::ACT_VIEW_GRAPH_IP, [
+		LogController::QuickLog(LogController::ACT_SAVE_SETTINGS, [
 			'title' => 'Content Protection'
 		]);
 		
