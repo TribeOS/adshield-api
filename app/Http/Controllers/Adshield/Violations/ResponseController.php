@@ -49,6 +49,7 @@ class ResponseController {
 		//no config yet? don't perform response
 		if ($this->config == null) return;
 
+		//IMPT:
 		//check violations for occurence of violations with responses.
 		//compose response text
 		//return to caller
@@ -58,29 +59,43 @@ class ResponseController {
 		//call logging code here to log before performing the action
 		// $this->LogResponse();
 
-		return '';
+		//we'll probably compose the JS code/lib here and return to the frontend to execute
+		// this script would either : 
+		// - show ads in the predefined ad tag/holders
+		// - inform user that ads are not showing becuase of possible violation/threat
+
+		return response()->json(['action' => '']);
 	}
 
 
+	/**
+	 * compose message to inform frontend that we are not showing ads (due to violation/threats)
+	 */
 	private function Block()
 	{
 
 	}
 
 
+	/**
+	 * compose captcha message for the frontend to follow
+	 */
 	private function Captcha()
 	{
 
 	}
 
 
+	/**
+	 * saves the response taken to our database
+	 */
 	private function LogResponse($violationId, $response, $info='')
 	{
 		$log = new ViolationResponse();
 		$log->violationId = $violationId;
 		$log->createdOn = gmdate("Y-m-d H:i:s");
 		$log->responseTaken = $response;
-		$log->info = $info;
+		$log->info = is_array($info) ? json_encode($info) : $info;
 		$log->save();
 	}
 

@@ -681,6 +681,20 @@ AdShield = function()
     }
 
     /**
+    *   Display captcha to user
+    **/
+    self.displayCaptcha = function() {
+
+    }
+
+    /**
+     * execute code to display ads to their respective tags/holders
+     */
+    self.displayAds = function() {
+
+    }
+
+    /**
      * try to check common signatures for automation tools
      * @return {Boolean} [description]
      */
