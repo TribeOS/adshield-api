@@ -1,7 +1,8 @@
 /**
  * Main JS for TribeOS' AdShield
- * Requires : Jquery 2.x+
+ * No third party JS lib dependency
  *
+ * expecting a global var _adshield array. with JSON element {key:'website key'}
  * UserKey : a unique user key for each website they register to TribeOS?
  */
 AdShield = function()
@@ -727,8 +728,8 @@ AdShield = function()
             }
         }
         self.AdShieldType = 3; //not used yet
-        self.CheckIframed();
-        self.CheckReferrerUrl();
+        self.CheckIframed(); //check if website is inside an iframe or not
+        self.CheckReferrerUrl(); //check the referrer of the request (bad or good referrer url)
         self.StartAdShield();
         self.CheckViolations();
     }

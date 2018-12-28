@@ -130,7 +130,7 @@ class LogController extends BaseController
 				$details = $info['title'] . ' Config';
 				break;
 			case self::ACT_WEBSITE_ADD:
-				$details = "New website created, " . $filter['domain'] . ". UserKey : " . $info['userKey'];
+				$details = "New website created, " . $info['domain'] . ". UserKey : " . $info['userKey'];
 				break;
 			case self::ACT_COUNTRY_ADD:
 				$details = "Added new country, " . $info['country'] .  " to Website : " . $info['userKey'];

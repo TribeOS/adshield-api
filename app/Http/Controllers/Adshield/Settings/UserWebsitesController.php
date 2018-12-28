@@ -67,7 +67,7 @@ class UserWebsitesController extends Controller
         {
             $limit = $request->get('limit', 10);
             $page = $request->get('page', 0);
-            $data = UserWebsite::where("accountId", $accountId);
+            $data = UserWebsite::where("accountId", $accountId)->orderBy("domain");
             $data = $data->paginate($limit);
             $data->appends([
                 'limit' => $limit

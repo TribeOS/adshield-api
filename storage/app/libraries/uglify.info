@@ -1,5 +1,8 @@
 uglifyjs adshield.js -o adshield.min.js --source-map "script.min.js.map" -m
 
+//worked in linux
+uglifyjs adshield.js -o adshield.min.js -m
+
 
 ***OLD
 uglifyjs adshield.js -o adshield.min.js --source-map script.min.js.map -p 5 -m toplevel -c -r AdShield,Init,urls
