@@ -69,6 +69,14 @@ Route::get('nojs/{userKey?}', ['as' => 'LogNoJsViolation', 'uses' => 'Adshield\V
 	->where('userKey', '[a-zA-Z0-9]+')->middleware('api.access');
 
 
+
+//Captcha Matters
+
+	// Validate captcha
+	Route::any('captcha', ['uses' => 'Adshield\Violations\ResponseController@Captcha'])
+		->middleware("web");
+
+
 /**
  * route for frontend
  */
@@ -87,6 +95,7 @@ Route::get('nojs/{userKey?}', ['as' => 'LogNoJsViolation', 'uses' => 'Adshield\V
 	//log out
 	Route::any('logout', ['uses' => 'Adshield\LoginController@logout'])
 		->middleware('api.access');
+
 
 
 Route::middleware(['authapi'])->group(function () {

@@ -325,6 +325,7 @@ AdShield = function()
         //on success remove blocks and adshield?
     }
 
+
     // self.RenderCaptcha = function(savedLogId, adShieldID, onSuccess)
     // {
 
@@ -744,8 +745,8 @@ AdShield = function()
         self.AdShieldType = 3; //not used yet
         self.CheckIframed(); //check if website is inside an iframe or not
         self.CheckReferrerUrl(); //check the referrer of the request (bad or good referrer url)
-        self.StartAdShield();
-        self.CheckViolations();
+        self.StartAdShield(); //(try to) place div overlays on known ads
+        self.CheckViolations(); //main violation/threat checker
     }
 
 }
