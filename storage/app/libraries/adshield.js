@@ -204,6 +204,7 @@ AdShield = function()
             document.querySelector("body").appendChild(shield);
         } else if (shield_type == "3") {
             //ad click handler
+            //places invisible divs on top of known ads and tracks clicks on it.
             self.ClickedMyAd.init({
                 selectors : adshield_ads,
                 onClick : function() {
@@ -310,6 +311,19 @@ AdShield = function()
         });
     }
 
+
+    /**
+     * show captacha on the frontend
+     * logs result to backend
+     */
+    self.RenderCaptcha = function() {
+        //block whole page
+        //show captcha
+        //disallow other clicks
+        //allow cancellation of captcha (no further action taken)
+        //on submit, verify if success/failed from backend, wait for result
+        //on success remove blocks and adshield?
+    }
 
     // self.RenderCaptcha = function(savedLogId, adShieldID, onSuccess)
     // {

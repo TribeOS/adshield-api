@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 
 
+/**
+ * handles checking of referrer url against google safe browsing databse
+ * no action is taken from this checks, only logs.
+ */
 class ApiReferrerController extends BaseController
 {
 	//results returned by check()
@@ -22,6 +26,7 @@ class ApiReferrerController extends BaseController
 
 	const EXPIRE_DAY = "7 days ago"; //number of days to hold the result before querying again on safebrowsing
 
+	//google safe browsing API key
 	const API_KEY = 'AIzaSyCK5yNHdQf2QodfVVaOM5ifyp3odr1OOvY';
 
 
@@ -108,6 +113,14 @@ class ApiReferrerController extends BaseController
 			->update(array('status' => $status, 'last_updated' => date('Y-m-d H:i:s')));
 	}
 
+
+	/**
+	 * checks the current status of the given url in our database 
+	 * (0=unsafe, 1=safe, 2=unknown)
+	 * @param  [type] $url  url to test
+	 * @param  [type] $hash hash form of the url for indexing/referrence
+	 * @return [type]       [description]
+	 */
 	private function getUrlStatus($url, $hash)
 	{
 		$rec = DB::table('asUrlFilter')
