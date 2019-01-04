@@ -70,13 +70,6 @@ Route::get('nojs/{userKey?}', ['as' => 'LogNoJsViolation', 'uses' => 'Adshield\V
 
 
 
-//Captcha Matters
-
-	// Validate captcha
-	Route::any('captcha', ['uses' => 'Adshield\Violations\ResponseController@Captcha'])
-		->middleware("web");
-
-
 /**
  * route for frontend
  */

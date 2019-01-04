@@ -710,6 +710,130 @@ AdShield = function()
 
     }
 
+
+    /**
+     * constructs the DOM element for the captcha service
+     * @return {[type]} [description]
+     */
+    self.constructCaptcha = function() {
+
+        var bd = document.createElement("div");
+        bd.style.top = 0;
+        bd.style.left = 0;
+        bd.style.backgroundColor = "#000";
+        bd.style.opacity = 0.6;
+        bd.style.width = "100%";
+        bd.style.height = "100%";
+        bd.style.position = "fixed";
+        bd.style.zIndex = "9999999999999999999999999";
+        document.body.appendChild(bd);
+
+        var f = document.createElement("div");
+        f.style.width = "300px";
+        f.style.height = "200px";
+        f.style.backgroundColor = "#eee";
+        f.style.left = "50%";
+        f.style.top = "50%";
+        f.style.position = "absolute";
+        f.style.transform = "translate(-50%, -50%)";
+        f.style.zIndex = bd.style.zIndex + "1";
+        f.style.padding = "20px";
+        document.body.appendChild(f);
+
+        //captcha holder
+        var ch = document.createElement("div");
+        f.appendChild(ch);
+
+        self.generateCaptcha(ch);
+
+        var i = document.createElement("input");
+        i.type = "text";
+        i.style.width = "100%";
+        i.style.padding = "6px";
+        f.appendChild(i);
+
+        //submit button
+        var button = document.createElement("button");
+        button.textContent = "Submit";
+        button.onclick = function() {
+            var result = self.validateCaptcha(i.value);
+            //inform backend of result
+            if (result) {
+                //success
+            } else {
+                //failed
+                self.generateCaptcha(ch);
+            }
+        }
+        f.appendChild(button);
+
+        //refreh button
+        var buttonRefresh = document.createElement("button");
+        buttonRefresh.textContent = "Refresh";
+        buttonRefresh.onclick = function() {
+            i.value = "";
+            self.generateCaptcha(ch);
+        }
+        f.appendChild(buttonRefresh);
+
+        //cancel button
+        var buttonCancel = document.createElement("button");
+        buttonCancel.textContent = "Cancel";
+        buttonRefresh.onclick = function() {
+            //inform backend of cancellation
+            //destroy captcha
+            document.removeChild(bd);
+            document.removeChild(f);
+        }
+        f.appendChild(buttonCancel);
+
+    }
+
+    /**
+     * generates a new captcha code
+     * @return {[type]} [description]
+     */
+    self.generateCaptcha = function(captchaHolder) {
+        //clear the contents of captcha div first 
+        captchaHolder.innerHTML = "";
+        var charsArray =
+            "0123456789abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ";
+        var lengthOtp = 6;
+        var captcha = [];
+        for (var i = 0; i < lengthOtp; i++) {
+            //below code will not allow Repetition of Characters
+            var index = Math.floor(Math.random() * charsArray.length + 1); //get the next character from the array
+            if (captcha.indexOf(charsArray[index]) == -1)
+                captcha.push(charsArray[index]);
+            else i--;
+        }
+        var canv = document.createElement("canvas");
+        canv.id = "captcha";
+        canv.width = 100;
+        canv.height = 50;
+        var ctx = canv.getContext("2d");
+        ctx.font = "25px Georgia";
+        ctx.strokeText(captcha.join(""), 0, 30);
+        //storing captcha so that can validate you can save it somewhere else according to your specific requirements
+        self.code = captcha.join("");
+        captchaHolder.appendChild(canv); // adds the canvas to the body element
+    }
+
+    /**
+     * captcha validator
+     * @return {[type]} [description]
+     */
+    self.validateCaptcha = function(answer) {
+        event.preventDefault();
+        if (answer == self.code) {
+            alert("Valid Captcha")
+            return true;
+        } else {
+            alert("Invalid Captcha. try Again");
+            return false;
+        }
+    }
+
     /**
      * try to check common signatures for automation tools
      * @return {Boolean} [description]
@@ -747,6 +871,7 @@ AdShield = function()
         self.CheckReferrerUrl(); //check the referrer of the request (bad or good referrer url)
         self.StartAdShield(); //(try to) place div overlays on known ads
         self.CheckViolations(); //main violation/threat checker
+
     }
 
 }

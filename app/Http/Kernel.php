@@ -22,6 +22,7 @@ class Kernel extends HttpKernel
         \App\Http\Middleware\PreflightResponse::class,
     ];
 
+
     /**
      * The application's route middleware groups.
      *
@@ -42,7 +43,9 @@ class Kernel extends HttpKernel
             'throttle:60,1',
             'bindings',
         ],
+        
     ];
+
 
     /**
      * The application's route middleware.
