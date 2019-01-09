@@ -72,7 +72,7 @@ Route::get('nojs/{userKey?}', ['as' => 'LogNoJsViolation', 'uses' => 'Adshield\V
 /**
  * captcha handler
  */
-Route::get('cap/{userKey?}', ['as' => 'CaptchaReceiver', 'uses' => 'Adshield\Violations\CaptchaController@receive']);
+Route::get('cap/{userKey?}/{act}', ['as' => 'CaptchaReceiver', 'uses' => 'Adshield\Violations\CaptchaController@receive']);
 
 
 /**

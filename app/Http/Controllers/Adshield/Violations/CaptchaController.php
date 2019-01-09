@@ -20,9 +20,10 @@ class CaptchaController {
 	 * main entry point for messages from adshieldjs captcha
 	 * @return [type] [description]
 	 */
-	public function receive()
+	public function receive($userkey, $act)
 	{
-
+		//userkey 
+		//act = action taken (shown, success, failed, cancelled)
 	}
 
 
