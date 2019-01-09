@@ -52,7 +52,7 @@ class ResponseController {
 		if ($this->config == null) return;
 
 		$violationId = 0;
-		$response = self::RP_BLOCKED;
+		$response = 'allow';
 		$info = [];
 
 		foreach($this->violations as $violation => $data)
@@ -62,18 +62,24 @@ class ResponseController {
 			} else if (isset($this->violations[V_NO_JS])) {
 				//no response
 				//js won't be running anyway
+				$response = 'block';
 			} else if (isset($this->violations[V_JS_CHECK_FAILED])) {
 				//block
+				$response = 'block';
 			} else if (isset($this->violations[V_KNOWN_VIOLATOR_UA])) {
 				//block
+				$response = 'block';
 			} else if (isset($this->violations[V_SUSPICIOUS_UA])) {
 				//block
+				$response = 'block';
 			} else if (isset($this->violations[V_BROWSER_INTEGRITY])) {
 				//block
+				$response = 'block';
 			} else if (isset($this->violations[V_KNOWN_DC])) {
 				$response = ViolationDataCenterController::Respond($this->config);
 			} else if (isset($this->violations[V_PAGES_PER_MINUTE_EXCEED])) {
 				//block
+				$response = 'block';
 			} else if (isset($this->violations[V_PAGES_PER_SESSION_EXCEED])) {
 				//block
 			} else if (isset($this->violations[V_BLOCKED_COUNTRY])) {
@@ -101,6 +107,8 @@ class ResponseController {
 			$response = self::RP_BLOCKED;
 		} else if ($response == 'captcha') {
 			$response = self::RP_CAPTCHA;
+		} else if ($response == 'allow') {
+			$response = self::RP_ALLOWED;
 		} else {
 			$response = self::RP_BLOCKED;
 		}
@@ -110,7 +118,10 @@ class ResponseController {
 			return $this->Block();
 		} else if ($repsonse == self::RP_CAPTCHA) {
 			return $this->Captcha();
+		} else if ($response == self::RP_ALLOWED) {
+			return $this->Allow();
 		}
+
 		//IMPT:
 		//check violations for occurence of violations with responses.
 		//compose response text
@@ -129,12 +140,17 @@ class ResponseController {
 	}
 
 
+	private function Allow()
+	{
+		return response()->json(['action' => 'allow']);
+	}
+
 	/**
 	 * compose message to inform frontend that we are not showing ads (due to violation/threats)
 	 */
 	private function Block()
 	{
-		return response()->json(['action' => '']);
+		return response()->json(['action' => 'block']);
 	}
 
 
@@ -143,7 +159,7 @@ class ResponseController {
 	 */
 	private function Captcha()
 	{
-		return response()->json(['action' => '']);
+		return response()->json(['action' => 'captcha']);
 	}
 
 
