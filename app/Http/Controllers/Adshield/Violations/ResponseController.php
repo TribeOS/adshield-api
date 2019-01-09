@@ -78,16 +78,11 @@ class ResponseController {
 
 
 	/**
-	 * compose captcha message for the frontend to follow
+	 * compose response message for showing captcha
 	 */
-	public function Captcha()
+	private function Captcha()
 	{
-		//generate captcha code and referring ID
-		//send back to js
-		//js renders form on the frontend
-		//js submits answer back to backend for validation. will also be matched with the referring ID
-		//captcha event would be logged (answer failed or succeed)
-		
+
 	}
 
 
