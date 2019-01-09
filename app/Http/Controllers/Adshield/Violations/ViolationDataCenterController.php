@@ -26,4 +26,16 @@ class ViolationDataCenterController extends ViolationController {
 		return !empty($violation);
 	}
 
+
+	public static function Respond($config)
+	{
+		try {
+			$setting = $config['contentProtection']['threatResponse']['requestsFromKnownViolatorDataCenters'];
+		} catch (/Exception $e) {
+			$setting = 'block';
+		}
+
+		return $setting;
+	}
+
 }

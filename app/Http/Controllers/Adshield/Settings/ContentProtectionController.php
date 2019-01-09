@@ -42,7 +42,7 @@ class ContentProtectionController extends Controller
 
 		$data = [
 			"threatResponse" => [
-				"requestsFromUnknownViolators" => "captcha",
+				"requestsFromKnownViolators" => "captcha",
 				"requestsFromKnownViolatorDataCenters" => "block"
 			],
 			"referrersAndProxies" => [

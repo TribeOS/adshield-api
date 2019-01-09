@@ -32,4 +32,15 @@ class ViolationIPController extends ViolationController {
 		return !empty($violation);
 	}
 
+	public static function Respond($config)
+	{
+		try {
+			$setting = $config['contentProtection']['threatResponse']['requestsFromKnownViolators'];
+		} catch (/Exception $e) {
+			$setting = 'block';
+		}
+
+		return $setting;
+	}
+
 }

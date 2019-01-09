@@ -73,7 +73,7 @@ class ViolationCheckController extends ViolationController {
 		$config = $this->GetConfig($userKey);
 		//get the config for that violation
 		//return signal/action for JS to interpret and perform frontend functions
-		$responseController = new ResponseController($userKey, $violations, $info);
+		$responseController = new ResponseController($userKey, $config, $violations, $info);
 		return $responseController->CreateResponse();
 	}
 
