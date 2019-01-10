@@ -82,20 +82,28 @@ class ResponseController {
 				$response = 'block';
 			} else if (isset($this->violations[V_PAGES_PER_SESSION_EXCEED])) {
 				//block
+				$response = 'block';
 			} else if (isset($this->violations[V_BLOCKED_COUNTRY])) {
 				//block
+				$response = 'block';
 			} else if (isset($this->violations[V_AGGREGATOR_UA])) {
 				//block
+				$response = 'block';
 			} else if (isset($this->violations[V_KNOWN_VIOLATOR_AUTO_TOOL])) {
 				//block
+				$response = 'block';
 			} else if (isset($this->violations[V_SESSION_LENGTH_EXCEED])) {
 				//block
+				$response = 'block';
 			} else if (isset($this->violations[V_BAD_UA])) {
 				//block
+				$response = 'block';
 			} else if (isset($this->violations[V_UNCLASSIFIED_UA])) {
 				//block
+				$response = 'block';
 			} else if (isset($this->violations[V_IS_BOT])) {
 				//block
+				$response = 'block';
 			}
 
 			$violationId = $data;
@@ -117,25 +125,10 @@ class ResponseController {
 		if ($response == self::RP_BLOCKED) {
 			return $this->Block();
 		} else if ($repsonse == self::RP_CAPTCHA) {
-			return $this->Captcha();
+			return $this->Captcha($violationId);
 		} else if ($response == self::RP_ALLOWED) {
 			return $this->Allow();
 		}
-
-		//IMPT:
-		//check violations for occurence of violations with responses.
-		//compose response text
-		//return to caller
-		
-		//we'll need a heirarchy of violations to follow, which one should be considered first to take action on before others.
-		
-		//call logging code here to log before performing the action
-		// $this->LogResponse();
-
-		//we'll probably compose the JS code/lib here and return to the frontend to execute
-		// this script would either : 
-		// - show ads in the predefined ad tag/holders
-		// - inform user that ads are not showing becuase of possible violation/threat
 
 	}
 
@@ -156,10 +149,11 @@ class ResponseController {
 
 	/**
 	 * compose response message for showing captcha
+	 * @param int $violationId Violation ID of current check
 	 */
-	private function Captcha()
+	private function Captcha($violationId)
 	{
-		return response()->json(['action' => 'captcha']);
+		return response()->json(['action' => 'captcha', 'violationId' => $violationId]);
 	}
 
 

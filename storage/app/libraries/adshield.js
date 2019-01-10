@@ -647,7 +647,7 @@ AdShield = function()
 
         self.httpPost(self.urls.vlog + "/" + self.UserKey, arg, function(response) {
             //perform action here
-            self.ViolationResponse(response.action);
+            self.ViolationResponse(response);
         });   
     }
 
@@ -655,24 +655,21 @@ AdShield = function()
      * perform action as indicated on the parameter
      * @param {[type]} action [description]
      */
-    self.ViolationResponse = function(action, options)
+    self.ViolationResponse = function(response, options)
     {
-        //act here :
-        //- content protection
-        //  - captcha
-        //  - block page
-        //- Custom page
-        //  - captcha
-        //  - block page
-        //  - custom validation and itentity page
-        // - content distribution
-        //  - enable content cache
-        //  - cache urls without extension
-        //  - mobile cache
-        //  - cache extension
-        //  - compression & reroute
-        //
-        //
+        if (response.action == 'allow')
+        {
+            self.displayAds();
+        }
+        else if (response.action == 'block')
+        {
+            //dont load anything
+            return false;
+        }
+        else if (response.action == 'captcha')
+        {
+            self.displayCaptcha();
+        }
     }
 
     /**
@@ -700,14 +697,18 @@ AdShield = function()
     *   Display captcha to user
     **/
     self.displayCaptcha = function() {
-
+        self.constructCaptcha(function() {
+            //success
+            self.displayAds();
+        });
     }
 
     /**
      * execute code to display ads to their respective tags/holders
      */
     self.displayAds = function() {
-
+        //add js code that loads the actual ads here
+        //-----------
     }
 
 
@@ -715,7 +716,7 @@ AdShield = function()
      * constructs the DOM element for the captcha service
      * @return {[type]} [description]
      */
-    self.constructCaptcha = function() {
+    self.constructCaptcha = function(onSuccess) {
 
         var bd = document.createElement("div");
         bd.style.top = 0;
@@ -760,6 +761,7 @@ AdShield = function()
             //inform backend of result
             if (result) {
                 //success
+                onSuccess();
             } else {
                 //failed
                 self.generateCaptcha(ch);
