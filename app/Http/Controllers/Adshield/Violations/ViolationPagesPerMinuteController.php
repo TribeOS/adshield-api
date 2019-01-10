@@ -58,4 +58,15 @@ class ViolationPagesPerMinuteController extends ViolationController {
 	}
 
 
+	public static function Respond($config)
+	{
+		try {
+			$setting = $config['contentProtection']['threatResponse']['pagesPerMinuteExceed'];
+		} catch (\Exception $e) {
+			$setting = 'block';
+		}
+
+		return $setting;
+	}
+
 }

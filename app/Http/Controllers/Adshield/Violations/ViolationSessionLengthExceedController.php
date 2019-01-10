@@ -54,4 +54,16 @@ class ViolationSessionLengthExceedController extends ViolationController {
 	}
 
 
+	public static function Respond($config)
+	{
+		try {
+			$setting = $config['contentProtection']['threatResponse']['sessionLengthExceed'];
+		} catch (\Exception $e) {
+			$setting = 'block';
+		}
+
+		return $setting;
+	}
+
+
 }

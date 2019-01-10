@@ -133,5 +133,16 @@ class ViolationPagesPerSessionController extends ViolationController {
 	}
 
 
+	public static function Respond($config)
+	{
+		try {
+			$setting = $config['contentProtection']['threatResponse']['pagesPerSessionExceed'];
+		} catch (\Exception $e) {
+			$setting = 'block';
+		}
+
+		return $setting;
+	}
+
 
 }

@@ -24,4 +24,16 @@ class ViolationSuspiciousUAController extends ViolationController {
 		return false;
 	}
 
+
+	public static function Respond($config)
+	{
+		try {
+			$setting = $config['contentProtection']['threatResponse']['suspiciousUA'];
+		} catch (\Exception $e) {
+			$setting = 'block';
+		}
+
+		return $setting;
+	}
+
 }

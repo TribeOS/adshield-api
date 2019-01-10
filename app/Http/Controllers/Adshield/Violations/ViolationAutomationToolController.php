@@ -48,4 +48,15 @@ class ViolationAutomationToolController extends ViolationController {
 	}
 
 
+	public static function Respond($config)
+	{
+		try {
+			$setting = $config['contentProtection']['threatResponse']['knownViolatorAutoTool'];
+		} catch (\Exception $e) {
+			$setting = 'block';
+		}
+
+		return $setting;
+	}
+
 }

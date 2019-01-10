@@ -62,8 +62,16 @@ AdShield = function()
     self.httpPost = function(url, arg, callback)
     {
         var xhttp = new XMLHttpRequest();
-        xhttp.addEventListener("load", callback);
         xhttp.open("POST", url, true);
+        xhttp.addEventListener("load", function() {
+            try {
+                let data = JSON.parse(this.responseText);
+                callback(data);
+            } catch (e) {
+                callback({});
+            }
+        });
+
         xhttp.setRequestHeader("Content-Type", "application/json");
         xhttp.send(JSON.stringify(arg));
     }
@@ -325,73 +333,6 @@ AdShield = function()
         //on success remove blocks and adshield?
     }
 
-
-    // self.RenderCaptcha = function(savedLogId, adShieldID, onSuccess)
-    // {
-
-    //     var captchaStatus = 'none';
-
-    //     var onCaptchaHide = function()
-    //     {
-    //         if (captchaStatus == 'none') self.LogCaptcha(savedLogId, 3);;
-    //         grecaptcha.reset();
-    //     }
-
-    //     if (grecaptchaId !== null)
-    //     {
-    //         //resets existing recaptcha
-    //         grecaptcha.reset(grecaptchaId);
-    //     } 
-    //     else
-    //     {
-    //         grecaptchaId = grecaptcha.render("g-recaptcha", {
-    //             'sitekey' : '6LfgFhEUAAAAAG7lOhroItXiJiO53EOZt-ui0FfY',
-    //             'callback' : function(response) {
-    //                 //verify
-    //                 var v_arg = { clklog_captcha : 1, response : response, key : self.UserKey };
-    //                 $.get(self.urls.adShieldHandler, v_arg, function(d)
-    //                 {
-    //                     if (savedLogId > 0 && d.success)
-    //                     {
-    //                         //indicate that the captcha was successfully completed
-    //                         $.get(self.urls.adShieldHandler, { key : self.UserKey, lgadclk_up : 1, id : savedLogId }, function() { });
-    //                         self.LogCaptcha(savedLogId, 1);
-    //                         captchaStatus = 'passed';
-    //                         //hide captcha form
-    //                         $('#recaptcha-holder').hide();
-    //                         onCaptchaHide();
-    //                         $("div#" + adShieldID).remove();
-    //                         if (typeof onSuccess != 'undefined') onSuccess();
-    //                     }
-    //                     else
-    //                     {
-    //                         self.LogCaptcha(savedLogId, 0);
-    //                         captchaStatus = 'failed';
-    //                     }
-    //                 }, 'json');
-    //             }
-    //         });
-    //     }
-
-    //     //add event handler for close button
-    //     $("button#btn-close-captcha").click(function()
-    //     {
-    //         self.LogCaptcha(savedLogId, 3);
-    //         $("#recaptcha-holder").hide();
-    //         $(".tribeos-bg").hide();
-    //         onCaptchaHide();
-    //     });
-
-    //     $(".tribeos-bg").css({
-    //         height : window.innerHeight + "px"
-    //     }).show();
-
-    //     //show the recaptcha form
-    //     $('#recaptcha-holder').show();
-
-    //     //log captcha
-    //     self.LogCaptcha(savedLogId, 2);
-    // }
 
     /**
      * logs the click on the adshield. then performs an IP check (whitelisted, greylisted, blacklisted)
@@ -700,6 +641,9 @@ AdShield = function()
         self.constructCaptcha(function() {
             //success
             self.displayAds();
+        }, function() {
+            //cancelled
+            console.log("not showing ads");
         });
     }
 
@@ -709,6 +653,7 @@ AdShield = function()
     self.displayAds = function() {
         //add js code that loads the actual ads here
         //-----------
+        console.log("showing ads...");
     }
 
 
@@ -716,7 +661,7 @@ AdShield = function()
      * constructs the DOM element for the captcha service
      * @return {[type]} [description]
      */
-    self.constructCaptcha = function(onSuccess) {
+    self.constructCaptcha = function(onSuccess, onCancel) {
 
         var bd = document.createElement("div");
         bd.style.top = 0;
@@ -762,6 +707,8 @@ AdShield = function()
             if (result) {
                 //success
                 onSuccess();
+                document.body.removeChild(bd);
+                document.body.removeChild(f);
             } else {
                 //failed
                 self.generateCaptcha(ch);
@@ -781,11 +728,12 @@ AdShield = function()
         //cancel button
         var buttonCancel = document.createElement("button");
         buttonCancel.textContent = "Cancel";
-        buttonRefresh.onclick = function() {
+        buttonCancel.onclick = function() {
             //inform backend of cancellation
             //destroy captcha
-            document.removeChild(bd);
-            document.removeChild(f);
+            document.body.removeChild(bd);
+            document.body.removeChild(f);
+            onCancel();
         }
         f.appendChild(buttonCancel);
 
@@ -827,13 +775,7 @@ AdShield = function()
      */
     self.validateCaptcha = function(answer) {
         event.preventDefault();
-        if (answer == self.code) {
-            alert("Valid Captcha")
-            return true;
-        } else {
-            alert("Invalid Captcha. try Again");
-            return false;
-        }
+        return answer == self.code;
     }
 
     /**
@@ -871,7 +813,7 @@ AdShield = function()
         self.AdShieldType = 3; //not used yet
         self.CheckIframed(); //check if website is inside an iframe or not
         self.CheckReferrerUrl(); //check the referrer of the request (bad or good referrer url)
-        self.StartAdShield(); //(try to) place div overlays on known ads
+        // self.StartAdShield(); //(try to) place div overlays on known ads
         self.CheckViolations(); //main violation/threat checker
 
     }

@@ -21,10 +21,13 @@ use App\Http\Controllers\Adshield\Violations\ViolationBlockedCountryController;
 use App\Http\Controllers\Adshield\Violations\ViolationSuspiciousUAController;
 use App\Http\Controllers\Adshield\Violations\ViolationBrowserIntegrityCheckController;
 use App\Http\Controllers\Adshield\Violations\ViolationPagesPerMinuteController;
+use App\Http\Controllers\Adshield\Violations\ViolationPagesPerSessionController;
 use App\Http\Controllers\Adshield\Violations\ViolationSessionLengthExceedController;
+use App\Http\Controllers\Adshield\Violations\ViolationAggregatorUserAgentController;
 use App\Http\Controllers\Adshield\Violations\ViolationAutomationToolController;
 use App\Http\Controllers\Adshield\Violations\ViolationBadAgentController;
 use App\Http\Controllers\Adshield\Violations\AutomatedTrafficCheckController;
+use App\Http\Controllers\Adshield\Violations\ViolationJSCheckFailedController;
 
 
 /**

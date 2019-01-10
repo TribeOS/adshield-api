@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Adshield\Violations;
 
 use App\Model\UserConfig;
+use App\Model\CaptchaLog;
 use DB;
 
 
@@ -24,45 +25,21 @@ class CaptchaController {
 	{
 		//userkey 
 		//act = action taken (shown, success, failed, cancelled)
-	}
+		$action = 'shown';
+		switch ($act) {
+			case 'shown' : $action = 'SHOWN'; break;
+			case 'success' : $action = 'SUCCESS'; break;
+			case 'failed' : $action = 'FAILED'; break;
+			case 'cancelled' : $action = 'CANCELLED'; break;
+		}
 
+		$data = Request::all();
 
-	/**
-	 * captcha shown
-	 * @return [type] [description]
-	 */
-	private function shown()
-	{
-
-	}
-
-	/**
-	 * captcha answer failed
-	 * @return [type] [description]
-	 */
-	private function failed()
-	{
-
-	}
-
-
-	/**
-	 * captcha answer successfuly
-	 * @return [type] [description]
-	 */
-	private function success()
-	{
-
-	}
-
-
-	/**
-	 * captcha was cancelled by the user
-	 * @return [type] [description]
-	 */
-	private function cancelled()
-	{
-
+		$log = new CaptchaLog();
+		$log->violationId = $data['violationId'];
+		$log->action = $action;
+		$log->createdOn = gmdate("Y-m-d H:i:s");
+		$log->save();
 	}
 
 

@@ -9,8 +9,20 @@ use App\Model\ViolationResponse;
 use DB;
 
 
+use App\Http\Controllers\Adshield\Violations\ViolationUserAgentController;
 use App\Http\Controllers\Adshield\Violations\ViolationIPController;
 use App\Http\Controllers\Adshield\Violations\ViolationDataCenterController;
+use App\Http\Controllers\Adshield\Violations\ViolationBlockedCountryController;
+use App\Http\Controllers\Adshield\Violations\ViolationSuspiciousUAController;
+use App\Http\Controllers\Adshield\Violations\ViolationBrowserIntegrityCheckController;
+use App\Http\Controllers\Adshield\Violations\ViolationPagesPerMinuteController;
+use App\Http\Controllers\Adshield\Violations\ViolationPagesPerSessionController;
+use App\Http\Controllers\Adshield\Violations\ViolationSessionLengthExceedController;
+use App\Http\Controllers\Adshield\Violations\ViolationAggregatorUserAgentController;
+use App\Http\Controllers\Adshield\Violations\ViolationAutomationToolController;
+use App\Http\Controllers\Adshield\Violations\ViolationBadAgentController;
+use App\Http\Controllers\Adshield\Violations\AutomatedTrafficCheckController;
+use App\Http\Controllers\Adshield\Violations\ViolationJSCheckFailedController;
 
 
 /**
@@ -57,53 +69,77 @@ class ResponseController {
 
 		foreach($this->violations as $violation => $data)
 		{
-			if ($violation == ViolationController::V_KNOWN_VIOLATOR) {
+			if ($violation == ViolationController::V_KNOWN_VIOLATOR)
+			{
 				$response = ViolationIPController::Respond($this->config);
-			} else if (isset($this->violations[V_NO_JS])) {
+			} 
+			else if (isset($this->violations[V_NO_JS]))
+			{
 				//no response
 				//js won't be running anyway
 				$response = 'block';
-			} else if (isset($this->violations[V_JS_CHECK_FAILED])) {
-				//block
-				$response = 'block';
-			} else if (isset($this->violations[V_KNOWN_VIOLATOR_UA])) {
-				//block
-				$response = 'block';
-			} else if (isset($this->violations[V_SUSPICIOUS_UA])) {
-				//block
-				$response = 'block';
-			} else if (isset($this->violations[V_BROWSER_INTEGRITY])) {
-				//block
-				$response = 'block';
-			} else if (isset($this->violations[V_KNOWN_DC])) {
+			} 
+			else if (isset($this->violations[V_JS_CHECK_FAILED])) 
+			{
+				$response = ViolationJSCheckFailedController::Respond($this->config);
+			} 
+			else if (isset($this->violations[V_KNOWN_VIOLATOR_UA])) 
+			{
+				$response = ViolationUserAgentController::Respond($this->config);
+			} 
+			else if (isset($this->violations[V_SUSPICIOUS_UA])) 
+			{
+				$response = ViolationSuspiciousUAController::Respond($this->config);
+			} 
+			else if (isset($this->violations[V_BROWSER_INTEGRITY])) 
+			{
+				$response = ViolationBrowserIntegrityCheckController::Respond($this->config);
+			} 
+			else if (isset($this->violations[V_KNOWN_DC])) 
+			{
 				$response = ViolationDataCenterController::Respond($this->config);
-			} else if (isset($this->violations[V_PAGES_PER_MINUTE_EXCEED])) {
-				//block
-				$response = 'block';
-			} else if (isset($this->violations[V_PAGES_PER_SESSION_EXCEED])) {
-				//block
-				$response = 'block';
-			} else if (isset($this->violations[V_BLOCKED_COUNTRY])) {
-				//block
-				$response = 'block';
-			} else if (isset($this->violations[V_AGGREGATOR_UA])) {
-				//block
-				$response = 'block';
-			} else if (isset($this->violations[V_KNOWN_VIOLATOR_AUTO_TOOL])) {
-				//block
-				$response = 'block';
-			} else if (isset($this->violations[V_SESSION_LENGTH_EXCEED])) {
-				//block
-				$response = 'block';
-			} else if (isset($this->violations[V_BAD_UA])) {
-				//block
-				$response = 'block';
-			} else if (isset($this->violations[V_UNCLASSIFIED_UA])) {
-				//block
-				$response = 'block';
-			} else if (isset($this->violations[V_IS_BOT])) {
-				//block
-				$response = 'block';
+			} 
+			else if (isset($this->violations[V_PAGES_PER_MINUTE_EXCEED])) 
+			{
+				$response = ViolationPagesPerMinuteController::Respond($this->config);
+			} 
+			else if (isset($this->violations[V_PAGES_PER_SESSION_EXCEED])) 
+			{
+				$response = ViolationPagesPerSession::Respond($this->config);
+			} 
+			else if (isset($this->violations[V_BLOCKED_COUNTRY])) 
+			{
+				$response = ViolationBlockedCountryController::Respond($this->config);
+			} 
+			else if (isset($this->violations[V_AGGREGATOR_UA])) 
+			{
+				$response = ViolationAggregatorUserAgentController::Respond($this->config);
+			} 
+			else if (isset($this->violations[V_KNOWN_VIOLATOR_AUTO_TOOL])) 
+			{
+				$response = ViolationAutomationToolController::Respond($this->config);
+			} 
+			else if (isset($this->violations[V_SESSION_LENGTH_EXCEED])) 
+			{
+				$response = ViolationSessionLengthExceedController::Respond($this->config);
+			} 
+			else if (isset($this->violations[V_BAD_UA])) 
+			{
+				$response = ViolationBadAgentController::Respond($this->config);
+			} 
+			else if (isset($this->violations[V_UNCLASSIFIED_UA]))
+			{
+				try {
+					$response = $this->config['contentProtection']['threatResponse']['unclassifiedUA'];
+				} catch (\Exception $e) {
+				}
+			} 
+			else if (isset($this->violations[V_IS_BOT])) 
+			{
+				try {
+					$response = $this->config['contentProtection']['threatResponse']['bot'];
+				} catch (\Exception $e) {
+				}
 			}
 
 			$violationId = $data;
@@ -124,7 +160,7 @@ class ResponseController {
 
 		if ($response == self::RP_BLOCKED) {
 			return $this->Block();
-		} else if ($repsonse == self::RP_CAPTCHA) {
+		} else if ($response == self::RP_CAPTCHA) {
 			return $this->Captcha($violationId);
 		} else if ($response == self::RP_ALLOWED) {
 			return $this->Allow();

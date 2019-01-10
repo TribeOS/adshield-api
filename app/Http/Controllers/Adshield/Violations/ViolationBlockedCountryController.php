@@ -29,4 +29,16 @@ class ViolationBlockedCountryController extends ViolationController {
 		return !empty($violation);
 	}
 
+
+	public static function Respond($config)
+	{
+		try {
+			$setting = $config['contentProtection']['threatResponse']['blockedCountry'];
+		} catch (\Exception $e) {
+			$setting = 'block';
+		}
+
+		return $setting;
+	}
+
 }

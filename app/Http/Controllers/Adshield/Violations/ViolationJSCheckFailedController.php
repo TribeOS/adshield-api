@@ -21,4 +21,15 @@ class ViolationJSCheckFailedController extends ViolationController {
 		return !$isOK;
 	}
 
+	public static function Respond($config)
+	{
+		try {
+			$setting = $config['contentProtection']['threatResponse']['jsCheckFailed'];
+		} catch (\Exception $e) {
+			$setting = 'block';
+		}
+
+		return $setting;
+	}
+
 }

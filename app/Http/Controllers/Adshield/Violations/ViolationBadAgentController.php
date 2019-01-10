@@ -50,4 +50,17 @@ class ViolationBadAgentController extends ViolationController {
 		return false;
 	}
 
+
+	public static function Respond($config)
+	{
+		try {
+			$setting = $config['contentProtection']['threatResponse']['badUA'];
+		} catch (\Exception $e) {
+			$setting = 'block';
+		}
+
+		return $setting;
+	}
+
+
 }

@@ -15,6 +15,10 @@ use App\Model\UserConfig;
 use App\Http\Controllers\Adshield\LogController;
 
 
+/**
+ * aka Ad Protection Controller
+ * handles all ad protection page data
+ */
 class ContentProtectionController extends Controller
 {
 
@@ -43,7 +47,20 @@ class ContentProtectionController extends Controller
 		$data = [
 			"threatResponse" => [
 				"requestsFromKnownViolators" => "captcha",
-				"requestsFromKnownViolatorDataCenters" => "block"
+				"requestsFromKnownViolatorDataCenters" => "block",
+				"jsCheckFailed" => "block",
+				"knownViolatorUA" => "block",
+				"suspiciousUA" => "block",
+				"browserIntegrity" => "block",
+				"pagesPerMinuteExceed" => "block",
+				"pagesPerSessionExceed" => "block",
+				"blockedCountry" => "block",
+				"aggregatorUA" => "block",
+				"knownViolatorAutoTool" => "block",
+				"sessionLengthExceed" => "block",
+				"badUA" => "block",
+				"unclassifiedUA" => "block",
+				"bot" => "block",
 			],
 			"referrersAndProxies" => [
 				"blockReferrers" => "no",
@@ -59,7 +76,10 @@ class ContentProtectionController extends Controller
 		];
 		if (!empty($settings) && !empty($settings->getConfigJson('contentProtection'))) 
 		{
-			$data = array_merge($data, $settings->getConfigJson('contentProtection'));
+			$config = $settings->getConfigJson('contentProtection');
+			if (!empty($config['threatResponse'])) $data['threatResponse'] = array_merge($data['threatResponse'], $config['threatResponse']);
+			if (!empty($config['referrersAndProxies'])) $data['referrersAndProxies'] = array_merge($data['referrersAndProxies'], $config['referrersAndProxies']);
+			if (!empty($config['sessions'])) $data['sessions'] = array_merge($data['sessions'], $config['sessions']);
 		}
 
 		return response()->json(['id'=>1, 'pageData' => $data]);

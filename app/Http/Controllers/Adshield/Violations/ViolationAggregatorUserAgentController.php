@@ -39,4 +39,17 @@ class ViolationAggregatorUserAgentController extends ViolationController {
 		return false;
 	}
 
+
+	public static function Respond($config)
+	{
+		try {
+			$setting = $config['contentProtection']['threatResponse']['aggregatorUA'];
+		} catch (\Exception $e) {
+			$setting = 'block';
+		}
+
+		return $setting;
+	}
+
+
 }

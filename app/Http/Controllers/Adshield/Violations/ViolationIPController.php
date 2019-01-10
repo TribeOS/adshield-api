@@ -36,7 +36,7 @@ class ViolationIPController extends ViolationController {
 	{
 		try {
 			$setting = $config['contentProtection']['threatResponse']['requestsFromKnownViolators'];
-		} catch (/Exception $e) {
+		} catch (\Exception $e) {
 			$setting = 'block';
 		}
 

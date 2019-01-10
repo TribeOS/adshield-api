@@ -49,5 +49,15 @@ class ViolationUserAgentController extends ViolationController {
 		return false;
 	}
 
+	public static function Respond($config)
+	{
+		try {
+			$setting = $config['contentProtection']['threatResponse']['knownViolatorUA'];
+		} catch (\Exception $e) {
+			$setting = 'block';
+		}
+
+		return $setting;
+	}
 
 }

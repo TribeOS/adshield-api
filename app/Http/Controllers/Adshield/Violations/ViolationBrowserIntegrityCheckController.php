@@ -45,4 +45,16 @@ class ViolationBrowserIntegrityCheckController extends ViolationController {
 		return !empty($knownAgent);
 	}
 
+
+	public static function Respond($config)
+	{
+		try {
+			$setting = $config['contentProtection']['threatResponse']['browserIntegrity'];
+		} catch (\Exception $e) {
+			$setting = 'block';
+		}
+
+		return $setting;
+	}
+
 }

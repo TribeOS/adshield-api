@@ -31,7 +31,7 @@ class ViolationDataCenterController extends ViolationController {
 	{
 		try {
 			$setting = $config['contentProtection']['threatResponse']['requestsFromKnownViolatorDataCenters'];
-		} catch (/Exception $e) {
+		} catch (\Exception $e) {
 			$setting = 'block';
 		}
 

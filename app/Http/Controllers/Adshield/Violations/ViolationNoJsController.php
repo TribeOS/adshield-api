@@ -44,4 +44,14 @@ class ViolationNoJsController extends ViolationController {
 			->header('Cache-Control', 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0');
 	}
 
+
+	public static function Respond($config)
+	{
+		//nothing to respond.
+		//JS doesn't work when this violation is raised
+		return 'block';
+	}
+
+
+
 }
