@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Adshield\Violations;
 use App\Model\UserConfig;
 use App\Model\CaptchaLog;
 use DB;
+use Request;
 
 
 /**

@@ -72,7 +72,10 @@ Route::get('nojs/{userKey?}', ['as' => 'LogNoJsViolation', 'uses' => 'Adshield\V
 /**
  * captcha handler
  */
-Route::get('cap/{userKey?}/{act}', ['as' => 'CaptchaReceiver', 'uses' => 'Adshield\Violations\CaptchaController@receive']);
+Route::any('cap/{userKey?}/{act?}', ['as' => 'CaptchaReceiver', 'uses' => 'Adshield\Violations\CaptchaController@receive'])
+	->where('userKey', '[a-zA-Z0-9]+')
+	->where('act', '[a-z]{1,10}')
+	->middleware('api.access');
 
 
 /**

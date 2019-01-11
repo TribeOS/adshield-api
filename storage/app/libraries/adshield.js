@@ -12,6 +12,7 @@ AdShield = function()
     self.urls = {};
     self.UserKey = null;
     self.AdShieldType = 3;
+    self.violationId = 0;
 
     //create "closest()" function
     this.Element && function(ElementPrototype) {
@@ -65,7 +66,7 @@ AdShield = function()
         xhttp.open("POST", url, true);
         xhttp.addEventListener("load", function() {
             try {
-                let data = JSON.parse(this.responseText);
+                var data = JSON.parse(this.responseText);
                 callback(data);
             } catch (e) {
                 callback({});
@@ -539,15 +540,15 @@ AdShield = function()
 
     }
 
-    self.LogCaptcha = function(l, s) 
-    {
-        self.httpPost(self.urls.adShieldHandler, 
-            { 
-                key : self.UserKey, logCaptcha : 1, log_id : l, status : s
-            }, 
-            function(d) {}
-        );
-    }
+    // self.LogCaptcha = function(l, s) 
+    // {
+    //     self.httpPost(self.urls.adShieldHandler, 
+    //         { 
+    //             key : self.UserKey, logCaptcha : 1, log_id : l, status : s
+    //         }, 
+    //         function(d) {}
+    //     );
+    // }
 
     self.FillValue = function(key, value)
     {
@@ -609,6 +610,7 @@ AdShield = function()
         }
         else if (response.action == 'captcha')
         {
+            self.violationId = response.violationId;
             self.displayCaptcha();
         }
     }
@@ -651,6 +653,7 @@ AdShield = function()
      * execute code to display ads to their respective tags/holders
      */
     self.displayAds = function() {
+        //IMPT:: ad code would be enabled here vvvvv
         //add js code that loads the actual ads here
         //-----------
         console.log("showing ads...");
@@ -705,13 +708,17 @@ AdShield = function()
             var result = self.validateCaptcha(i.value);
             //inform backend of result
             if (result) {
+                self.httpPost(self.urls.captchaUrl + "/" + self.UserKey + "/success", { violationId : self.violationId }, function(d) {
+                    onSuccess();
+                    document.body.removeChild(bd);
+                    document.body.removeChild(f);
+                });
                 //success
-                onSuccess();
-                document.body.removeChild(bd);
-                document.body.removeChild(f);
             } else {
+                self.httpPost(self.urls.captchaUrl + "/" + self.UserKey + "/failed", { violationId : self.violationId }, function(d) {
+                    self.generateCaptcha(ch);
+                });
                 //failed
-                self.generateCaptcha(ch);
             }
         }
         f.appendChild(button);
@@ -729,14 +736,15 @@ AdShield = function()
         var buttonCancel = document.createElement("button");
         buttonCancel.textContent = "Cancel";
         buttonCancel.onclick = function() {
-            //inform backend of cancellation
-            //destroy captcha
-            document.body.removeChild(bd);
-            document.body.removeChild(f);
-            onCancel();
+            self.httpPost(self.urls.captchaUrl + "/" + self.UserKey + "/cancelled", { violationId : self.violationId }, function(d) {
+                document.body.removeChild(bd);
+                document.body.removeChild(f);
+                onCancel();
+            });
         }
         f.appendChild(buttonCancel);
 
+        self.httpPost(self.urls.captchaUrl + "/" + self.UserKey + "/shown", { violationId : self.violationId }, function(d) { });
     }
 
     /**
