@@ -23,8 +23,8 @@ class AdshieldController extends BaseController
 		header("Content-Type: application/javascript");
 		$shieldType = 3; //default to use the "guess estimate" function to capture clicks on ad
 
-		// $jsContent = Storage::get('libraries/adshield.min.js');
-		$jsContent = Storage::get('libraries/adshield.js');
+		$jsContent = Storage::get('libraries/adshield.min.js');
+		// $jsContent = Storage::get('libraries/adshield.js');
 		$urls = [
 			'statlog' => route('AdshieldLogstat'),
     		'checkReferrer' => route('AdshieldCheckUrl'),
