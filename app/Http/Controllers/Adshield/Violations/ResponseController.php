@@ -157,7 +157,7 @@ class ResponseController {
 			$response = self::RP_BLOCKED;
 		}
 
-		if ($violationId > 0) $this->LogResponse($violationId, $response, $info);
+		$this->LogResponse($violationId, $response, $info);
 
 		if ($response == self::RP_BLOCKED) {
 			return $this->Block();
