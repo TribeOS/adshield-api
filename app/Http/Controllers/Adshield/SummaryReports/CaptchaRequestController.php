@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Adshield\SummaryReports;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Input;
+use Request;
 
 use App\Http\Controllers\Adshield\Protection\DummyDataController;
 use App\Http\Controllers\Adshield\LogController;
@@ -17,61 +17,165 @@ class CaptchaRequestController extends BaseController
 
 	public function getData()
 	{
-		$days = Input::get('days', 60);
+		$filter = Request::get("filter", []);
+
 		$data = [
-			'totalTrafficVsCaptcha' => $this->getTotalTrafficVsCaptcha($days),
-			'attemptsSolvedVsFailed' => $this->getAttemptsSolvedVsFailed($days),
-			'captchaRequests' => $this->getCaptchaRequests($days)
+			'totalTrafficVsCaptcha' => $this->getTotalTrafficVsCaptcha($filter),
+			'attemptsSolvedVsFailed' => $this->getAttemptsSolvedVsFailed($filter),
+			'captchaRequests' => $this->getCaptchaRequests($filter)
 		];
 
 		$data['totalTrafficVsCaptcha'] = DummyDataController::ApplyDuration($data['totalTrafficVsCaptcha']);
 		$data['attemptsSolvedVsFailed'] = DummyDataController::ApplyDuration($data['attemptsSolvedVsFailed']);
 
-		// LogController::QuickLog(LogController::ACT_VIEW_REPORT, [
-		// 	'title' => 'Captcha Requests',
-		// 	'userKey' => $filter['userKey']
-		// ]);
+		LogController::QuickLog(LogController::ACT_VIEW_REPORT, [
+			'title' => 'Captcha Requests',
+			'userKey' => $filter['userKey']
+		]);
 
-		return response()->json(['id'=>0, 'pageData' => $data])
-			->header('Content-Type', 'application/vnd.api+json');
+		return response()->json(['id'=>0, 'pageData' => $data]);
 	}
 
-	private function getTotalTrafficVsCaptcha($days)
+
+	/**
+	 * gets the total number of requests/traffic for the given period and website
+	 * together with the total number of captcha served/shown (logged)
+	 * @param  [type] $days [description]
+	 * @return [type]       [description]
+	 */
+	private function getTotalTrafficVsCaptcha($filter)
 	{
+		//get total trafic
+		$traffic = DB::table("trViolationLog")
+			->join("trViolationSession", function($join) use($filter) {
+				$join->on("trViolationSession.id", "=", "trViolationLog.sessionId")
+					->where("trViolationSession.userKey", $filter['userKey']);
+
+				if (!empty($filter['duration']) && $filter['duration'] > 0)
+				{
+					$duration = $filter['duration'];
+					$join->where("trViolationLog.createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
+				}
+			})
+			->count();
+
+		//get total captcha served
+
+		$captcha = DB::table('trViolations')
+			->join('trViolationResponses', function($join) use($filter) {
+				$join->on('trViolationResponses.violationId', '=', 'trViolations.id')
+					->where('userKey', '=', $filter['userKey'])
+					->where('trViolationResponses.responseTaken', '=', 'CAPTCHA');
+
+				if (!empty($filter['duration']) && $filter['duration'] > 0)
+				{
+					$duration = $filter['duration'];
+					$join->where("trViolationResponses.createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
+				}
+			})
+			->count();
+
+
 		$data = [
-			'data' => [46, 26],
+			'data' => [$traffic, $captcha],
 			'label' => ['Total Traffic', 'CAPTCHA Served']
 		];
+
 		return $data;
 	}
 
-	private function getAttemptsSolvedVsFailed($days)
+	private function getAttemptsSolvedVsFailed($filter)
 	{
+		$records = DB::table("trCaptchaLog")
+			->join("trViolations", function($join) use($filter) {
+				$join->on("trViolations.id", "=", "trCaptchaLog.violationId")
+					->where("trViolations.userKey", $filter['userKey']);
+				if (!empty($filter['duration']) && $filter['duration'] > 0)
+				{
+					$duration = $filter['duration'];
+					$join->where("trCaptchaLog.createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
+				}
+			})
+			->selectRaw("action, COUNT(*) AS total")
+			->whereIn("action", ['SUCCESS', 'FAILED'])
+			->groupBy("action")
+			->get();
+
+
+		$label = [
+			'SUCCESS' => 'Solved',
+			'FAILED' => 'Failed'
+		];
+
 		$data = [
-			'data' => [2, 12, 54],
-			'label' => ['Solved', 'Failed', 'No Attempt']
+			'data' => [],
+			'label' => []
 		];
-		return $data;
-	}
 
-	private function getCaptchaRequests($days)
-	{
-		$data = [];
-		$data['datasets'][] = [
-			'data' => [3, 48, 38, 1, 21, 91, 6],
-			'label' => 'Total Traffic'
-		];
-		$data['datasets'][] = [
-			'data' => [47, 57, 90, 87, 59, 13, 31],
-			'label' => 'Served Total'
-		];
-		$data['label'] = ['January', 'February', 'March', 'April', 'May', 'June', 'July'];
-
-		foreach($data['datasets'] as $index=>$ds) {
-			$data['datasets'][$index] = DummyDataController::ApplyDuration($data['datasets'][$index]);
+		foreach($records as $d)
+		{
+			$data['data'][] = $d->total;
+			$data['label'][] = $label[$d->action];
 		}
 
 		return $data;
+	}
+
+	private function getCaptchaRequests($filter)
+	{
+
+		$records = [];
+
+		//get traffic count
+		$records['traffic'] = DB::table("trViolationLog")
+			->join("trViolationSession", function($join) use($filter) {
+				$join->on("trViolationSession.id", "=", "trViolationLog.sessionId")
+					->where("trViolationSession.userKey", $filter['userKey'])
+					->whereBetween("trViolationLog.createdOn", [gmdate("Y-01-01 00:00:00"), gmdate("Y-12-31 23:59:59", time())]);
+			})
+			->selectRaw("MONTH(trViolationLog.createdOn) AS month, COUNT(*) AS total")
+			->groupBy("month")
+			->get();
+
+		//get captcha served
+		$records['captcha'] = DB::table('trViolations')
+			->join('trViolationResponses', function($join) use($filter) {
+				$join->on('trViolationResponses.violationId', '=', 'trViolations.id')
+					->where('userKey', '=', $filter['userKey'])
+					->where('trViolationResponses.responseTaken', '=', 'CAPTCHA')
+					->whereBetween("trViolationResponses.createdOn", [gmdate("Y-01-01 00:00:00"), gmdate("Y-12-31 23:59:59", time())]);
+			})
+			->selectRaw("MONTH(trViolations.createdOn) AS month, COUNT(*) AS total")
+			->groupBy("month")
+			->get();
+
+		$graph = [
+			'datasets' => [],
+			'label' => ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+		];
+
+		$label = [
+			'traffic' => 'Traffic',
+			'captcha' => 'Captcha Served'
+		];
+
+		$previousName = '';
+		foreach($records as $index=>$record)
+		{
+			
+			$graph['datasets'][] = [
+				'data' => [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+				'label' => $label[$index]
+			];
+
+			foreach($record as $rec)
+			{
+				$graph['datasets'][count($graph['datasets']) - 1]['data'][$rec->month - 1] = $rec->total;
+			}
+
+		}
+
+		return $graph;
 	}
 
 	

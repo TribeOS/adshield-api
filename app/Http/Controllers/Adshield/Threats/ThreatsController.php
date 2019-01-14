@@ -10,6 +10,7 @@ use Request;
 use App\Http\Controllers\Adshield\Protection\DummyDataController;
 
 use App\Http\Controllers\Adshield\Violations\ViolationController;
+use App\Http\Controllers\Adshield\Violations\ResponseController;
 use App\Http\Controllers\Adshield\LogController;
 
 
@@ -121,27 +122,32 @@ class ThreatsController extends BaseController
 		//we're using the threats classification for now since we don't have data/logic for recording "threats averted" activity.
 		
 		$labels = [
-			ViolationController::V_UNCLASSIFIED_UA => 'Unclassified User Agent',
-			ViolationController::V_BAD_UA => 'Bad User Agent',
-			ViolationController::V_KNOWN_VIOLATOR_UA => 'Known Violator User Agent',
-			ViolationController::V_AGGREGATOR_UA => 'Aggregator User Agent',
+			ResponseController::RP_BLOCKED => 'Blocked',
+			ResponseController::RP_CAPTCHA => 'Captcha'
 		];
 
 		$data = DB::table('trViolations')
+			->join("trViolationResponses", "trViolationResponses.violationId", "=", "trViolations.id")
 			->where('userKey', $filter['userKey'])
-			->selectRaw("violation, COUNT(*) AS total")
-			->groupBy('violation')
+			->selectRaw("responseTaken, COUNT(*) AS total")
+			->groupBy('responseTaken')
 			->whereIn('violation', [
 				ViolationController::V_UNCLASSIFIED_UA,
 				ViolationController::V_BAD_UA,
 				ViolationController::V_KNOWN_VIOLATOR_UA,
-				ViolationController::V_AGGREGATOR_UA
+				ViolationController::V_AGGREGATOR_UA,
+				ViolationController::V_JS_CHECK_FAILED,
+				ViolationController::V_KNOWN_VIOLATOR,
+				ViolationController::V_BROWSER_INTEGRITY,
+				ViolationController::V_IS_BOT,
+				ViolationController::V_KNOWN_VIOLATOR_AUTO_TOOL,
+				ViolationController::V_KNOWN_DC
 			]);
 
 		if (!empty($filter['duration']) && $filter['duration'] > 0)
 		{
 			$duration = $filter['duration'];
-			$data->where("createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
+			$data->where("trViolations.createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
 		}
 
 		$data = $data->get();
@@ -149,7 +155,7 @@ class ThreatsController extends BaseController
 		foreach($data as $d)
 		{
 			$graphData['data'][] = $d->total;
-			$graphData['label'][] = $labels[$d->violation];
+			$graphData['label'][] = $labels[$d->responseTaken];
 		}
 
 		return $graphData;

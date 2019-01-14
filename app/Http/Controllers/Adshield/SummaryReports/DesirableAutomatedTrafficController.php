@@ -110,7 +110,7 @@ class DesirableAutomatedTrafficController extends BaseController
 				];
 			}
 
-			$graph['datasets'][count($graph['datasets']) - 1]['data'][$record->month] = $record->noRequests;
+			$graph['datasets'][count($graph['datasets']) - 1]['data'][$record->month - 1] = $record->noRequests;
 		}
 
 		return $graph;
