@@ -87,7 +87,12 @@ class TargetedContentController extends BaseController
 			->join("trViolations", function($join) use($filter) {
 				$join->on("trViolations.ip", "=", "trViolationSession.ip")
 					->on("trViolations.createdOn", "=", "trViolationLog.createdOn")
-					->whereIn("trViolations.violation", [])
+					->whereIn("trViolations.violation", [
+						ViolationController::V_IS_BOT,
+						ViolationController::V_BAD_UA,
+						ViolationController::V_BROWSER_INTEGRITY,
+						ViolationController::V_KNOWN_VIOLATOR_AUTO_TOOL,
+					])
 					->where("trViolations.userKey", $filter['userKey']);
 			})
 			->selectRaw("trViolationLog.url AS path, COUNT(*) AS noRequests")
