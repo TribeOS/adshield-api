@@ -7,7 +7,6 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Support\Facades\DB;
 use Request;
 
-use App\Http\Controllers\Adshield\Protection\DummyDataController;
 use App\Http\Controllers\Adshield\Violations\ViolationController;
 use App\Http\Controllers\Adshield\Violations\ResponseController;
 use App\Http\Controllers\Adshield\LogController;
@@ -25,8 +24,7 @@ class TargetedContentController extends BaseController
 			'responseCodesByTotalPercentage' => $this->getResponseCodesByTotalPercentage($filter),
 		];
 
-		return response()->json(['id'=>0, 'pageData' => $data])
-			->header('Content-Type', 'application/vnd.api+json');
+		return response()->json(['id'=>0, 'pageData' => $data]);
 	}
 
 
@@ -99,6 +97,7 @@ class TargetedContentController extends BaseController
 	 */
 	private function getResponseCodesByTotalPercentage($filter)
 	{
+
 		$responses = DB::table('trViolations')
 			->join('trViolationResponses', function($join) use($filter) {
 				$join->on('trViolationResponses.violationId', '=', 'trViolations.id')
