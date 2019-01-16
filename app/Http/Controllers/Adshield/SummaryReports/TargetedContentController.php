@@ -114,15 +114,20 @@ class TargetedContentController extends BaseController
 			->groupBy("responseTaken")
 			->get();
 
-		$data = [];
+		$data = ['data' => [], 'label' => []];
 
 		$labels = [
 			ResponseController::RP_BLOCKED => 'Blocked',
-			ResponseController::RP_CAPTCHA => 'Captcha'
-		]
+			ResponseController::RP_CAPTCHA => 'Captcha',
+			ResponseController::RP_ALLOWED => 'Allowed'
+		];
 		
-		$data['data'] = [19, 37, 5, 19];
-		$data['label'] = ['Monitored', 'Captcha', 'Blocked', 'Dropped'];
+		foreach($responses as $response)
+		{
+			$data['data'][] = $response->total;
+			$data['label'][] = $labels[$response->responseTaken];
+		}
+
 		return $data;
 	}
 
