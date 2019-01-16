@@ -25,12 +25,6 @@ class TargetedContentController extends BaseController
 			'responseCodesByTotalPercentage' => $this->getResponseCodesByTotalPercentage($filter),
 		];
 
-		LogController::QuickLog(LogController::ACT_VIEW_REPORT, [
-			'title' => 'Targeted Content',
-			'userKey' => $filter['userKey'],
-			'page' => $page
-		]);
-
 		return response()->json(['id'=>0, 'pageData' => $data])
 			->header('Content-Type', 'application/vnd.api+json');
 	}
@@ -87,6 +81,12 @@ class TargetedContentController extends BaseController
 
 
 		$data = $data->paginate($limit);
+
+		LogController::QuickLog(LogController::ACT_VIEW_REPORT, [
+			'title' => 'Targeted Content',
+			'userKey' => $filter['userKey'],
+			'page' => $page
+		]);
 
 		return $data;
 	}
