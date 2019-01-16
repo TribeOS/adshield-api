@@ -30,9 +30,6 @@ class TargetedContentController extends BaseController
 
 	private function getListData($filter)
 	{
-		function generateData($name, $noRequests) {
-			return ['path' => $name, 'noRequests' => $noRequests];
-		}
 		
 		$page = Request::get("page", 0);
 		$limit = Request::get("limit", 10);
