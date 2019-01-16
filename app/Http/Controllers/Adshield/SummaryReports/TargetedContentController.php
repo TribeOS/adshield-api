@@ -56,7 +56,7 @@ class TargetedContentController extends BaseController
 					if (!empty($filter['duration']) && $filter['duration'] > 0)
 					{
 						$duration = $filter['duration'];
-						$join->where("createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
+						$join->where("trViolations.createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
 					}
 			})
 			->join('trViolationLog', function($join) use($filter) {
@@ -74,7 +74,7 @@ class TargetedContentController extends BaseController
 					if (!empty($filter['duration']) && $filter['duration'] > 0)
 					{
 						$duration = $filter['duration'];
-						$join->where("createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
+						$join->where("trViolations.createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
 					}
 			})
 			->selectRaw("trViolationLog.url AS path, COUNT(*) AS noRequests")
