@@ -19,7 +19,8 @@ class ViolationBadAgentController extends ViolationController {
 	public static function hasViolation()
 	{
 		$userAgent = Request::header('user-agent', '');
-		if ($botName = self::isBadUserAgent($userAgent) !== false) return $botName;
+		$botName = self::isBadUserAgent($userAgent);
+		if ($botName !== false) return $botName;
 		return false;
 	}
 

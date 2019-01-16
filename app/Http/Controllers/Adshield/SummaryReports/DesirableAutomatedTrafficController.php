@@ -7,9 +7,10 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Support\Facades\DB;
 use Request;
 
-use App\Http\Controllers\Adshield\Protection\DummyDataController;
 use App\Http\Controllers\Adshield\Violations\ViolationController;
 use App\Http\Controllers\Adshield\LogController;
+
+use App\Model\UserWebsite;
 
 
 class DesirableAutomatedTrafficController extends BaseController
@@ -76,9 +77,10 @@ class DesirableAutomatedTrafficController extends BaseController
 
 		$limit = Request::get('limit', 10);
 		$page = Request::get('page', 10);
+		$duration = $filter['duration'];
 
 		$data = DB::table('trViolations')
-			->join('trViolationAutoTraffic', function($join) use($filter) {
+			->join('trViolationAutoTraffic', function($join) use($filter, $duration) {
 				$join->on('trViolationAutoTraffic.violationId', '=', 'trViolations.id')
 					->where('userKey', '=', $filter['userKey'])
 					->whereIn('violation', [
@@ -86,32 +88,63 @@ class DesirableAutomatedTrafficController extends BaseController
 						ViolationController::V_BAD_UA,
 						ViolationController::V_KNOWN_VIOLATOR_UA,
 						ViolationController::V_AGGREGATOR_UA
-					])
-					->whereBetween("trViolations.createdOn", [gmdate("Y-01-01 00:00:00"), gmdate("Y-12-31 23:59:59", time())]);
-			})
-			->selectRaw("trafficName, MONTH(trViolations.createdOn) AS month, COUNT(*) AS noRequests")
-			->groupBy('trafficName', 'month')
+					]);
+				if ($duration > 0) $join->where("trViolations.createdOn", ">", gmdate("Y-m-d H:i:s", strtotime("$duration DAYS AGO")));
+			});
+
+		if ($duration > 0) {
+			$data->selectRaw("trafficName, DATE(trViolations.createdOn) AS marker, COUNT(*) AS noRequests");
+		} else {
+			$data->selectRaw("trafficName, YEAR(trViolations.createdOn) AS marker, COUNT(*) AS noRequests");
+		}
+		$data = $data->groupBy("trafficName", "marker")
+			->orderBy("trafficName")
 			->get();
 
 		$graph = [
 			'datasets' => [],
-			'label' => ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+			'label' => []
 		];
 
+		$defaultData = [];
+
+		$site = UserWebsite::where("userKey", $filter['userKey'])->first();
+
+		if ($duration > 0) {
+			for($a = 0; $a < $duration; $a ++) {
+				$d = date("Y-m-d", strtotime(($duration - $a) . " days ago"));
+				$graph['label'][] = $d;
+				$defaultData[$d] = 0;
+			}
+		} else {
+			$start = date("Y", strtotime($site->createdOn));
+			for($a = $start; $a <= date("Y"); $a ++) {
+				$graph['label'][] = $a;
+				$defaultData[$a] = 0;
+			}
+		}
 
 		$previousName = '';
 		foreach($data as $record)
 		{
 			if ($record->trafficName !== $previousName)
 			{
+				try {
+					$graph['datasets'][count($graph['datasets']) - 1]['data'] = array_values($graph['datasets'][count($graph['datasets']) - 1]['data']);
+				} catch (\Exception $e) {}
+
 				$graph['datasets'][] = [
-					'data' => [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+					'data' => $defaultData,
 					'label' => $record->trafficName
 				];
+				$previousName = $record->trafficName;
 			}
 
-			$graph['datasets'][count($graph['datasets']) - 1]['data'][$record->month - 1] = $record->noRequests;
+			$graph['datasets'][count($graph['datasets']) - 1]['data'][$record->marker] = $record->noRequests;
 		}
+		try {
+			$graph['datasets'][count($graph['datasets']) - 1]['data'] = array_values($graph['datasets'][count($graph['datasets']) - 1]['data']);
+		} catch (\Exception $e) {}
 
 		return $graph;
 
