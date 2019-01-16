@@ -21,7 +21,8 @@ class ThreatsController extends BaseController
 			ViolationController::V_UNCLASSIFIED_UA => 'Unclassified User Agent', 
 			ViolationController::V_BAD_UA => 'Bad User Agent', 
 			ViolationController::V_KNOWN_VIOLATOR_UA => 'Known Violator User Agent', 
-			ViolationController::V_AGGREGATOR_UA => 'Aggregator User Agent'
+			ViolationController::V_AGGREGATOR_UA => 'Aggregator User Agent',
+			ViolationController::V_KNOWN_VIOLATOR => 'Known Violator'
 		];
 
 	/**
@@ -117,10 +118,7 @@ class ThreatsController extends BaseController
 	}
 
 	private function getThreatsAverted($filter)
-	{
-		//TEMPORARY
-		//we're using the threats classification for now since we don't have data/logic for recording "threats averted" activity.
-		
+	{		
 		$labels = [
 			ResponseController::RP_BLOCKED => 'Blocked',
 			ResponseController::RP_CAPTCHA => 'Captcha'
@@ -129,19 +127,14 @@ class ThreatsController extends BaseController
 		$data = DB::table('trViolations')
 			->join("trViolationResponses", "trViolationResponses.violationId", "=", "trViolations.id")
 			->where('userKey', $filter['userKey'])
-			->selectRaw("responseTaken, COUNT(*) AS total")
-			->groupBy('responseTaken')
+			->selectRaw("violation, COUNT(*) AS total")
+			->groupBy('violation')
 			->whereIn('violation', [
-				ViolationController::V_UNCLASSIFIED_UA,
-				ViolationController::V_BAD_UA,
-				ViolationController::V_KNOWN_VIOLATOR_UA,
+				ViolationController::V_UNCLASSIFIED_UA, 
+				ViolationController::V_BAD_UA, 
+				ViolationController::V_KNOWN_VIOLATOR_UA, 
 				ViolationController::V_AGGREGATOR_UA,
-				ViolationController::V_JS_CHECK_FAILED,
-				ViolationController::V_KNOWN_VIOLATOR,
-				ViolationController::V_BROWSER_INTEGRITY,
-				ViolationController::V_IS_BOT,
-				ViolationController::V_KNOWN_VIOLATOR_AUTO_TOOL,
-				ViolationController::V_KNOWN_DC
+				ViolationController::V_KNOWN_VIOLATOR
 			]);
 
 		if (!empty($filter['duration']) && $filter['duration'] > 0)
@@ -155,7 +148,7 @@ class ThreatsController extends BaseController
 		foreach($data as $d)
 		{
 			$graphData['data'][] = $d->total;
-			$graphData['label'][] = $labels[$d->responseTaken];
+			$graphData['label'][] = self::labels[$d->violation];
 		}
 
 		return $graphData;

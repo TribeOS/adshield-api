@@ -9,6 +9,7 @@ use Request;
 
 use App\Http\Controllers\Adshield\Protection\DummyDataController;
 use App\Http\Controllers\Adshield\Violations\ViolationController;
+use App\Http\Controllers\Adshield\Violations\ResponseController;
 use App\Http\Controllers\Adshield\LogController;
 
 
@@ -21,7 +22,7 @@ class TargetedContentController extends BaseController
 		$filter = Request::get("filter", []);
 		$data = [
 			'listData' => $this->getListData($filter),
-			'responseCodesByTotalPercentage' => $this->getResponseCodesByTotalPercentage(0),
+			'responseCodesByTotalPercentage' => $this->getResponseCodesByTotalPercentage($filter),
 		];
 
 		$data['responseCodesByTotalPercentage'] = DummyDataController::ApplyDuration($data['responseCodesByTotalPercentage']);
@@ -93,9 +94,33 @@ class TargetedContentController extends BaseController
 	}
 
 
-	private function getResponseCodesByTotalPercentage($days)
+	/**
+	 * gets all the responses taken by the system for the given period
+	 * @param  [type] $filter [description]
+	 * @return [type]         [description]
+	 */
+	private function getResponseCodesByTotalPercentage($filter)
 	{
+		$responses = DB::table('trViolations')
+			->join('trViolationResponses', function($join) use($filter) {
+				$join->on('trViolationResponses.violationId', '=', 'trViolations.id')
+					->where('userKey', '=', $filter['userKey']);
+					if ($filter['duration'] > 0) {
+						$duration = $filter['duration'];
+						$join->where("trViolationResponses.createdOn", ">", gmdate("Y-m-d H:i:s", strtotime("$duration days ago")));
+					}
+			})
+			->selectRaw("responseTaken, COUNT(*) AS total")
+			->groupBy("responseTaken")
+			->get();
+
 		$data = [];
+
+		$labels = [
+			ResponseController::RP_BLOCKED => 'Blocked',
+			ResponseController::RP_CAPTCHA => 'Captcha'
+		]
+		
 		$data['data'] = [19, 37, 5, 19];
 		$data['label'] = ['Monitored', 'Captcha', 'Blocked', 'Dropped'];
 		return $data;
