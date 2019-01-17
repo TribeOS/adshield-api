@@ -44,8 +44,6 @@ class DesirableAutomatedTrafficController extends BaseController
 					->where('userKey', '=', $filter['userKey'])
 					->whereIn('violation', [
 						ViolationController::V_UNCLASSIFIED_UA,
-						ViolationController::V_BAD_UA,
-						ViolationController::V_KNOWN_VIOLATOR_UA,
 						ViolationController::V_AGGREGATOR_UA
 					]);
 					if (!empty($filter['duration']) && $filter['duration'] > 0)
@@ -85,8 +83,6 @@ class DesirableAutomatedTrafficController extends BaseController
 					->where('userKey', '=', $filter['userKey'])
 					->whereIn('violation', [
 						ViolationController::V_UNCLASSIFIED_UA,
-						ViolationController::V_BAD_UA,
-						ViolationController::V_KNOWN_VIOLATOR_UA,
 						ViolationController::V_AGGREGATOR_UA
 					]);
 				if ($duration > 0) $join->where("trViolations.createdOn", ">", gmdate("Y-m-d H:i:s", strtotime("$duration DAYS AGO")));

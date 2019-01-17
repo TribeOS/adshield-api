@@ -44,7 +44,7 @@ class TrafficSummaryController extends BaseController
 
 		$data = [
 			'threatResponseProtocolsUsed' => $this->getThreatResponseProtocolsUsed($filter),
-			'threatsAverted' => DummyDataController::ApplyDuration($this->getThreatsAverted($filter)),
+			'threatsAverted' => $this->getThreatsAverted($filter),
 			'trafficGraph' => $this->getTrafficGraph($filter)
 		];
 
@@ -108,7 +108,7 @@ class TrafficSummaryController extends BaseController
 		return $graphData;
 	}
 
-	private function getTrafficGraph($days)
+	private function getTrafficGraph1($days)
 	{
 		$data = [];
 		$data['datasets'][] = [
@@ -129,32 +129,31 @@ class TrafficSummaryController extends BaseController
 	}
 
 
-	private function trafficGraph()
+	private function getTrafficGraph($filter)
 	{
 		$limit = Request::get('limit', 10);
 		$page = Request::get('page', 10);
 		$duration = $filter['duration'];
 
-		$data = DB::table('trViolations')
-			->join('trViolationAutoTraffic', function($join) use($filter, $duration) {
-				$join->on('trViolationAutoTraffic.violationId', '=', 'trViolations.id')
-					->where('userKey', '=', $filter['userKey'])
-					->whereIn('violation', [
-						ViolationController::V_UNCLASSIFIED_UA,
-						ViolationController::V_BAD_UA,
-						ViolationController::V_KNOWN_VIOLATOR_UA,
-						ViolationController::V_AGGREGATOR_UA
-					]);
-				if ($duration > 0) $join->where("trViolations.createdOn", ">", gmdate("Y-m-d H:i:s", strtotime("$duration DAYS AGO")));
+		$data = DB::table("trViolationLog")
+			->join("trViolationSession", function($join) use($filter, $duration) {
+				$join->on("trViolationSession.id", "=", "trViolationLog.sessionId")
+					->where("trViolationSession.userKey", $filter['userKey']);
+				if ($duration > 0) $join->where("trViolationLog.createdOn", ">", gmdate("Y-m-d H:i:s", strtotime("$duration DAYS AGO")));
+			})
+			->leftJoin("trViolations", function($join) use($filter) {
+				$join->on("trViolations.ip", "=", "trViolationSession.ip")
+					->on("trViolations.createdOn", "=", "trViolationLog.createdOn")
+					->where("trViolations.userKey", $filter['userKey']);
 			});
 
 		if ($duration > 0) {
-			$data->selectRaw("trafficName, DATE(trViolations.createdOn) AS marker, COUNT(*) AS noRequests");
+			$data->selectRaw("trViolations.violation, DATE(trViolationLog.createdOn) AS marker, COUNT(*) AS noRequests");
 		} else {
-			$data->selectRaw("trafficName, YEAR(trViolations.createdOn) AS marker, COUNT(*) AS noRequests");
+			$data->selectRaw("trViolations.violation, YEAR(trViolationLog.createdOn) AS marker, COUNT(*) AS noRequests");
 		}
-		$data = $data->groupBy("trafficName", "marker")
-			->orderBy("trafficName")
+		$data = $data->groupBy("trViolations.violation", "marker")
+			->orderBy("trViolations.violation", "marker")
 			->get();
 
 		$graph = [
@@ -180,27 +179,65 @@ class TrafficSummaryController extends BaseController
 			}
 		}
 
-		$previousName = '';
+		$graphData = [
+			'human' => $defaultData,
+			'desiredAutomaticTraffic' => $defaultData,
+			'unwantedAutomaticTraffic' => $defaultData
+		];
+
+		$labels = [
+			'human' => 'Human',
+			'desiredAutomaticTraffic' => 'Desirable Automatic Traffic',
+			'unwantedAutomaticTraffic' => 'Unwanted Automatic Traffic'
+		];
+
+		$previousName = ''; $index = '';
 		foreach($data as $record)
 		{
-			if ($record->trafficName !== $previousName)
+
+			switch($record->violation == null)
 			{
-				try {
-					$graph['datasets'][count($graph['datasets']) - 1]['data'] = array_values($graph['datasets'][count($graph['datasets']) - 1]['data']);
-				} catch (\Exception $e) {}
-
-				$graph['datasets'][] = [
-					'data' => $defaultData,
-					'label' => $record->trafficName
-				];
-				$previousName = $record->trafficName;
+				//undesirable auto traffic
+				case ViolationController::V_AGGREGATOR_UA:
+				case ViolationController::V_UNCLASSIFIED_UA:	
+					$index = 'desiredAutomaticTraffic';
+					break;
+				//undesirable
+				case ViolationController::V_KNOWN_VIOLATOR:
+				case ViolationController::V_NO_JS:
+				case ViolationController::V_JS_CHECK_FAILED:
+				case ViolationController::V_KNOWN_VIOLATOR_UA:
+				case ViolationController::V_SUSPICIOUS_UA:
+				case ViolationController::V_BROWSER_INTEGRITY:
+				case ViolationController::V_KNOWN_DC:
+				case ViolationController::V_PAGES_PER_MINUTE_EXCEED:
+				case ViolationController::V_PAGES_PER_SESSION_EXCEED:
+				case ViolationController::V_BLOCKED_COUNTRY:
+				case ViolationController::V_KNOWN_VIOLATOR_AUTO_TOOL:
+				case ViolationController::V_SESSION_LENGTH_EXCEED:
+				case ViolationController::V_BAD_UA:
+				case ViolationController::V_IS_BOT:
+					$index = 'unwantedAutomaticTraffic';
+					break;
+				default:
+					//human
+					$index = 'human';
 			}
+			$graphData[$index][$record->marker] += $record->noRequests;
 
-			$graph['datasets'][count($graph['datasets']) - 1]['data'][$record->marker] = $record->noRequests;
 		}
-		try {
-			$graph['datasets'][count($graph['datasets']) - 1]['data'] = array_values($graph['datasets'][count($graph['datasets']) - 1]['data']);
-		} catch (\Exception $e) {}
+
+		foreach($graphData as $index=>$gData)
+		{
+			$graph['datasets'][] = [];
+			$graph['datasets'][count($graph['datasets']) - 1]['data'] = array_values($gData);
+			$graph['datasets'][count($graph['datasets']) - 1]['label'] = $labels[$index];
+			
+		}
+
+		// try {
+		// 	$graph['datasets'][count($graph['datasets']) - 1]['data'] = array_values($graph['datasets'][count($graph['datasets']) - 1]['data']);
+		// } catch (\Exception $e) {}
 
 		return $graph;
 	}
