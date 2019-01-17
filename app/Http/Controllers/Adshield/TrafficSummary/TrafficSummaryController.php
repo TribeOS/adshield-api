@@ -223,7 +223,11 @@ class TrafficSummaryController extends BaseController
 					//human
 					$index = 'human';
 			}
-			$graphData[$index][$record->marker] += $record->noRequests;
+			if (isset($graphData[$index][$record->marker])) {
+				$graphData[$index][$record->marker] = $record->noRequests;
+			} else {
+				$graphData[$index][$record->marker] += $record->noRequests;
+			}
 
 		}
 
