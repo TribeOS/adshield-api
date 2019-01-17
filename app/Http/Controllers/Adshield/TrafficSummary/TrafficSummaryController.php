@@ -144,7 +144,7 @@ class TrafficSummaryController extends BaseController
 			->leftJoin("trViolations", function($join) use($filter) {
 				$join->on("trViolations.ip", "=", "trViolationSession.ip")
 					->on("trViolations.createdOn", "=", "trViolationLog.createdOn")
-					->where("trViolations.userKey", $filter['userKey']);
+					->on("trViolations.userKey", "=", "trViolationLog.userKey");
 			});
 
 		if ($duration > 0) {
@@ -238,10 +238,6 @@ class TrafficSummaryController extends BaseController
 			$graph['datasets'][count($graph['datasets']) - 1]['label'] = $labels[$index];
 			
 		}
-
-		// try {
-		// 	$graph['datasets'][count($graph['datasets']) - 1]['data'] = array_values($graph['datasets'][count($graph['datasets']) - 1]['data']);
-		// } catch (\Exception $e) {}
 
 		return $graph;
 	}
