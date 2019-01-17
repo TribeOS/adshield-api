@@ -5,45 +5,107 @@ namespace App\Http\Controllers\Adshield\TrafficSummary;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Input;
+use Request;
 
 use App\Http\Controllers\Adshield\Protection\DummyDataController;
 use App\Model\UserWebsite;
 use App\Http\Controllers\Adshield\Violations\ViolationController;
+use App\Http\Controllers\Adshield\Violations\ResponseController;
 
+/**
+ * handle the backend for the page "traffic-summary"
+ */
 class TrafficSummaryController extends BaseController
 {
 
+	const labels = [
+		ViolationController::V_KNOWN_VIOLATOR => 'Known Violator',
+		ViolationController::V_NO_JS => 'JS not loaded',
+		ViolationController::V_JS_CHECK_FAILED => 'JS Check Failed',
+		ViolationController::V_KNOWN_VIOLATOR_UA => 'Known Violator User Agent',
+		ViolationController::V_SUSPICIOUS_UA => 'Suspicious User Agent',
+		ViolationController::V_BROWSER_INTEGRITY => 'Browser Integrity Failed',
+		ViolationController::V_KNOWN_DC => 'Known Data Center IP',
+		ViolationController::V_PAGES_PER_MINUTE_EXCEED => 'Pages Per Minute Exceed',
+		ViolationController::V_PAGES_PER_SESSION_EXCEED => 'Pages Per Session Exceed',
+		ViolationController::V_BLOCKED_COUNTRY => 'Blocked Country',
+		ViolationController::V_AGGREGATOR_UA => 'Aggregator User Agent',
+		ViolationController::V_KNOWN_VIOLATOR_AUTO_TOOL => 'Known Violator Automation Tool',
+		ViolationController::V_SESSION_LENGTH_EXCEED => 'Session Length Exceed',
+		ViolationController::V_BAD_UA => 'Bad User Agent',
+		ViolationController::V_UNCLASSIFIED_UA => 'Unclassified User Agent',
+		ViolationController::V_IS_BOT => 'Bot',
+	];
 
 	public function getData()
 	{
-		$days = Input::get('days', 60);
+
+		$filter = Request::get("filter", []);
+
 		$data = [
-			'threatResponseProtocolsUsed' => DummyDataController::ApplyDuration($this->getThreatResponseProtocolsUsed($days)),
-			'threatsAverted' => DummyDataController::ApplyDuration($this->getThreatsAverted($days)),
-			'trafficGraph' => $this->getTrafficGraph($days)
+			'threatResponseProtocolsUsed' => $this->getThreatResponseProtocolsUsed($filter),
+			'threatsAverted' => DummyDataController::ApplyDuration($this->getThreatsAverted($filter)),
+			'trafficGraph' => $this->getTrafficGraph($filter)
 		];
 
 		return response()->json(['id'=>0, 'pageData' => $data])
 			->header('Content-Type', 'application/vnd.api+json');
 	}
 
-	private function getThreatResponseProtocolsUsed($days)
+	private function getThreatResponseProtocolsUsed($filter)
 	{
-		$data = [
-			'data' => [70, 45, 95, 64],
-			'label' => ['captcha', 'blocked', 'dropped', 'monitored']
+		$duration = $filter['duration'];
+
+		$data = DB::table('trViolations')
+			->join("trViolationResponses", "trViolationResponses.violationId", "=", "trViolations.id")
+			->where('userKey', $filter['userKey'])
+			->selectRaw("responseTaken, COUNT(*) AS total")
+			->groupBy('responseTaken');
+
+		if (!empty($duration) && $duration > 0)
+		{
+			$data->where("trViolations.createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
+		}
+
+		$data = $data->get();
+		$graphData = ['data' => [], 'label' => []];
+		$labels = [
+			ResponseController::RP_BLOCKED => 'Blocked',
+			ResponseController::RP_CAPTCHA => 'Captcha',
+			ResponseController::RP_ALLOWED => 'Allowed',
 		];
-		return $data;
+		foreach($data as $d)
+		{
+			$graphData['data'][] = $d->total;
+			$graphData['label'][] = $labels[$d->responseTaken];
+		}
+
+		return $graphData;
 	}
 
-	private function getThreatsAverted($days)
+	private function getThreatsAverted($filter)
 	{
-		$data = [
-			'data' => [62, 74, 52, 40, 94],
-			'label' => ['Known Violators', 'JavaScript Check Failed', 'JavaScript Not Loaded', 'Known Violator User Agent', 'Bad User Agent']
-		];
-		return $data;
+		$data = DB::table('trViolations')
+			->join("trViolationResponses", "trViolationResponses.violationId", "=", "trViolations.id")
+			->where('userKey', $filter['userKey'])
+			->selectRaw("violation, COUNT(*) AS total")
+			->groupBy('violation');
+
+		if (!empty($filter['duration']) && $filter['duration'] > 0)
+		{
+			$duration = $filter['duration'];
+			$data->where("trViolations.createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
+		}
+
+		$data = $data->get();
+		$graphData = ['data' => [], 'label' => []];
+		foreach($data as $d)
+		{
+			$graphData['data'][] = $d->total;
+			$graphData['label'][] = self::labels[$d->violation];
+		}
+
+		return $graphData;
 	}
 
 	private function getTrafficGraph($days)

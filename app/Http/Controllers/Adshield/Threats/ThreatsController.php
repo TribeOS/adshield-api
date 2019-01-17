@@ -119,10 +119,6 @@ class ThreatsController extends BaseController
 
 	private function getThreatsAverted($filter)
 	{		
-		$labels = [
-			ResponseController::RP_BLOCKED => 'Blocked',
-			ResponseController::RP_CAPTCHA => 'Captcha'
-		];
 
 		$data = DB::table('trViolations')
 			->join("trViolationResponses", "trViolationResponses.violationId", "=", "trViolations.id")
