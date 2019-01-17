@@ -144,7 +144,7 @@ class TrafficSummaryController extends BaseController
 			->leftJoin("trViolations", function($join) use($filter) {
 				$join->on("trViolations.ip", "=", "trViolationSession.ip")
 					->on("trViolations.createdOn", "=", "trViolationLog.createdOn")
-					->on("trViolations.userKey", "=", "trViolationLog.userKey");
+					->on("trViolations.userKey", "=", "trViolationSession.userKey");
 			});
 
 		if ($duration > 0) {
