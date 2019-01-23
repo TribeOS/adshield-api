@@ -82,21 +82,24 @@ Route::any('cap/{userKey?}/{act?}', ['as' => 'CaptchaReceiver', 'uses' => 'Adshi
  * route for frontend
  */
 
-
 	//==========================================================================================
 
+Route::middleware(['api.access'])->group(function() {
+
+	//account creation/signup and confirmation
+	Route::any('/accounts/', ['uses' => 'Adshield\Accounts\AccountController@handle']);
+	Route::any('/confirm/{code}', ['as' => 'AccountConfirm', 'uses' => 'Adshield\Accounts\AccountController@Confirm']);
+
 	//User authentication/login
-	Route::any('login', ['uses' => 'Adshield\LoginController@login'])
-		->middleware('api.access');
+	Route::any('login', ['uses' => 'Adshield\LoginController@login']);
 
 	//verify token
-	Route::get('tokens', ['uses' => 'Adshield\LoginController@verifyToken'])
-		->middleware('api.access');
+	Route::get('tokens', ['uses' => 'Adshield\LoginController@verifyToken']);
 
 	//log out
-	Route::any('logout', ['uses' => 'Adshield\LoginController@logout'])
-		->middleware('api.access');
+	Route::any('logout', ['uses' => 'Adshield\LoginController@logout']);
 
+});
 
 
 Route::middleware(['authapi'])->group(function () {
@@ -303,7 +306,7 @@ Route::middleware(['authapi'])->group(function () {
 
 	Route::any('/users/{id?}', ['uses' => 'Adshield\Accounts\UserController@handle']);
 	Route::any('/passwords/{id?}', ['uses' => 'Adshield\Accounts\PasswordController@handle']);
-	Route::any('/userWebsites', ['uses' => 'Adshield\Settings\UserWebsitesController@handle']);
+	Route::any('/userWebsites/{id?}', ['uses' => 'Adshield\Settings\UserWebsitesController@handle']);
 
 	//==========================================================================================
 

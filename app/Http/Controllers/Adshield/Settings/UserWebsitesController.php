@@ -23,7 +23,7 @@ class UserWebsitesController extends Controller
 
     const MAX_KEY_CHAR = 12; //max characteres for a userkey (this is used when generating a rnadom user key)
 
-    public function handle(Request $request)
+    public function handle(Request $request, $id=null)
     {
         $userId = 0;
         try {
@@ -35,11 +35,16 @@ class UserWebsitesController extends Controller
         {
             return $this->getWebsites($user->accountId, $request);
         }
-        else if ($request->isMethod('post'))
+        else if ($request->isMethod('post') || $request->isMethod('put'))
         {
             $website = Input::get("userWebsite");
             $userKey = !empty($website['userKey']) ? $website['userKey'] : '';
-            return $this->create($user, $website['domain'], $userKey);
+            $jsCode = $website["jsCode"];
+            if (empty($id)) {
+                return $this->create($user, $website['domain'], $userKey, $jsCode);
+            } else {
+                return $this->update($id, $website);
+            }
         }
         else if ($request->isMethod('delete'))
         {
@@ -85,7 +90,7 @@ class UserWebsitesController extends Controller
         //remove website?
     }
 
-    private function create($user, $domain, $userKey="")
+    private function create($user, $domain, $userKey="", $jsCode="")
     {
         if (empty($userKey)) $userKey = $this->GenerateUserKey($domain);
         //check if user key is unique FIRST
@@ -109,6 +114,7 @@ class UserWebsitesController extends Controller
             $record->domain = $domain;
             $record->createdOn = gmdate('Y-m-d H:i:s');
             $record->status = 1;
+            $record->jsCode = $jsCode;
             $record->save();
         } catch (\Exception $e) {
             return response($e->getMessage(), 500);
@@ -123,6 +129,32 @@ class UserWebsitesController extends Controller
         return response($record, 200);
     }
 
+
+    /**
+     * updates the userwebsite record
+     * @param  [type] $id      [description]
+     * @param  [type] $website [description]
+     * @return [type]          [description]
+     */
+    private function update($id, $website)
+    {
+        $record = UserWebsite::find($id);
+        if (empty($record))
+        {
+            return response([
+                'errors' => [
+                    'detail' => "Website doesn't exists.",
+                ]
+            ], 500);
+        }
+
+        $record->jsCode = $website['jsCode'];
+        $record->domain = $website['domain'];
+        $record->status = $website['status'];
+        $record->save();
+
+        return response(['userWebsite' => $record, 'id' => $id], 200);
+    }  
 
     /**
      * generate a UserKey from the given domain 
