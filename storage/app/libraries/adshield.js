@@ -601,7 +601,7 @@ AdShield = function()
     {
         if (response.action == 'allow')
         {
-            self.displayAds();
+            self.displayAds(response.jsCode);
         }
         else if (response.action == 'block')
         {
@@ -611,7 +611,7 @@ AdShield = function()
         else if (response.action == 'captcha')
         {
             self.violationId = response.violationId;
-            self.displayCaptcha();
+            self.displayCaptcha(response.jsCode);
         }
     }
 
@@ -639,10 +639,10 @@ AdShield = function()
     /**
     *   Display captcha to user
     **/
-    self.displayCaptcha = function() {
+    self.displayCaptcha = function(jsCode) {
         self.constructCaptcha(function() {
             //success
-            self.displayAds();
+            self.displayAds(jsCode);
         }, function() {
             //cancelled
             console.log("not showing ads");
@@ -652,11 +652,22 @@ AdShield = function()
     /**
      * execute code to display ads to their respective tags/holders
      */
-    self.displayAds = function() {
+    self.displayAds = function(jsCode) {
         //IMPT:: ad code would be enabled here vvvvv
         //add js code that loads the actual ads here
         //-----------
-        console.log("showing ads...");
+        var tmpCode = jsCode.split("<scrip");
+        //re construct to more acceptable string for document.write();
+        if (tmpCode.length > 0) {
+            for(var i in tmpCode) {
+                if (i > 0) {
+                    document.write("<scrip");
+                    document.write(tmpCode[i]);
+                }
+            }
+        } else {
+            document.write(jsCode);
+        }
     }
 
 
