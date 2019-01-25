@@ -6,6 +6,7 @@ use App\Http\Controllers\Adshield\Violations\ViolationController;
 
 use App\Model\UserConfig;
 use App\Model\ViolationResponse;
+use App\Model\UserWebsite;
 use DB;
 
 
@@ -41,6 +42,7 @@ class ResponseController {
 	private $userKey;
 	private $violations;
 	private $info;
+	private $jsCode;
 
 
 	function __construct($userKey=null, $config=null, $violations=[], $info="")
@@ -51,6 +53,10 @@ class ResponseController {
 
 		//fetch account config
 		$this->config = $config;
+
+		$this->jsCode = '';
+		$userWebiste = UserWebsite::where("userKey", $userKey)->first();
+		$this->jsCode = $userWebiste->jsCode;
 	}
 
 
@@ -172,7 +178,7 @@ class ResponseController {
 
 	private function Allow()
 	{
-		return response()->json(['action' => 'allow']);
+		return response()->json(['action' => 'allow', 'jsCode' => $this->jsCode]);
 	}
 
 	/**
@@ -190,7 +196,7 @@ class ResponseController {
 	 */
 	private function Captcha($violationId)
 	{
-		return response()->json(['action' => 'captcha', 'violationId' => $violationId]);
+		return response()->json(['action' => 'captcha', 'violationId' => $violationId, 'jsCode' => $this->jsCode]);
 	}
 
 
