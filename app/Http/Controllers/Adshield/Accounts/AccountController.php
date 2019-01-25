@@ -113,6 +113,8 @@ class AccountController extends BaseController {
     	$user->username = $data['username'];
     	$user->password = Hash::make($data['password']);
     	$user->accountId = $accountId;
+    	$user->createdOn = gmdate("Y-m-d H:i:s");
+    	$user->updatedOn = gmdate("Y-m-d H:i:s");
     	$user->save();
 
     	//create user permission

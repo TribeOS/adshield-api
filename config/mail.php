@@ -56,8 +56,8 @@ return [
     */
 
     'from' => [
-        'address' => env('MAIL_FROM_ADDRESS', 'hello@tr.be'),
-        'name' => env('MAIL_FROM_NAME', 'TribeCMS'),
+        'address' => env('MAIL_FROM_ADDRESS', 'hello@tribeos.io'),
+        'name' => env('MAIL_FROM_NAME', 'AdShield'),
     ],
 
     /*
