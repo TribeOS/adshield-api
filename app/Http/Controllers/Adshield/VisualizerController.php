@@ -88,7 +88,7 @@ class VisualizerController extends BaseController
 
 		//use transactions.month as "directAccess value"
 		$data['stat'][4]['count'] = $data['transactions']['month'];
-		for($a = 0; count($data['stat']) - 2; $a ++)
+		for($a = 0; $a < count($data['stat']) - 2; $a ++)
 		{
 			$data['stat'][4]['count'] -= $data['stat'][$a]['count'];
 		}
