@@ -86,6 +86,13 @@ class VisualizerController extends BaseController
 			'month' => $this->GetAdshieldTransactionSince($accountId, $userKey, gmdate("Y-m-1 H:i:s", strtotime('midnight this month'))),
 		];
 
+		//use transactions.month as "directAccess value"
+		$data['stat'][4]['count'] = $data['transactions']['month'];
+		for($a = 0; count($data['stat']) - 2; $a ++)
+		{
+			$data['stat'][4]['count'] -= $data['stat'][$a]['count'];
+		}
+
 		//we can use just the value 1 since for every hit/request we will be sending the stat update to the frontend.
 		$data['transactionsInterval'] = 1; //$this->GetAdshieldTransactionForPastTime($accountId, $userKey, $time);
 		if ($initCall) $data['transactionsInterval'] = 0; 
