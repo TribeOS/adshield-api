@@ -235,6 +235,10 @@ Route::middleware(['authapi'])->group(function () {
 	Route::get('/clickFraudReports', ['uses' => 'Adshield\SummaryReports\ClickFraudController@getData'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}');
 
+	//blocked requests
+	Route::get('/blockedRequests', ['uses' => 'Adshield\SummaryReports\BlockedRequestController@getData'])
+		->where('apikey', '[a-zA-Z0-9]{2,8}');
+
 	//captcha requests
 	Route::get('/captchaRequests', ['uses' => 'Adshield\SummaryReports\CaptchaRequestController@getData'])
 		->where('apikey', '[a-zA-Z0-9]{2,8}');
