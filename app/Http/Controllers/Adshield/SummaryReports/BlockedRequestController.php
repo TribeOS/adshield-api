@@ -135,7 +135,7 @@ class BlockedRequestController extends BaseController
 
 		$label = [
 			'traffic' => 'Traffic',
-			'blocked' => 'Captcha Served'
+			'blocked' => 'Blocked Requests'
 		];
 		$defaultData = [];
 
