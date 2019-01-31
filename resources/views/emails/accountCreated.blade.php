@@ -6,3 +6,13 @@
 </p>
 
 <a href="{{ route('AccountConfirm', ['code' => $account->confirmation]) }}">Confirm my account please</a>
+
+<p>
+	Once logged in, please go to Settings/Api Settings, add your website and copy paste the ad widget that you'd like to protect from non human traffic.
+</p>
+
+<p>
+	Thank you!
+	<br />
+	AdShield Team
+</p>
