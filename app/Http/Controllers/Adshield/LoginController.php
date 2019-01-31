@@ -16,6 +16,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Adshield\Settings\UserWebsitesController;
 use App\Model\User;
 use App\Http\Controllers\Adshield\LogController;
+use App\Http\Controllers\Adshield\Accounts\AccountController;
 
 
 class LoginController extends Controller
@@ -38,6 +39,15 @@ class LoginController extends Controller
             return response($error, 401)
                 ->header('Content-Type', 'application/vnd.api+json');
         }
+
+        //check if account has been confirmed
+        $account = $user->account;
+        if ($account->status == AccountController::AC_UNCONFIRMED) {
+            return response("You're main account hasn't been confirmed yet. Please make sure you complete the registration process by confirming your email at " . $account->email, 500);
+        } else if ($account->status == AccountController::AC_INACTIVE) {
+            return response("You're main account is inactive. It could have been deactivated for some reason. Please contact admin for more information.", 500);
+        }
+
         $token = md5(time().rand(1000, 9999));
         $response['access_token'] = $token;
         $response['username'] = $user->username;

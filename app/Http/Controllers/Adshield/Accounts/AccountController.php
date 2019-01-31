@@ -46,6 +46,7 @@ class AccountController extends BaseController {
 	private function SignUp($data)
 	{
 		$validator = Validator::make($data, [
+			'company' => 'required|max:255',
             'firstname' => 'required|max:255',
             'lastname' => 'required|max:255',
             'email' => [
@@ -58,7 +59,7 @@ class AccountController extends BaseController {
                 'required',
                 Rule::unique('users'),
             ],
-            'password' => 'required|max:100'
+            'password' => 'required|max:100|confirmed'
         ]);
 
         if ($validator->fails()) {
