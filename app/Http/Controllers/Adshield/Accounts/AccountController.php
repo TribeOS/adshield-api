@@ -145,13 +145,14 @@ class AccountController extends BaseController {
 		}
 		//check against "unconfirmed" Accounts
 		if ($account->status == self::AC_ACTIVE) {
-			return response("Your account is already active, confirmation isn't required.", 200);
+			return view("api.accountConfirmation")->with(['account' => $account, 'status' => 'already_confirmed']);
 		}
 		//set to "active" account
 		$account->status = self::AC_ACTIVE;
 		$account->save();
 		//inform frontend of confirmation
-		return response("Your account has been confirmed and activated. You can now log in using your username and password.", 200);
+
+		return view("api.accountConfirmation")->with(['account' => $account, 'status' => 'confirmed']);
 	}
 
 
