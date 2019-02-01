@@ -90,6 +90,8 @@ Route::middleware(['api.access'])->group(function() {
 	Route::any('/accounts/', ['uses' => 'Adshield\Accounts\AccountController@handle']);
 	Route::any('/confirm/{code}', ['as' => 'AccountConfirm', 'uses' => 'Adshield\Accounts\AccountController@Confirm']);
 
+	Route::any('/test', ['uses' => 'Adshield\Protection\IpInfoController@test']);
+
 	//User authentication/login
 	Route::any('login', ['uses' => 'Adshield\LoginController@login']);
 

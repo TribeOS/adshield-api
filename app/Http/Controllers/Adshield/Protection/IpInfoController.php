@@ -98,5 +98,9 @@ class IpInfoController extends BaseController
 		return $id;
 	}
 
+	public function test()
+	{
+		echo gethostbyname(gethostname());
+	}
 
 }
