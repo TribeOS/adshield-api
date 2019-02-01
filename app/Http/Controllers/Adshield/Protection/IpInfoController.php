@@ -100,7 +100,7 @@ class IpInfoController extends BaseController
 
 	public function test()
 	{
-		echo gethostbyname(gethostname());
+		echo $_SERVER['SERVER_ADDR'];
 	}
 
 }
