@@ -54,6 +54,7 @@ class LoginController extends Controller
         $response['id'] = $user->id;
         $response['accountId'] = $user->accountId;
         $response['channelId'] = sha1($user->accountId); //create identifier for the channel
+        $response['permission'] = $user->permission->permission;
         $this->saveToken($token, $user);
 
         $response['websites'] = UserWebsitesController::getUserWebsites($user->acountId);
