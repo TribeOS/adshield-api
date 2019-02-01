@@ -4,6 +4,9 @@
 namespace App\Http\Controllers\Adshield\Misc;
 
 use Illuminate\Routing\Controller as BaseController;
+use App\Mail\Notification;
+use Illuminate\Support\Facades\Mail;
+
 
 use DB;
 
@@ -31,26 +34,18 @@ class NotificationController extends BaseController {
 		$config = $config['emailNotifications'];
 		$sentTo = []; //list of emails already sent for this instance
 
-		$notification = "";
+		$notification = new Notification($type, $data);
+
 		//create email object (pass $data)
 		foreach($config as $c)
 		{
-			if ($type != $c['coverage']) continue;	//skip if coverage doesn't include this event
+			if ($type != $c['coverage'] && $c['coverage'] !== self::NC_ALL) continue;	//skip if coverage doesn't include this event
 			if (in_array($c['email'], $sentTo)) continue;	//skip if already sent
 
 			$sentTo[] = $c['email'];
 			//$c['email'], $c['coverage']
-			//self::Send($notification);
+			Mail::to($c['email'])->send($notification);
 		}
-	}
-
-
-	/**
-	 * sends the created notification
-	 */
-	private static function Send($notification)
-	{
-		//send it here
 	}
 
 

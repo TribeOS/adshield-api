@@ -121,7 +121,7 @@ class AccountController extends BaseController {
     	//create user permission
     	$usersPermission = new UserPermission();
     	$usersPermission->userId = $user->id;
-    	$usersPermission->permission = 1;
+    	$usersPermission->permission = 4; //set default user to "admin" permission
     	$usersPermission->save();
     	$user->permission = $usersPermission->permission;
     	$user->password = "";
