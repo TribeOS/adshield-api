@@ -78,6 +78,11 @@ class UserWebsitesController extends Controller
                 'limit' => $limit
             ]);
 
+            foreach($data as $d) {
+                $coded = json_decode($d->jsCode);
+                $d->jsCode = ($coded == null) ? [] : $coded;
+            }
+
             return response()->json(['id' => 0, 'listData' => $data]);
         }
         $websites = UserWebsite::where("accountId", $accountId)->get();
@@ -148,7 +153,7 @@ class UserWebsitesController extends Controller
             ], 500);
         }
 
-        $record->jsCode = $website['jsCode'];
+        $record->jsCode = json_encode($website['jsCode']);
         $record->domain = $website['domain'];
         $record->status = $website['status'];
         $record->save();

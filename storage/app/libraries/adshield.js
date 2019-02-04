@@ -670,6 +670,10 @@ AdShield = function()
         }
     }
 
+    self.parseJsCode = function(code) {
+        
+    }
+
 
     /**
      * constructs the DOM element for the captcha service

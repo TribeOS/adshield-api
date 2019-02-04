@@ -56,7 +56,7 @@ class ResponseController {
 
 		$this->jsCode = '';
 		$userWebiste = UserWebsite::where("userKey", $userKey)->first();
-		$this->jsCode = $userWebiste->jsCode;
+		$this->jsCode = json_decode($userWebiste->jsCode, 1);
 	}
 
 
