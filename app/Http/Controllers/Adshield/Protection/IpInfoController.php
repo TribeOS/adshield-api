@@ -13,7 +13,7 @@ date_default_timezone_set("America/New_York");
 class IpInfoController extends BaseController
 {
 
-	const MAX_DAYS_OLD_IP = 15;
+	const MAX_DAYS_OLD_IP = 30;
 
 	/**
 	 * gets the info of the given IP through ip-api.com service
@@ -96,11 +96,6 @@ class IpInfoController extends BaseController
 				]);
 		}
 		return $id;
-	}
-
-	public function test()
-	{
-		echo $_SERVER['SERVER_ADDR'];
 	}
 
 }

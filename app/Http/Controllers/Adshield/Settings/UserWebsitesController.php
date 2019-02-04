@@ -114,7 +114,7 @@ class UserWebsitesController extends Controller
             $record->domain = $domain;
             $record->createdOn = gmdate('Y-m-d H:i:s');
             $record->status = 1;
-            $record->jsCode = $jsCode;
+            $record->jsCode = json_encode($jsCode);
             $record->save();
         } catch (\Exception $e) {
             return response($e->getMessage(), 500);
