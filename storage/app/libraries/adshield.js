@@ -654,7 +654,7 @@ AdShield = function()
      */
     self.displayAds = function(jsCode) {
         for(var i in jsCode) {
-            let code = jsCode[i];
+            var code = jsCode[i];
             self.insertRawJs(code.code, code.container, code.intoContainer);
         }
     }   
