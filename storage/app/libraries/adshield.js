@@ -682,7 +682,6 @@ AdShield = function()
                 script.setAttribute(scripts[i].attributes[n].name, scripts[i].attributes[n].value);
             }
             script.innerHTML = scripts[i].innerHTML;
-            console.log(script);
             try {
                 if (intoContainer) {
                     document.getElementById(container).appendChild(script);
