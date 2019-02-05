@@ -653,26 +653,48 @@ AdShield = function()
      * execute code to display ads to their respective tags/holders
      */
     self.displayAds = function(jsCode) {
-        //IMPT:: ad code would be enabled here vvvvv
-        //add js code that loads the actual ads here
-        //-----------
-        var tmpCode = jsCode.split("<scrip");
-        //re construct to more acceptable string for document.write();
-        if (tmpCode.length > 0) {
-            for(var i in tmpCode) {
-                if (i > 0) {
-                    document.write("<scrip");
-                    document.write(tmpCode[i]);
-                }
+        for(var i in jsCode) {
+            let code = jsCode[i];
+            self.insertRawJs(code.code, code.container, code.intoContainer);
+        }
+    }   
+
+    /**
+     * for inserting whole js code snippet along with the <script> tags
+     * @param  {[type]} code [description]
+     * @return {[type]}      [description]
+     */
+    self.insertRawJs = function(code, container, intoContainer) {
+        //we're inserting the actual JS code into a temporary div
+        //then let browser parse it and we take the <script> elements
+        //get the attributes and contents and copy it into a new <script> element
+        //which is what we insert into the document. (doing it this way makes the script run)
+        //NOTE:: insert <script> without "src" attribute allows the code innerHTML run.
+        //otherwise, if "src" is included the code doesn't run.
+        var h = document.createElement("div");
+        h.innerHTML = code;
+        var scripts = h.getElementsByTagName("script");
+        for(var i = 0; i < scripts.length; i++)
+        {
+            var script = document.createElement("script");
+            //set attributes
+            for(var n =0; n < scripts[i].attributes.length; n ++) {
+                script.setAttribute(scripts[i].attributes[n].name, scripts[i].attributes[n].value);
             }
-        } else {
-            document.write(jsCode);
+            script.innerHTML = scripts[i].innerHTML;
+            console.log(script);
+            try {
+                if (intoContainer) {
+                    document.getElementById(container).appendChild(script);
+                } else {
+                    document.body.appendChild(script);
+                }
+            } catch (e) {
+                console.log(e);
+            }
         }
     }
 
-    self.parseJsCode = function(code) {
-        
-    }
 
 
     /**
