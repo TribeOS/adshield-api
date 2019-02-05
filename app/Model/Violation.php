@@ -20,4 +20,9 @@ class Violation extends Model
 		return $this->hasMany('App\Model\ViolationIp', 'ip');
 	}
 
+	public function website()
+	{
+		return $this->belongsTo('App\Model\UserWebsite', 'userKey', 'userKey');
+	}
+
 }

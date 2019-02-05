@@ -21,7 +21,7 @@ class Notification extends Mailable
     public function __construct($type, $data)
     {
         $this->type = $type;
-        $this->data = $data;s
+        $this->data = $data;
     }
 
     /**

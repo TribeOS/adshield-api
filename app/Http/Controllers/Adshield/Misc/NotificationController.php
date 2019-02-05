@@ -33,8 +33,17 @@ class NotificationController extends BaseController {
 
 		$config = $config['emailNotifications'];
 		$sentTo = []; //list of emails already sent for this instance
+		$info = [];	//info we want to send to the notification
+		if (empty($config)) return false;
 
-		$notification = new Notification($type, $data);
+		if ($type == self::NC_SETTINGS) {
+			//get settings information
+			$info = $data['settings'];
+		} else if ($type == self::NC_VIOLATIONS) {
+			//get violation info
+			$info = $data['violation'];
+		}
+		$notification = new Notification($type, $info);
 
 		//create email object (pass $data)
 		foreach($config as $c)
@@ -52,7 +61,7 @@ class NotificationController extends BaseController {
 	/**
 	 * gets account's config for the given UserKey
 	 */
-	private function GetAccountConfig($userKey)
+	private static function GetAccountConfig($userKey)
 	{
 		$account = DB::table("account")
 			->join("userWebsites", function($join) use($userKey) {

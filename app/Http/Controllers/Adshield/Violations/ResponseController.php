@@ -6,6 +6,7 @@ use App\Http\Controllers\Adshield\Violations\ViolationController;
 
 use App\Model\UserConfig;
 use App\Model\ViolationResponse;
+use App\Model\Violation;
 use App\Model\UserWebsite;
 use DB;
 
@@ -24,6 +25,9 @@ use App\Http\Controllers\Adshield\Violations\ViolationAutomationToolController;
 use App\Http\Controllers\Adshield\Violations\ViolationBadAgentController;
 use App\Http\Controllers\Adshield\Violations\AutomatedTrafficCheckController;
 use App\Http\Controllers\Adshield\Violations\ViolationJSCheckFailedController;
+
+//for notification
+use App\Http\Controllers\Adshield\Misc\NotificationController;
 
 
 /**
@@ -164,6 +168,9 @@ class ResponseController {
 		}
 
 		$this->LogResponse($violationId, $response, $info);
+
+		$violation = Violation::find($violationId);
+		// NotificationController::CreatedAndSend($this->userKey, NotificationController::NC_VIOLATIONS, ['violation' => $violation]);
 
 		if ($response == self::RP_BLOCKED) {
 			return $this->Block();
