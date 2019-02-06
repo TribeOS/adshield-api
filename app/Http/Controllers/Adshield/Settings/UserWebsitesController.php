@@ -175,7 +175,8 @@ class UserWebsitesController extends Controller
         }
         $userKey = strtolower($userKey);
         $record = UserWebsite::where("userKey", $userKey)->first();
-        if (!empty($record))
+        //we generate a random key if key already exists or resulting key is less than 6 chars
+        if (!empty($record) || strlen($userKey) < 6)
         {
             //key already exists, create a new one
             $domain = str_random(self::MAX_KEY_CHAR);
