@@ -21,6 +21,9 @@ use App\Http\Controllers\Adshield\LogController;
 class UserWebsitesController extends Controller
 {
 
+    const ST_ACTIVE = '1';
+    const ST_DELETED = '0';
+
     const MAX_KEY_CHAR = 12; //max characteres for a userkey (this is used when generating a rnadom user key)
 
     public function handle(Request $request, $id=null)
@@ -48,7 +51,10 @@ class UserWebsitesController extends Controller
         }
         else if ($request->isMethod('delete'))
         {
-            return $this->remove();
+            if (empty($id)) {
+                return response("Invalid request.", 500);
+            }
+            return $this->remove($id);
         }
     }
 
@@ -58,7 +64,9 @@ class UserWebsitesController extends Controller
      */
     public static function getUserWebsites($accountId)
     {
-        $websites = UserWebsite::where("accountId", $accountId)->get();
+        $websites = UserWebsite::where("accountId", $accountId)
+            ->where("status", self::ST_ACTIVE)
+            ->get();
         return $websites;
     }
 
@@ -72,7 +80,9 @@ class UserWebsitesController extends Controller
         {
             $limit = $request->get('limit', 10);
             $page = $request->get('page', 0);
-            $data = UserWebsite::where("accountId", $accountId)->orderBy("domain");
+            $data = UserWebsite::where("accountId", $accountId)
+                ->where("status", self::ST_ACTIVE)
+                ->orderBy("domain");
             $data = $data->paginate($limit);
             $data->appends([
                 'limit' => $limit
@@ -85,14 +95,20 @@ class UserWebsitesController extends Controller
 
             return response()->json(['id' => 0, 'listData' => $data]);
         }
-        $websites = UserWebsite::where("accountId", $accountId)->get();
+        $websites = UserWebsite::where("accountId", $accountId)
+            ->where("status", self::ST_ACTIVE)
+            ->get();
+            
         return $websites;
     }
 
 
-    private function remove()
+    private function remove($id)
     {
         //remove website?
+        $record = UserWebsite::find($id);
+        $result = $record->delete();
+        return response([], 200);
     }
 
     private function create($user, $domain, $userKey="", $jsCode="")
@@ -118,7 +134,7 @@ class UserWebsitesController extends Controller
             $record->userKey = $userKey;
             $record->domain = $domain;
             $record->createdOn = gmdate('Y-m-d H:i:s');
-            $record->status = 1;
+            $record->status = self::ST_ACTIVE;
             $record->jsCode = json_encode($jsCode);
             $record->save();
         } catch (\Exception $e) {
