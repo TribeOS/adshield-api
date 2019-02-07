@@ -123,7 +123,11 @@ class LoginController extends Controller
      */
     public static function getUserIdFromToken($token, $all=false)
     {
-        $result = DB::table("accessTokens")->where("accessToken", $token)->first();
+        $result = DB::table("accessTokens")
+            ->join("users", "users.id", "=", "accessTokens.userId")
+            ->selectRaw("accessTokens.*, email, username, firstname, lastname")
+            ->where("accessToken", $token)
+            ->first();
         if (!$all) return $result->userId;
         return $result;
     }

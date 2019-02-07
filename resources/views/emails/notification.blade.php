@@ -1,50 +1,64 @@
 <h2>Notification from AdShield</h2>
 
-@if($type == 'settings')
+@if($type == 'violations')
 	<h3>
 		Violation Detected!
 	</h3>
 	<table>
 		<tr>
-			<td>Website</td>
-			<td>{{ $violationo->website->domain }}</td>
+			<td>Website :</td>
+			<td>{{ $data->website->domain }}</td>
 		</tr>
 		<tr>
-			<td>Violation</td>
-			<td>{{ $violation->violation }}</td>
+			<td>Violation :</td>
+			<td>{{ $data->violation }}</td>
 		</tr>
 		<tr>
-			<td>Date/Time</td>
-			<td>{{ $violation->createdOn }}</td>
+			<td>Date/Time :</td>
+			<td>{{ $data->createdOn }}</td>
 		</tr>
 		<tr>
-			<td>Url</td>
-			<td>{{ $violation->info->fullUrl }}</td>
+			<td>Url :</td>
+			<td>{{ $data->info->fullUrl }}</td>
 		</tr>
 		<tr>
-			<td>User Agent</td>
-			<td>{{ $violation->info->userAgent }}</td>
+			<td>User Agent :</td>
+			<td>{{ $data->info->userAgent }}</td>
 		</tr>
 		<tr>
-			<td>Country</td>
-			<td>{{ $violation->info->country }}</td>
+			<td>Country :</td>
+			<td>{{ $data->info->country }}</td>
 		</tr>
 		<tr>
-			<td>City</td>
-			<td>{{ $violation->info->city }}</td>
+			<td>City :</td>
+			<td>{{ $data->info->city }}</td>
 		</tr>
 		<tr>
-			<td>IP</td>
-			<td>{{ $violation->myIp->ipStr }}</td>
+			<td>IP :</td>
+			<td>{{ $data->myIp->ipStr }}</td>
 		</tr>
 	</table>
-@elseif($type == 'violations')
+@elseif($type == 'settings')
 	<h3>
-		Settings Updated!
+		Settings in AdShield was updated!
 	</h3>
 	<table>
 		<tr>
+			<td>User :</td>
 			<td></td>
 		</tr>
+		<tr>
+			<td>Updated On :</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>Setting :</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>Description :</td>
+			<td></td>
+		</tr>
+		
 	</table>
 @endif

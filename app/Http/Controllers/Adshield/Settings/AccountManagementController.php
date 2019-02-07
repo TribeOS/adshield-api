@@ -13,6 +13,8 @@ use App\Model\Account;
 
 use App\Http\Controllers\Adshield\LogController;
 
+use App\Http\Controllers\Adshield\Misc\NotificationController;
+
 
 /**
  * handles setting and fetching of account config
@@ -34,7 +36,7 @@ class AccountManagementController extends BaseController
 		}
 		else if ($request->isMethod('put'))
 		{
-			return $this->saveSettings($user->accountId);
+			return $this->saveSettings($user);
 		}
 	}
 
@@ -58,17 +60,24 @@ class AccountManagementController extends BaseController
 	}
 
 
-	private function saveSettings($accountId)
+	private function saveSettings($user)
 	{
 		$settings = Input::get('accountManagement', []);
 		$settings = $settings['pageData'];
-		$account = Account::find($accountId);
+		$account = Account::find($user->accountId);
 		$account->config = json_encode($settings);
 		$account->save();
 
 		LogController::QuickLog(LogController::ACT_SAVE_SETTINGS, [
 			'title' => 'Account Management'
 		]);
+
+		NotificationController::CreateAndSendSettings(
+			$user->username,
+			'Account Management',
+			'An update was made in your Account Management page. Here is the data that was saved: <br />' . $account->config,
+			$user->accountId
+		);
 
 		return response()->json(['id'=>1, 'pageData' => $settings]);
 	}

@@ -170,7 +170,7 @@ class ResponseController {
 		$this->LogResponse($violationId, $response, $info);
 
 		$violation = Violation::find($violationId);
-		// NotificationController::CreatedAndSend($this->userKey, NotificationController::NC_VIOLATIONS, ['violation' => $violation]);
+		NotificationController::CreateAndSend($this->userKey, NotificationController::NC_VIOLATIONS, ['violation' => $violation]);
 
 		if ($response == self::RP_BLOCKED) {
 			return $this->Block();

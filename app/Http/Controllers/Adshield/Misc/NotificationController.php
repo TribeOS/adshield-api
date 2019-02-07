@@ -26,9 +26,14 @@ class NotificationController extends BaseController {
 	/**
 	 * creates a new notification and sends it
 	 */
-	public static function CreateAndSend($userKey, $type, $data)
+	public static function CreateAndSend($userKey, $type, $data, $accountId=null)
 	{
-		$config = self::GetAccountConfig($userKey);
+		if ($accountId == null) {
+			$config = self::GetAccountConfig($userKey);
+		} else {
+			$config = self::GetConfig($accountId);
+		}
+
 		if ($config == false) return;
 
 		$config = $config['emailNotifications'];
@@ -72,6 +77,32 @@ class NotificationController extends BaseController {
 
 		if (empty($account)) return false;
 		return json_decode($account->config, 1);
+	}
+
+
+	private static function GetConfig($accountId)
+	{
+		$account = DB::table("account")
+			->where("id", $accountId)
+			->select("config")->first();
+
+		if (empty($account)) return false;
+		return json_decode($account->config, 1);
+	}
+
+
+	public static function CreateAndSendSettings($username, $settingName, $description, $accountId)
+	{
+		self::CreateAndSend(null, self::NC_SETTINGS, 
+			[
+				'settings' => [
+					'user' => $username,
+					'updatedOn' => gmdate("Y-m-d H:i:s e"),
+					'setting' => $settingName,
+					'description' => $description
+				]
+			]
+		, $accountId);
 	}
 
 }

@@ -30,6 +30,10 @@ class ViolationCheckController extends ViolationController {
 	{
 		$this->VerifyKey($userKey);
 		$this->config = $this->GetConfig($userKey);
+		if ($this->config == false) {
+			//website has been disabled/deleted
+			return response()->json(['disabled' => true]);
+		}
 		//get user information
 		$ip = $this->GetUserIp();
 		$info = Request::all();
