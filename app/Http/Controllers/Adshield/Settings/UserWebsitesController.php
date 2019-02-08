@@ -194,12 +194,14 @@ class UserWebsitesController extends Controller
             $description = "Your website, <strong>{$record->domain}</strong>, has been updated. UserKey : {$record->userKey}";
         }
 
-        // NotificationController::CreateAndSendSettings(
-        //     $this->user->username,
-        //     'Api Settings',
-        //     $description,
-        //     $this->user->accountId
-        // );
+        event(new NotifyUser(NotificationController::NC_SETTINGS, 
+            [
+                'username' => $this->user->username,
+                'setting' => 'Api Settings',
+                'description' => $description,
+                'accountId' => $this->user->accountId
+            ]
+        ));
 
         return response(['userWebsite' => $record, 'id' => $id], 200);
     }  

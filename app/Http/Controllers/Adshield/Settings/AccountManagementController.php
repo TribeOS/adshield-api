@@ -14,7 +14,7 @@ use App\Model\Account;
 use App\Http\Controllers\Adshield\LogController;
 
 use App\Http\Controllers\Adshield\Misc\NotificationController;
-
+use App\Events\NotifyUser;
 
 /**
  * handles setting and fetching of account config
@@ -72,12 +72,14 @@ class AccountManagementController extends BaseController
 			'title' => 'Account Management'
 		]);
 
-		// NotificationController::CreateAndSendSettings(
-		// 	$user->username,
-		// 	'Account Management',
-		// 	'An update was made in your Account Management page. Here is the data that was saved: <br />' . $account->config,
-		// 	$user->accountId
-		// );
+		event(new NotifyUser(NotificationController::NC_SETTINGS, 
+			[
+				'username' => $user->username,
+				'setting' => 'Account Management',
+				'description' => 'An update was made in your Account Management page. Here is the data that was saved: ' . $account->config,
+				'accountId' => $user->accountId
+			]
+		));
 
 		return response()->json(['id'=>1, 'pageData' => $settings]);
 	}

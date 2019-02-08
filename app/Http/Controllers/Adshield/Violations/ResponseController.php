@@ -28,6 +28,7 @@ use App\Http\Controllers\Adshield\Violations\ViolationJSCheckFailedController;
 
 //for notification
 use App\Http\Controllers\Adshield\Misc\NotificationController;
+use App\Events\NotifyUser;
 
 
 /**
@@ -169,8 +170,14 @@ class ResponseController {
 
 		$this->LogResponse($violationId, $response, $info);
 
+		//fire notification event
 		$violation = Violation::find($violationId);
-		NotificationController::CreateAndSend($this->userKey, NotificationController::NC_VIOLATIONS, ['violation' => $violation]);
+		event(new NotifyUser(NotificationController::NC_VIOLATIONS, 
+			[
+				'userKey' => $this->userKey, 
+				'violation' => $violation
+			]
+		));
 
 		if ($response == self::RP_BLOCKED) {
 			return $this->Block();
