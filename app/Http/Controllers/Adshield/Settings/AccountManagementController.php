@@ -72,12 +72,12 @@ class AccountManagementController extends BaseController
 			'title' => 'Account Management'
 		]);
 
-		NotificationController::CreateAndSendSettings(
-			$user->username,
-			'Account Management',
-			'An update was made in your Account Management page. Here is the data that was saved: <br />' . $account->config,
-			$user->accountId
-		);
+		// NotificationController::CreateAndSendSettings(
+		// 	$user->username,
+		// 	'Account Management',
+		// 	'An update was made in your Account Management page. Here is the data that was saved: <br />' . $account->config,
+		// 	$user->accountId
+		// );
 
 		return response()->json(['id'=>1, 'pageData' => $settings]);
 	}

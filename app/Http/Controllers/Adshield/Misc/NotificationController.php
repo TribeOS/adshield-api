@@ -48,6 +48,7 @@ class NotificationController extends BaseController {
 			//get violation info
 			$info = $data['violation'];
 		}
+		
 		$notification = new Notification($type, $info);
 
 		//create email object (pass $data)
@@ -93,14 +94,19 @@ class NotificationController extends BaseController {
 
 	public static function CreateAndSendSettings($username, $settingName, $description, $accountId)
 	{
+		$settings = [
+			'user' => $username,
+			'updatedOn' => gmdate("Y-m-d H:i:s e"),
+			'setting' => $settingName,
+			'description' => $description
+		];
+
+		//conver to object to make implementation on notification view less confusing
+		$settings = json_decode(json_encode($settings));
+
 		self::CreateAndSend(null, self::NC_SETTINGS, 
 			[
-				'settings' => [
-					'user' => $username,
-					'updatedOn' => gmdate("Y-m-d H:i:s e"),
-					'setting' => $settingName,
-					'description' => $description
-				]
+				'settings' => $settings
 			]
 		, $accountId);
 	}

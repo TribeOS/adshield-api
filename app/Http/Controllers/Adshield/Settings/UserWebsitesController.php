@@ -16,6 +16,7 @@ use App\Model\User;
 use App\Model\UserWebsite;
 
 use App\Http\Controllers\Adshield\LogController;
+use App\Http\Controllers\Adshield\Misc\NotificationController;
 
 
 class UserWebsitesController extends Controller
@@ -26,12 +27,15 @@ class UserWebsitesController extends Controller
 
     const MAX_KEY_CHAR = 12; //max characteres for a userkey (this is used when generating a rnadom user key)
 
+    var $user = null;
+
     public function handle(Request $request, $id=null)
     {
         $userId = 0;
         try {
             $token = $request->bearerToken();
             $user = LoginController::getUserIdFromToken($token, true); //get USER instead of just the id
+            $this->user = $user;
         } catch (Exception $e) {}
 
         if ($request->isMethod('get'))
@@ -103,11 +107,19 @@ class UserWebsitesController extends Controller
     }
 
 
+    /**
+     * use this if we are actually deleting the website data along with other records attached to it from the database
+     * @param  [type] $id [description]
+     * @return [type]     [description]
+     */
     private function remove($id)
     {
         //remove website?
         $record = UserWebsite::find($id);
+        $domain = $record->domain;
+        $userKey = $record->userKey;
         $result = $record->delete();
+
         return response([], 200);
     }
 
@@ -141,7 +153,6 @@ class UserWebsitesController extends Controller
             return response($e->getMessage(), 500);
         }
         
-
         LogController::QuickLog(LogController::ACT_WEBSITE_ADD, [
             'userKey' => $userKey,
             'domain' => $record->domain
@@ -169,10 +180,26 @@ class UserWebsitesController extends Controller
             ], 500);
         }
 
+        $oldStatus = $record->status;
+
         $record->jsCode = json_encode($website['jsCode']);
         $record->domain = $website['domain'];
         $record->status = $website['status'];
         $record->save();
+
+        //check if this is a changed of status from 1 to 0 (deleted/inactive)
+        if ($oldStatus == 1 && $record->status == 0) {
+            $description = "Your website, <strong>{$record->domain}</strong>, has been removed. UserKey : {$record->userKey}";
+        } else {
+            $description = "Your website, <strong>{$record->domain}</strong>, has been updated. UserKey : {$record->userKey}";
+        }
+
+        // NotificationController::CreateAndSendSettings(
+        //     $this->user->username,
+        //     'Api Settings',
+        //     $description,
+        //     $this->user->accountId
+        // );
 
         return response(['userWebsite' => $record, 'id' => $id], 200);
     }  

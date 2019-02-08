@@ -45,19 +45,19 @@
 	<table>
 		<tr>
 			<td>User :</td>
-			<td></td>
+			<td>{{ $data->user }}</td>
 		</tr>
 		<tr>
 			<td>Updated On :</td>
-			<td></td>
+			<td>{{ $data->updatedOn }}</td>
 		</tr>
 		<tr>
 			<td>Setting :</td>
-			<td></td>
+			<td>{{ $data->setting }}</td>
 		</tr>
 		<tr>
 			<td>Description :</td>
-			<td></td>
+			<td>{{ $data->description }}</td>
 		</tr>
 		
 	</table>
