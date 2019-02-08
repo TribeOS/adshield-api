@@ -84,68 +84,68 @@ class ResponseController {
 			{
 				$response = ViolationIPController::Respond($this->config);
 			} 
-			else if (isset($this->violations[V_NO_JS]))
+			else if (isset($this->violations[ViolationController::V_NO_JS]))
 			{
 				//no response
 				//js won't be running anyway
 				$response = 'block';
 			} 
-			else if (isset($this->violations[V_JS_CHECK_FAILED])) 
+			else if (isset($this->violations[ViolationController::V_JS_CHECK_FAILED])) 
 			{
 				$response = ViolationJSCheckFailedController::Respond($this->config);
 			} 
-			else if (isset($this->violations[V_KNOWN_VIOLATOR_UA])) 
+			else if (isset($this->violations[ViolationController::V_KNOWN_VIOLATOR_UA])) 
 			{
 				$response = ViolationUserAgentController::Respond($this->config);
 			} 
-			else if (isset($this->violations[V_SUSPICIOUS_UA])) 
+			else if (isset($this->violations[ViolationController::V_SUSPICIOUS_UA])) 
 			{
 				$response = ViolationSuspiciousUAController::Respond($this->config);
 			} 
-			else if (isset($this->violations[V_BROWSER_INTEGRITY])) 
+			else if (isset($this->violations[ViolationController::V_BROWSER_INTEGRITY])) 
 			{
 				$response = ViolationBrowserIntegrityCheckController::Respond($this->config);
 			} 
-			else if (isset($this->violations[V_KNOWN_DC])) 
+			else if (isset($this->violations[ViolationController::V_KNOWN_DC])) 
 			{
 				$response = ViolationDataCenterController::Respond($this->config);
 			} 
-			else if (isset($this->violations[V_PAGES_PER_MINUTE_EXCEED])) 
+			else if (isset($this->violations[ViolationController::V_PAGES_PER_MINUTE_EXCEED])) 
 			{
 				$response = ViolationPagesPerMinuteController::Respond($this->config);
 			} 
-			else if (isset($this->violations[V_PAGES_PER_SESSION_EXCEED])) 
+			else if (isset($this->violations[ViolationController::V_PAGES_PER_SESSION_EXCEED])) 
 			{
 				$response = ViolationPagesPerSession::Respond($this->config);
 			} 
-			else if (isset($this->violations[V_BLOCKED_COUNTRY])) 
+			else if (isset($this->violations[ViolationController::V_BLOCKED_COUNTRY])) 
 			{
 				$response = ViolationBlockedCountryController::Respond($this->config);
 			} 
-			else if (isset($this->violations[V_AGGREGATOR_UA])) 
+			else if (isset($this->violations[ViolationController::V_AGGREGATOR_UA])) 
 			{
 				$response = ViolationAggregatorUserAgentController::Respond($this->config);
 			} 
-			else if (isset($this->violations[V_KNOWN_VIOLATOR_AUTO_TOOL])) 
+			else if (isset($this->violations[ViolationController::V_KNOWN_VIOLATOR_AUTO_TOOL])) 
 			{
 				$response = ViolationAutomationToolController::Respond($this->config);
 			} 
-			else if (isset($this->violations[V_SESSION_LENGTH_EXCEED])) 
+			else if (isset($this->violations[ViolationController::V_SESSION_LENGTH_EXCEED])) 
 			{
 				$response = ViolationSessionLengthExceedController::Respond($this->config);
 			} 
-			else if (isset($this->violations[V_BAD_UA])) 
+			else if (isset($this->violations[ViolationController::V_BAD_UA])) 
 			{
 				$response = ViolationBadAgentController::Respond($this->config);
 			} 
-			else if (isset($this->violations[V_UNCLASSIFIED_UA]))
+			else if (isset($this->violations[ViolationController::V_UNCLASSIFIED_UA]))
 			{
 				try {
 					$response = $this->config['contentProtection']['threatResponse']['unclassifiedUA'];
 				} catch (\Exception $e) {
 				}
 			} 
-			else if (isset($this->violations[V_IS_BOT])) 
+			else if (isset($this->violations[ViolationController::V_IS_BOT])) 
 			{
 				try {
 					$response = $this->config['contentProtection']['threatResponse']['bot'];
