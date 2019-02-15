@@ -17,6 +17,7 @@ use App\Model\UserWebsite;
 
 use App\Http\Controllers\Adshield\LogController;
 use App\Http\Controllers\Adshield\Misc\NotificationController;
+use App\Events\NotifyUser;
 
 
 class UserWebsitesController extends Controller
