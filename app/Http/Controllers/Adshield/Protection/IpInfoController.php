@@ -33,7 +33,10 @@ class IpInfoController extends BaseController
 			// $url = 'http://ip-api.com/json/' . $ip;
 			$response = file_get_contents($url);
 			$info = json_decode($response, true);
-			$id = self::SaveIpInfo($ip, $info, utf8_encode($response));
+			unset($info['time_zone']);
+			unset($info['currency']);
+			$response = json_encode($info);
+			$id = self::SaveIpInfo($ip, $info, $response);
 		}
 		else if (strtotime($info->updatedOn) < strtotime(self::MAX_DAYS_OLD_IP . " days ago"))
 		{
@@ -42,11 +45,20 @@ class IpInfoController extends BaseController
 			// $url = 'http://ip-api.com/json/' . $ip;
 			$response = file_get_contents($url);
 			$info = json_decode($response, true);
-			self::SaveIpInfo($ip, $info, utf8_encode($response), true);
+			unset($info['time_zone']);
+			unset($info['currency']);
+			$response = json_encode($info);
+			self::SaveIpInfo($ip, $info, $response, true);
 		}
 		else
 		{
-			$info = json_decode($info->rawInfo, true);
+			$record = [
+				'city' => $info->city,
+				'country_name' => $info->country,
+				'organization' => $info->org,
+				'isp' => $info->isp,
+			];
+			$info = $record;
 		}
 
 		if (!isset($info['city'])) $info['city'] = '';
