@@ -38,7 +38,8 @@ class IpInfoController extends BaseController
 		else if (strtotime($info->updatedOn) < strtotime(self::MAX_DAYS_OLD_IP . " days ago"))
 		{
 			$id = $info->id;
-			$url = 'http://ip-api.com/json/' . $ip;
+			$url = "https://api.ipgeolocation.io/ipgeo?apiKey=a9ac9ebcfef3462aa81f1be0aa3101a2&ip=$ip";
+			// $url = 'http://ip-api.com/json/' . $ip;
 			$response = file_get_contents($url);
 			$info = json_decode($response, true);
 			self::SaveIpInfo($ip, $info, $response, true);
@@ -49,8 +50,8 @@ class IpInfoController extends BaseController
 		}
 
 		if (!isset($info['city'])) $info['city'] = '';
-		if (!isset($info['country'])) $info['country'] = '';
-		if (!isset($info['org'])) $info['org'] = '';
+		if (!isset($info['country_name'])) $info['country_name'] = '';
+		if (!isset($info['organization'])) $info['organization'] = '';
 		if (!isset($info['isp'])) $info['isp'] = '';
 		$info['id'] = $id;
 
