@@ -124,4 +124,8 @@ class IpInfoController extends BaseController
 		return $id;
 	}
 
+
+	//TODO:: implement an IP look up that could handle huge traffic!!
+	//
+
 }
