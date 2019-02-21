@@ -33,7 +33,7 @@ class IpInfoController extends BaseController
 			// $url = 'http://ip-api.com/json/' . $ip;
 			$response = file_get_contents($url);
 			$info = json_decode($response, true);
-			$id = self::SaveIpInfo($ip, $info, (string)$response);
+			$id = self::SaveIpInfo($ip, $info, "$response");
 		}
 		else if (strtotime($info->updatedOn) < strtotime(self::MAX_DAYS_OLD_IP . " days ago"))
 		{
@@ -42,7 +42,7 @@ class IpInfoController extends BaseController
 			// $url = 'http://ip-api.com/json/' . $ip;
 			$response = file_get_contents($url);
 			$info = json_decode($response, true);
-			self::SaveIpInfo($ip, $info, (string)$response, true);
+			self::SaveIpInfo($ip, $info, "$response", true);
 		}
 		else
 		{
