@@ -54,7 +54,7 @@ class IpInfoController extends BaseController
 		{
 			$record = [
 				'city' => $info->city,
-				'country_name' => $info->country,
+				'country' => $info->country,
 				'organization' => $info->org,
 				'isp' => $info->isp,
 			];
@@ -62,7 +62,7 @@ class IpInfoController extends BaseController
 		}
 
 		if (!isset($info['city'])) $info['city'] = '';
-		if (!isset($info['country_name'])) $info['country_name'] = '';
+		if (!isset($info['country'])) $info['country'] = '';
 		if (!isset($info['organization'])) $info['organization'] = '';
 		if (!isset($info['isp'])) $info['isp'] = '';
 		$info['id'] = $id;
