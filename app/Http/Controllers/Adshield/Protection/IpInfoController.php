@@ -29,7 +29,8 @@ class IpInfoController extends BaseController
 		$id = 0;
 		if (empty($info))
 		{
-			$url = 'http://ip-api.com/json/' . $ip;
+			$url = "https://api.ipgeolocation.io/ipgeo?apiKey=a9ac9ebcfef3462aa81f1be0aa3101a2&ip=$ip";
+			// $url = 'http://ip-api.com/json/' . $ip;
 			$response = file_get_contents($url);
 			$info = json_decode($response, true);
 			$id = self::SaveIpInfo($ip, $info, $response);
@@ -74,10 +75,10 @@ class IpInfoController extends BaseController
 				->insertGetId([
 					'ipStr' => $ip,
 					'ip' => inet_pton($ip),
-					'org' => $info['org'] ?? '',
+					'org' => $info['organization'] ?? '',
 					'isp' => $info['isp'] ?? '',
 					'city' => $info['city'] ?? '',
-					'country' => $info['country'] ?? '',
+					'country' => $info['country_name'] ?? '',
 					'updatedOn' => gmdate("Y-m-d H:i:s"),
 					'rawInfo' => $response
 				]);
@@ -87,10 +88,10 @@ class IpInfoController extends BaseController
 			DB::table("asIpCachedInfo")
 				->where('ip', inet_pton($ip))
 				->update([
-					'org' => $info['org'] ?? '',
+					'org' => $info['organization'] ?? '',
 					'isp' => $info['isp'] ?? '',
 					'city' => $info['city'] ?? '',
-					'country' => $info['country'] ?? '',
+					'country' => $info['country_name'] ?? '',
 					'updatedOn' => gmdate("Y-m-d H:i:s"),
 					'rawInfo' => $response
 				]);
