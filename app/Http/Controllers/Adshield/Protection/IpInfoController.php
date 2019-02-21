@@ -37,6 +37,12 @@ class IpInfoController extends BaseController
 			unset($info['currency']);
 			$response = json_encode($info);
 			$id = self::SaveIpInfo($ip, $info, $response);
+			$info = [
+				'country' => $info['country_name'],
+				'city' => $info['city'],
+				'org' => $info['organization'],
+				'isp' => $info['isp']
+			];
 		}
 		else if (strtotime($info->updatedOn) < strtotime(self::MAX_DAYS_OLD_IP . " days ago"))
 		{
@@ -49,13 +55,19 @@ class IpInfoController extends BaseController
 			unset($info['currency']);
 			$response = json_encode($info);
 			self::SaveIpInfo($ip, $info, $response, true);
+			$info = [
+				'country' => $info['country_name'],
+				'city' => $info['city'],
+				'org' => $info['organization'],
+				'isp' => $info['isp']
+			];
 		}
 		else
 		{
 			$record = [
 				'city' => $info->city,
 				'country' => $info->country,
-				'organization' => $info->org,
+				'org' => $info->org,
 				'isp' => $info->isp,
 			];
 			$info = $record;
@@ -63,7 +75,7 @@ class IpInfoController extends BaseController
 
 		if (!isset($info['city'])) $info['city'] = '';
 		if (!isset($info['country'])) $info['country'] = '';
-		if (!isset($info['organization'])) $info['organization'] = '';
+		if (!isset($info['org'])) $info['org'] = '';
 		if (!isset($info['isp'])) $info['isp'] = '';
 		$info['id'] = $id;
 
