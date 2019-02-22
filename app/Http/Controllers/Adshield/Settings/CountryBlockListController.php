@@ -23,6 +23,7 @@ class CountryBlockListController extends BaseController
 			if (empty($id)) {
 				$userKey = Request::get('filter')['userKey'];
 				$data = $this->getBlockedCountries($userKey);
+				$data = ['id' => 0, 'listData' => $data];
 			} else {
 				$data = $this->getBlockedCountry($id);
 			}
@@ -47,7 +48,14 @@ class CountryBlockListController extends BaseController
 
 	private function getBlockedCountries($userKey)
 	{
-		$data = DB::table("asBlockedCountries")->where('userKey', $userKey)->get();
+		$limit = Request::get("limit", 10);
+		$page = Request::get("page", 1);
+
+		$data = DB::table("asBlockedCountries")
+			->join("countries", "countries.id", "=", "asBlockedCountries.country")
+			->selectRaw("asBlockedCountries.*, countryName, countryCode")
+			->where('userKey', $userKey);
+		$data = $data->paginate($limit);
 		return $data;
 	}
 
