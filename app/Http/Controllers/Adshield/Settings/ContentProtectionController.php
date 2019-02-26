@@ -104,7 +104,7 @@ class ContentProtectionController extends Controller
 		$config->save();
 
 		LogController::QuickLog(LogController::ACT_SAVE_SETTINGS, [
-			'title' => 'Content Protection'
+			'title' => 'Ad Protection'
 		]);
 		
 		//only one record in the database for this
