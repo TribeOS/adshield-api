@@ -31,36 +31,54 @@ class IpInfoController extends BaseController
 		{
 			$url = "https://api.ipgeolocation.io/ipgeo?apiKey=a9ac9ebcfef3462aa81f1be0aa3101a2&ip=$ip";
 			// $url = 'http://ip-api.com/json/' . $ip;
-			$response = file_get_contents($url);
-			$info = json_decode($response, true);
-			unset($info['time_zone']);
-			unset($info['currency']);
-			$response = json_encode($info);
-			$id = self::SaveIpInfo($ip, $info, $response);
-			$info = [
-				'country' => $info['country_name'],
-				'city' => $info['city'],
-				'org' => $info['organization'],
-				'isp' => $info['isp']
-			];
+			trY {
+				$response = file_get_contents($url);
+				$info = json_decode($response, true);
+				unset($info['time_zone']);
+				unset($info['currency']);
+				$response = json_encode($info);
+				$id = self::SaveIpInfo($ip, $info, $response);
+				$info = [
+					'country' => $info['country_name'],
+					'city' => $info['city'],
+					'org' => $info['organization'],
+					'isp' => $info['isp']
+				];
+			} catch (\Exception $e) {
+				$info = [
+					'country' => '',
+					'city' => '',
+					'org' => '',
+					'isp' => ''
+				];
+			}
 		}
 		else if (strtotime($info->updatedOn) < strtotime(self::MAX_DAYS_OLD_IP . " days ago"))
 		{
 			$id = $info->id;
 			$url = "https://api.ipgeolocation.io/ipgeo?apiKey=a9ac9ebcfef3462aa81f1be0aa3101a2&ip=$ip";
 			// $url = 'http://ip-api.com/json/' . $ip;
-			$response = file_get_contents($url);
-			$info = json_decode($response, true);
-			unset($info['time_zone']);
-			unset($info['currency']);
-			$response = json_encode($info);
-			self::SaveIpInfo($ip, $info, $response, true);
-			$info = [
-				'country' => $info['country_name'],
-				'city' => $info['city'],
-				'org' => $info['organization'],
-				'isp' => $info['isp']
-			];
+			try {
+				$response = file_get_contents($url);
+				$info = json_decode($response, true);
+				unset($info['time_zone']);
+				unset($info['currency']);
+				$response = json_encode($info);
+				self::SaveIpInfo($ip, $info, $response, true);
+				$info = [
+					'country' => $info['country_name'],
+					'city' => $info['city'],
+					'org' => $info['organization'],
+					'isp' => $info['isp']
+				];
+			} catch (\Exception $e) {
+				$info = [
+					'country' => '',
+					'city' => '',
+					'org' => '',
+					'isp' => ''
+				];
+			}
 		}
 		else
 		{
