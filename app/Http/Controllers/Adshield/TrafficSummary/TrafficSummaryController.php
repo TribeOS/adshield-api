@@ -131,9 +131,10 @@ class TrafficSummaryController extends BaseController
 
 	private function getTrafficGraph($filter)
 	{
-		$limit = Request::get('limit', 10);
-		$page = Request::get('page', 10);
 		$duration = $filter['duration'];
+
+		
+
 
 		$data = DB::table("trViolationLog")
 			->join("trViolationSession", function($join) use($filter, $duration) {
@@ -148,12 +149,12 @@ class TrafficSummaryController extends BaseController
 			});
 
 		if ($duration > 0) {
-			$data->selectRaw("trViolations.violation, DATE(trViolationLog.createdOn) AS marker, COUNT(*) AS noRequests");
+			$data->selectRaw("trViolations.violation, DATE(trViolationLog.createdOn) AS marker, COUNT(*) AS noRequests, trViolations.createdOn, violationInfo");
 		} else {
-			$data->selectRaw("trViolations.violation, YEAR(trViolationLog.createdOn) AS marker, COUNT(*) AS noRequests");
+			$data->selectRaw("trViolations.violation, YEAR(trViolationLog.createdOn) AS marker, COUNT(*) AS noRequests, trViolations.createdOn, violationInfo");
 		}
-		$data = $data->groupBy("trViolations.violation", "marker")
-			->orderBy("trViolations.violation", "marker")
+		$data = $data->groupBy("trViolations.violation", "marker", "trViolations.createdOn", "trViolations.violationInfo")
+			->orderBy("trViolations.createdOn", "trViolations.violationInfo", "trViolations.violation", "marker")
 			->get();
 
 		$graph = [
@@ -191,44 +192,54 @@ class TrafficSummaryController extends BaseController
 			'unwantedAutomaticTraffic' => 'Unwanted Automatic Traffic'
 		];
 
-		$previousName = ''; $index = '';
+		$prev = ['createdOn' => null, 'infoId' => 0]; 
+		$index = '';
 		foreach($data as $record)
 		{
 
-			switch($record->violation == null)
-			{
-				//undesirable auto traffic
-				case ViolationController::V_AGGREGATOR_UA:
-				case ViolationController::V_UNCLASSIFIED_UA:	
-					$index = 'desiredAutomaticTraffic';
-					break;
-				//undesirable
-				case ViolationController::V_KNOWN_VIOLATOR:
-				case ViolationController::V_NO_JS:
-				case ViolationController::V_JS_CHECK_FAILED:
-				case ViolationController::V_KNOWN_VIOLATOR_UA:
-				case ViolationController::V_SUSPICIOUS_UA:
-				case ViolationController::V_BROWSER_INTEGRITY:
-				case ViolationController::V_KNOWN_DC:
-				case ViolationController::V_PAGES_PER_MINUTE_EXCEED:
-				case ViolationController::V_PAGES_PER_SESSION_EXCEED:
-				case ViolationController::V_BLOCKED_COUNTRY:
-				case ViolationController::V_KNOWN_VIOLATOR_AUTO_TOOL:
-				case ViolationController::V_SESSION_LENGTH_EXCEED:
-				case ViolationController::V_BAD_UA:
-				case ViolationController::V_IS_BOT:
-					$index = 'unwantedAutomaticTraffic';
-					break;
-				default:
-					//human
-					$index = 'human';
+			if ($record->violation == null) {
+				$index = 'human';
+			} else {
+				if ($prev['createdOn'] == $record->createdOn && $prev['infoId'] == $record->violationInfo) continue;
+				switch($record->violation)
+				{
+					//undesirable auto traffic
+					case ViolationController::V_AGGREGATOR_UA:
+					case ViolationController::V_UNCLASSIFIED_UA:	
+						$index = 'desiredAutomaticTraffic';
+						break;
+					//undesirable
+					case ViolationController::V_KNOWN_VIOLATOR:
+					case ViolationController::V_NO_JS:
+					case ViolationController::V_JS_CHECK_FAILED:
+					case ViolationController::V_KNOWN_VIOLATOR_UA:
+					case ViolationController::V_SUSPICIOUS_UA:
+					case ViolationController::V_BROWSER_INTEGRITY:
+					case ViolationController::V_KNOWN_DC:
+					case ViolationController::V_PAGES_PER_MINUTE_EXCEED:
+					case ViolationController::V_PAGES_PER_SESSION_EXCEED:
+					case ViolationController::V_BLOCKED_COUNTRY:
+					case ViolationController::V_KNOWN_VIOLATOR_AUTO_TOOL:
+					case ViolationController::V_SESSION_LENGTH_EXCEED:
+					case ViolationController::V_BAD_UA:
+					case ViolationController::V_IS_BOT:
+						$index = 'unwantedAutomaticTraffic';
+						break;
+					case null:
+					default:
+						//human
+						$index = 'human';
+				}
 			}
+
 			if (isset($graphData[$index][$record->marker])) {
 				$graphData[$index][$record->marker] += $record->noRequests;
 			} else {
 				$graphData[$index][$record->marker] = $record->noRequests;
 			}
 
+			$prev['createdOn'] = $record->createdOn;
+			$prev['infoId'] = $record->violationInfo;
 		}
 
 		foreach($graphData as $index=>$gData)

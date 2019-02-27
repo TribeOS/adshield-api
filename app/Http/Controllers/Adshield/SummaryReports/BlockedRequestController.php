@@ -59,9 +59,9 @@ class BlockedRequestController extends BaseController
 			})
 			->count();
 
-		//get total captcha served
+		//get total blocked served
 
-		$captcha = DB::table('trViolations')
+		$blocked = DB::table('trViolations')
 			->join('trViolationResponses', function($join) use($filter) {
 				$join->on('trViolationResponses.violationId', '=', 'trViolations.id')
 					->where('userKey', '=', $filter['userKey'])
@@ -75,9 +75,8 @@ class BlockedRequestController extends BaseController
 			})
 			->count();
 
-
 		$data = [
-			'data' => [(int)$traffic, (int)$captcha],
+			'data' => [(int)$traffic, (int)$blocked],
 			'label' => ['Total Traffic', 'Blocked Requests']
 		];
 
