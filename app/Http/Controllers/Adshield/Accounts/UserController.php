@@ -14,6 +14,9 @@ use App\Model\User;
 use App\Model\UserPermission;
 use App\Http\Controllers\Adshield\LoginController;
 
+use Illuminate\Support\Facades\Mail;
+use App\Mail\PasswordReset;
+
 
 class UserController extends BaseController {
 
@@ -184,5 +187,45 @@ class UserController extends BaseController {
     {
 
     }
+
+    /**
+     * user requests to reset their password
+     */
+    public function requestResetPassword(Request $request)
+    {
+        $email = $request->get('email');
+        //generate hash
+        $hash = md5(time().'adshield');
+        //update user's record
+        $user = User::where('email', $email)->first();
+        if (empty($user)) {
+            return response('User does not exists', 404);
+        }
+        $user->resetHash = $hash;
+        $user->save();
+        //send email of instruction to user along with link to the reset url
+        Mail::to($user->email)->send(new PasswordReset($user));
+        return response(['success' => true], 200);
+    }
+
+
+    /**
+     * handles password reset process for user
+     */
+    public function doResetPassword(Request $request, $hash)
+    {
+        // $hash = $request->get("hash");
+        $user = User::where("resetHash", $hash)->first();
+        if (empty($user) || empty($hash)) {
+            return response("Invalid request. Please start another password reset request from the login page.", 500);
+        }
+
+        $user->password = Hash::make($request->get('password'));
+        $user->resetHash = null;
+        $user->save();
+        return response(['success' => true], 200);
+
+    }
+
 
 }

@@ -126,8 +126,6 @@ class AccountController extends BaseController {
     	$user->permission = $usersPermission->permission;
     	$user->password = "";
 
-
-    	//TODO
     	//send email
     	Mail::to($account->email)->send(new AccountCreated($account));
 	}

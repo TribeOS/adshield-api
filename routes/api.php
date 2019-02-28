@@ -90,6 +90,10 @@ Route::middleware(['api.access'])->group(function() {
 	Route::any('/accounts/', ['uses' => 'Adshield\Accounts\AccountController@handle']);
 	Route::any('/confirm/{code}', ['as' => 'AccountConfirm', 'uses' => 'Adshield\Accounts\AccountController@Confirm']);
 
+	//user reset password
+	Route::any('/requestPassword', ['as' => 'RequestResetPassword', 'uses' => 'Adshield\Accounts\UserController@requestResetPassword']);	
+	Route::any('/resetPassword/{hash}', ['as' => 'ResetPassword', 'uses' => 'Adshield\Accounts\UserController@doResetPassword']);	
+
 	//User authentication/login
 	Route::any('login', ['uses' => 'Adshield\LoginController@login']);
 
