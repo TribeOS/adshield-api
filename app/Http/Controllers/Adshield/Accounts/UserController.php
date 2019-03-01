@@ -220,6 +220,11 @@ class UserController extends BaseController {
             return response("Invalid request. Please start another password reset request from the login page.", 500);
         }
 
+        $validate = $request->validate([
+            'password' => 'required|min:5|max:50|confirmed'
+        ]);
+
+
         $user->password = Hash::make($request->get('password'));
         $user->resetHash = null;
         $user->save();
