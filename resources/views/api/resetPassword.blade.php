@@ -1,3 +1,6 @@
+
+<img src="https://adshield.tribeos.io/assets/images/adshield_logo-601f860d634ed1de8f025d9adc5cbbc1.png" />
+
 <p>
 	We've sent you this email because you (or someone else) requested to reset your password on AdShield.
 </p>
