@@ -98,8 +98,6 @@ class VisualizerController extends BaseController
 		if ($initCall)
 		{
 			$data['transactionsInterval'] = 0; 
-			//get previous hits as well 
-			$data['previousTransactions'] = $this->GetPreviousTicks($userKey);
 		}
 
 		$data['adClicks'] = [
