@@ -295,4 +295,37 @@ class AdshieldStatController extends BaseController
 		return $clicks->total;
 	}
 
+
+	public static function GetPreviousTicks($userKey)
+	{
+		$timeAgo = 2 * floor(strtotime("2 minutes ago") / 2);
+		$timeNow = 2 * floor(strtotime("NOW") / 2);
+
+		$data = DB::table("trViolationLog")
+			->join("trViolationSession", function($join) use($userKey) {
+				$join->on("trViolationSession.id", "=", "trViolationLog.sessionId")
+					->where("userKey", $userKey);
+			})
+			->selectRaw("COUNT(*) as total, 
+				2 * FLOOR(UNIX_TIMESTAMP(trViolationLog.createdOn)/2) AS createdOn")
+			->where("trViolationLog.createdOn", ">=", gmdate("Y-m-d H:i:s",$timeAgo))
+			->groupBy("createdOn")
+			->orderBy("createdOn")
+			->get();
+
+		$ticks = [];
+		while($timeAgo < $timeNow)
+		{
+			$ticks[$timeAgo] = 0;
+			$timeAgo += 2;
+		}
+
+		foreach($data as $d)
+		{
+			$ticks[$d->createdOn] = $d->total;
+		}
+
+		return $ticks;
+	}
+
 }

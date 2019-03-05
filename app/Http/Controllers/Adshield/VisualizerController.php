@@ -95,8 +95,12 @@ class VisualizerController extends BaseController
 
 		//we can use just the value 1 since for every hit/request we will be sending the stat update to the frontend.
 		$data['transactionsInterval'] = 1; //$this->GetAdshieldTransactionForPastTime($accountId, $userKey, $time);
-		if ($initCall) $data['transactionsInterval'] = 0; 
-
+		if ($initCall)
+		{
+			$data['transactionsInterval'] = 0; 
+			//get previous hits as well 
+			$data['previousTransactions'] = $this->GetPreviousTicks($userKey);
+		}
 
 		$data['adClicks'] = [
 			'today' => $this->GetTotalAdClicks($accountId, $userKey, gmdate("Y-m-d H:i:s", strtotime('midnight today'))),
@@ -132,6 +136,15 @@ class VisualizerController extends BaseController
 	{
 		$clicks = AdshieldStatController::GetAdClicks($accountId, $userKey, $dateFrom);
 		return $clicks;
+	}
+
+	/**
+	 * gets all the hits we have for the past 2 minutes on 2 second interval
+	 */
+	private function GetPreviousTicks($userKey)
+	{
+		$stats = AdshieldStatController::GetPreviousTicks($userKey);
+		return $stats;
 	}
 
 }
