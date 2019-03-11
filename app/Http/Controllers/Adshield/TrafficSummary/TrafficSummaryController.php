@@ -6,6 +6,7 @@ use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Support\Facades\DB;
 use Request;
+use Config;
 
 use App\Http\Controllers\Adshield\Protection\DummyDataController;
 use App\Model\UserWebsite;
@@ -58,9 +59,17 @@ class TrafficSummaryController extends BaseController
 
 		$data = DB::table('trViolations')
 			->join("trViolationResponses", "trViolationResponses.violationId", "=", "trViolations.id")
-			->where('userKey', $filter['userKey'])
 			->selectRaw("responseTaken, COUNT(*) AS total")
 			->groupBy('responseTaken');
+
+		if ($filter['userKey'] !== 'all') {
+			$data->where('userKey', $filter['userKey']);
+		} else {
+			$data->join('userWebsites', function($join) {
+				$join->on('userWebsites.userKey', '=', 'trViolations.userKey')
+					->where('userWebsites.accountId', Config::get('user')->accountId);
+			});
+		}
 
 		if (!empty($duration) && $duration > 0)
 		{
@@ -87,9 +96,17 @@ class TrafficSummaryController extends BaseController
 	{
 		$data = DB::table('trViolations')
 			->join("trViolationResponses", "trViolationResponses.violationId", "=", "trViolations.id")
-			->where('userKey', $filter['userKey'])
 			->selectRaw("violation, COUNT(*) AS total")
 			->groupBy('violation');
+
+		if ($filter['userKey'] !== 'all') {
+			$data->where('userKey', $filter['userKey']);
+		} else {
+			$data->join('userWebsites', function($join) {
+				$join->on('userWebsites.userKey', '=', 'trViolations.userKey')
+					->where('userWebsites.accountId', Config::get('user')->accountId);
+			});
+		}
 
 		if (!empty($filter['duration']) && $filter['duration'] > 0)
 		{
@@ -108,38 +125,14 @@ class TrafficSummaryController extends BaseController
 		return $graphData;
 	}
 
-	private function getTrafficGraph1($days)
-	{
-		$data = [];
-		$data['datasets'][] = [
-			'data' => [39, 48, 74, 70, 87, 34, 18],
-			'label' => 'Humans'
-		];
-		$data['datasets'][] = [
-			'data' => [46, 56, 65, 23, 34, 32, 13],
-			'label' => 'Good Bots'
-		];
-		$data['label'] = ['January', 'February', 'March', 'April', 'May', 'June', 'July'];
-
-		foreach($data['datasets'] as $index=>$ds) {
-			$data['datasets'][$index] = DummyDataController::ApplyDuration($data['datasets'][$index]);
-		}
-
-		return $data;
-	}
-
-
 	private function getTrafficGraph($filter)
 	{
 		$duration = $filter['duration'];
 
-		
-
-
 		$data = DB::table("trViolationLog")
 			->join("trViolationSession", function($join) use($filter, $duration) {
-				$join->on("trViolationSession.id", "=", "trViolationLog.sessionId")
-					->where("trViolationSession.userKey", $filter['userKey']);
+				$join->on("trViolationSession.id", "=", "trViolationLog.sessionId");
+				if ($filter['userKey'] !== 'all') $join->where("trViolationSession.userKey", $filter['userKey']);
 				if ($duration > 0) $join->where("trViolationLog.createdOn", ">", gmdate("Y-m-d H:i:s", strtotime("$duration DAYS AGO")));
 			})
 			->leftJoin("trViolations", function($join) use($filter) {
@@ -147,6 +140,15 @@ class TrafficSummaryController extends BaseController
 					->on("trViolations.createdOn", "=", "trViolationLog.createdOn")
 					->on("trViolations.userKey", "=", "trViolationSession.userKey");
 			});
+
+		if ($filter['userKey'] !== 'all') {
+			$data->where('userKey', $filter['userKey']);
+		} else {
+			$data->join('userWebsites', function($join) {
+				$join->on('userWebsites.userKey', '=', 'trViolations.userKey')
+					->where('userWebsites.accountId', Config::get('user')->accountId);
+			});
+		}
 
 		if ($duration > 0) {
 			$data->selectRaw("trViolations.violation, DATE(trViolationLog.createdOn) AS marker, COUNT(*) AS noRequests, trViolations.createdOn, violationInfo");
@@ -164,7 +166,14 @@ class TrafficSummaryController extends BaseController
 
 		$defaultData = [];
 
-		$site = UserWebsite::where("userKey", $filter['userKey'])->first();
+		if ($filter['userKey'] !== 'all') {
+			$site = UserWebsite::where("userKey", $filter['userKey'])->first();
+		} else {
+			$site = DB::table("userWebsites")
+				->where("accountId", Config::get('user')->accountId)
+				->selectRaw("MIN(createdOn) AS createdOn")
+				->first();
+		}
 
 		if ($duration > 0) {
 			for($a = 0; $a < $duration; $a ++) {

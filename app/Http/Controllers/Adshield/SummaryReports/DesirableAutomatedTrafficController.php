@@ -6,6 +6,7 @@ use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Support\Facades\DB;
 use Request;
+use Config;
 
 use App\Http\Controllers\Adshield\Violations\ViolationController;
 use App\Http\Controllers\Adshield\LogController;
@@ -41,23 +42,29 @@ class DesirableAutomatedTrafficController extends BaseController
 		$data = DB::table('trViolations')
 			->join('trViolationAutoTraffic', function($join) use($filter) {
 				$join->on('trViolationAutoTraffic.violationId', '=', 'trViolations.id')
-					->where('userKey', '=', $filter['userKey'])
 					->whereIn('violation', [
 						ViolationController::V_UNCLASSIFIED_UA,
 						ViolationController::V_AGGREGATOR_UA
 					]);
-					if (!empty($filter['duration']) && $filter['duration'] > 0)
-					{
-						$duration = $filter['duration'];
-						$join->where("trViolations.createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
-					}
+				if ($filter['userKey'] !== 'all') $join->where('userKey', '=', $filter['userKey']);
+				if (!empty($filter['duration']) && $filter['duration'] > 0)
+				{
+					$duration = $filter['duration'];
+					$join->where("trViolations.createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
+				}
 			})
 			->selectRaw("trafficName, COUNT(*) AS noRequests")
 			->groupBy('trafficName')
 			->orderBy('trafficName');
 
-		$data = $data->paginate($limit);
+		if ($filter['userKey'] == 'all') {
+			$data->join('userWebsites', function($join) {
+				$join->on('userWebsites.userKey', '=', 'trViolations.userKey')
+					->where('userWebsites.accountId', Config::get('user')->accountId);
+			});
+		}
 
+		$data = $data->paginate($limit);
 
 		LogController::QuickLog(LogController::ACT_VIEW_REPORT, [
 			'title' => 'Desirable Automated Traffic',
@@ -80,13 +87,20 @@ class DesirableAutomatedTrafficController extends BaseController
 		$data = DB::table('trViolations')
 			->join('trViolationAutoTraffic', function($join) use($filter, $duration) {
 				$join->on('trViolationAutoTraffic.violationId', '=', 'trViolations.id')
-					->where('userKey', '=', $filter['userKey'])
 					->whereIn('violation', [
 						ViolationController::V_UNCLASSIFIED_UA,
 						ViolationController::V_AGGREGATOR_UA
 					]);
+				if ($filter['userKey'] !== 'all') $join->where('userKey', '=', $filter['userKey']);
 				if ($duration > 0) $join->where("trViolations.createdOn", ">", gmdate("Y-m-d H:i:s", strtotime("$duration DAYS AGO")));
 			});
+
+		if ($filter['userKey'] == 'all') {
+			$data->join('userWebsites', function($join) {
+				$join->on('userWebsites.userKey', '=', 'trViolations.userKey')
+					->where('userWebsites.accountId', Config::get('user')->accountId);
+			});
+		}
 
 		if ($duration > 0) {
 			$data->selectRaw("trafficName, DATE(trViolations.createdOn) AS marker, COUNT(*) AS noRequests");
@@ -104,7 +118,14 @@ class DesirableAutomatedTrafficController extends BaseController
 
 		$defaultData = [];
 
-		$site = UserWebsite::where("userKey", $filter['userKey'])->first();
+		if ($filter['userKey'] !== 'all') {
+			$site = UserWebsite::where("userKey", $filter['userKey'])->first();
+		} else {
+			$site = DB::table("userWebsites")
+				->where("accountId", Config::get('user')->accountId)
+				->selectRaw("MIN(createdOn) AS createdOn")
+				->first();
+		}
 
 		if ($duration > 0) {
 			for($a = 0; $a < $duration; $a ++) {

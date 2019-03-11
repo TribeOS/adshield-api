@@ -30,7 +30,6 @@ class LogController extends BaseController
 
 	public function handle(Request $request)
 	{
-
 		$userId = 0;
         try {
             $token = $request->bearerToken();

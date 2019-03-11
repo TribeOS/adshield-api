@@ -6,6 +6,7 @@ use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Support\Facades\DB;
 use Request;
+use Config;
 
 use App\Http\Controllers\Adshield\Protection\DummyDataController;
 use App\Http\Controllers\Adshield\LogController;
@@ -48,32 +49,47 @@ class BlockedRequestController extends BaseController
 		//get total trafic
 		$traffic = DB::table("trViolationLog")
 			->join("trViolationSession", function($join) use($filter) {
-				$join->on("trViolationSession.id", "=", "trViolationLog.sessionId")
-					->where("trViolationSession.userKey", $filter['userKey']);
+				$join->on("trViolationSession.id", "=", "trViolationLog.sessionId");
+				if ($filter['userKey'] !== 'all') $join->where("trViolationSession.userKey", $filter['userKey']);
 
 				if (!empty($filter['duration']) && $filter['duration'] > 0)
 				{
 					$duration = $filter['duration'];
 					$join->where("trViolationLog.createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
 				}
-			})
-			->count();
+			});
+
+		if ($filter['userKey'] == 'all') {
+			$traffic->join('userWebsites', function($join) {
+				$join->on('userWebsites.userKey', '=', 'trViolationSession.userKey')
+					->where('userWebsites.accountId', Config::get('user')->accountId);
+			});
+		}
+
+		$traffic = $traffic->count();
 
 		//get total blocked served
 
 		$blocked = DB::table('trViolations')
 			->join('trViolationResponses', function($join) use($filter) {
 				$join->on('trViolationResponses.violationId', '=', 'trViolations.id')
-					->where('userKey', '=', $filter['userKey'])
 					->where('trViolationResponses.responseTaken', '=', ResponseController::RP_BLOCKED);
+				if ($filter['userKey'] !== 'all') $join->where('userKey', '=', $filter['userKey']);
 
 				if (!empty($filter['duration']) && $filter['duration'] > 0)
 				{
 					$duration = $filter['duration'];
 					$join->where("trViolationResponses.createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
 				}
-			})
-			->count();
+			});
+
+		if ($filter['userKey'] == 'all') {
+			$blocked->join('userWebsites', function($join) {
+				$join->on('userWebsites.userKey', '=', 'trViolations.userKey')
+					->where('userWebsites.accountId', Config::get('user')->accountId);
+			});
+		}
+		$blocked = $blocked->count();
 
 		$data = [
 			'data' => [(int)$traffic, (int)$blocked],
@@ -98,10 +114,17 @@ class BlockedRequestController extends BaseController
 		//get traffic count
 		$records['traffic'] = DB::table("trViolationLog")
 			->join("trViolationSession", function($join) use($filter, $duration) {
-				$join->on("trViolationSession.id", "=", "trViolationLog.sessionId")
-					->where("trViolationSession.userKey", $filter['userKey']);
+				$join->on("trViolationSession.id", "=", "trViolationLog.sessionId");
+				if ($filter['userKey'] !== 'all') $join->where("trViolationSession.userKey", $filter['userKey']);
 				if ($duration > 0) $join->where("trViolationLog.createdOn", ">", gmdate("Y-m-d H:i:s", strtotime("$duration DAYS AGO")));
 			});
+
+		if ($filter['userKey'] == 'all') {
+			$records['traffic']->join('userWebsites', function($join) {
+				$join->on('userWebsites.userKey', '=', 'trViolationSession.userKey')
+					->where('userWebsites.accountId', Config::get('user')->accountId);
+			});
+		}
 
 		if ($duration > 0) {
 			$records['traffic']->selectRaw("DATE(trViolationLog.createdOn) AS marker, COUNT(*) AS total");
@@ -114,10 +137,17 @@ class BlockedRequestController extends BaseController
 		$records['blocked'] = DB::table('trViolations')
 			->join('trViolationResponses', function($join) use($filter, $duration) {
 				$join->on('trViolationResponses.violationId', '=', 'trViolations.id')
-					->where('userKey', '=', $filter['userKey'])
 					->where('trViolationResponses.responseTaken', '=', ResponseController::RP_BLOCKED);
+				if ($filter['userKey'] !== 'all') $join->where('userKey', '=', $filter['userKey']);
 				if ($duration > 0) $join->where("trViolationResponses.createdOn", ">", gmdate("Y-m-d H:i:s", strtotime("$duration DAYS AGO")));
 			});
+
+		if ($filter['userKey'] == 'all') {
+			$records['blocked']->join('userWebsites', function($join) {
+				$join->on('userWebsites.userKey', '=', 'trViolations.userKey')
+					->where('userWebsites.accountId', Config::get('user')->accountId);
+			});
+		}
 
 		if ($duration > 0) {
 			$records['blocked']->selectRaw("DATE(trViolations.createdOn) AS marker, COUNT(*) AS total");
@@ -138,7 +168,14 @@ class BlockedRequestController extends BaseController
 		];
 		$defaultData = [];
 
-		$site = UserWebsite::where("userKey", $filter['userKey'])->first();
+		if ($filter['userKey'] !== 'all') {
+			$site = UserWebsite::where("userKey", $filter['userKey'])->first();
+		} else {
+			$site = DB::table("userWebsites")
+				->where("accountId", Config::get('user')->accountId)
+				->selectRaw("MIN(createdOn) AS createdOn")
+				->first();
+		}
 
 		if ($duration > 0) {
 			for($a = 0; $a < $duration; $a ++) {
@@ -183,18 +220,26 @@ class BlockedRequestController extends BaseController
 		$data = DB::table('trViolations')
 			->join('trViolationResponses', function($join) use($filter) {
 				$join->on('trViolationResponses.violationId', '=', 'trViolations.id')
-					->where('userKey', '=', $filter['userKey'])
 					->where('responseTaken', ResponseController::RP_BLOCKED);
-					if (!empty($filter['duration']) && $filter['duration'] > 0)
-					{
-						$duration = $filter['duration'];
-						$join->where("trViolationResponses.createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
-					}
+					
+				if ($filter['userKey'] !== 'all') $join->where('userKey', '=', $filter['userKey']);
+				if (!empty($filter['duration']) && $filter['duration'] > 0)
+				{
+					$duration = $filter['duration'];
+					$join->where("trViolationResponses.createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
+				}
 			})
 			->join('trViolationIps', 'trViolationIps.id', '=', 'trViolations.ip')
 			->selectRaw("ipStr AS ip, COUNT(*) AS noRequests, MAX(trViolationResponses.createdOn) AS createdOn")
 			->groupBy('ipStr')
 			->orderBy('ipStr');
+
+		if ($filter['userKey'] == 'all') {
+			$data->join('userWebsites', function($join) {
+				$join->on('userWebsites.userKey', '=', 'trViolations.userKey')
+					->where('userWebsites.accountId', Config::get('user')->accountId);
+			});
+		}
 
 		$data = $data->paginate($limit);
 

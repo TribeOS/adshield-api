@@ -6,6 +6,7 @@ use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
+use Config;
 
 use App\Http\Controllers\Adshield\Violations\ViolationController;
 use App\Http\Controllers\Adshield\LogController;
@@ -30,8 +31,16 @@ class IpJsCheckFailedController extends BaseController
 			->select(DB::raw("ipStr AS ip, COUNT(*) as total"))
 			->groupBy('ipStr')
 			->where('violation', ViolationController::V_JS_CHECK_FAILED)
-			->where('userKey', $filter['userKey'])
 			->orderBy('ipStr', 'asc');
+
+		if ($filter['userKey'] !== 'all') {
+			$data->where('userKey', $filter['userKey']);
+		} else {
+			$data->join('userWebsites', function($join) {
+				$join->on('userWebsites.userKey', '=', 'trViolations.userKey')
+					->where('userWebsites.accountId', Config::get('user')->accountId);
+			});
+		}
 
 		if (!empty($filter['duration']) && $filter['duration'] > 0)
 		{
@@ -69,8 +78,18 @@ class IpJsCheckFailedController extends BaseController
 				ViolationController::V_KNOWN_VIOLATOR,
 				ViolationController::V_SESSION_LENGTH_EXCEED,
 			])
-			->groupBy("violation")
-			->get();
+			->groupBy("violation");
+		
+		if ($filter['userKey'] !== 'all') {
+			$violation->where('userKey', $filter['userKey']);
+		} else {
+			$violation->join('userWebsites', function($join) {
+				$join->on('userWebsites.userKey', '=', 'trViolations.userKey')
+					->where('userWebsites.accountId', Config::get('user')->accountId);
+			});
+		}
+
+		$violation = $violation->get();
 
 		$info = IpInfoController::GetIpInfo($ip);
 		$graphData = [

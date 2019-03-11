@@ -33,7 +33,6 @@ class ProtectionOverviewController extends BaseController
 		$filter = Input::get("filter", []);
 		
 		$data = DB::table('trViolations')
-			->where('userKey', $filter['userKey'])
 			->selectRaw("violation, COUNT(*) AS total")
 			->groupBy('violation')
 			->whereIn('violation', [
@@ -43,6 +42,8 @@ class ProtectionOverviewController extends BaseController
 				ViolationController::V_KNOWN_VIOLATOR_UA,
 				ViolationController::V_KNOWN_DC
 			]);
+
+		if ($filter['userKey'] !== 'all') $data->where('userKey', $filter['userKey']);
 
 		if (!empty($filter['duration']) && $filter['duration'] > 0)
 		{

@@ -6,6 +6,7 @@ use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Support\Facades\DB;
 use Request;
+use Config;
 
 use App\Http\Controllers\Adshield\Violations\ViolationController;
 use App\Http\Controllers\Adshield\Violations\ResponseController;
@@ -34,50 +35,11 @@ class TargetedContentController extends BaseController
 		$page = Request::get("page", 0);
 		$limit = Request::get("limit", 10);
 
-		// $data = DB::table('trViolations')
-		// 	->join('trViolationSession', function($join) use($filter) {
-		// 		$join->on('trViolationSession.userKey', '=', 'trViolations.userKey')
-		// 			->on('trViolationSession.ip', '=', 'trViolations.ip')
-		// 			->where('trViolations.userKey', '=', $filter['userKey'])
-		// 			->whereIn('trViolations.violation', [
-		// 				ViolationController::V_UNCLASSIFIED_UA,
-		// 				ViolationController::V_BAD_UA,
-		// 				ViolationController::V_KNOWN_VIOLATOR_UA,
-		// 				ViolationController::V_AGGREGATOR_UA
-		// 			]);
-
-		// 			if (!empty($filter['duration']) && $filter['duration'] > 0)
-		// 			{
-		// 				$duration = $filter['duration'];
-		// 				$join->where("trViolations.createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
-		// 			}
-		// 	})
-		// 	->join('trViolationLog', function($join) use($filter) {
-		// 		$join->on('trViolationLog.sessionId', '=', 'trViolationSession.id')
-		// 			->on('trViolationLog.infoId', '=', 'trViolations.violationInfo')
-		// 			->on('trViolationLog.createdOn', '=', 'trViolations.createdOn')
-		// 			->where('trViolations.userKey', '=', $filter['userKey'])
-		// 			->whereIn('trViolations.violation', [
-		// 				ViolationController::V_UNCLASSIFIED_UA,
-		// 				ViolationController::V_BAD_UA,
-		// 				ViolationController::V_KNOWN_VIOLATOR_UA,
-		// 				ViolationController::V_AGGREGATOR_UA
-		// 			]);
-
-		// 			if (!empty($filter['duration']) && $filter['duration'] > 0)
-		// 			{
-		// 				$duration = $filter['duration'];
-		// 				$join->where("trViolations.createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
-		// 			}
-		// 	})
-		// 	->selectRaw("trViolationLog.url AS path, COUNT(*) AS noRequests")
-		// 	->groupBy('trViolationLog.url')
-		// 	->orderBy('trViolationLog.url', 'asc');
-
 		$data = DB::table("trViolationLog")
 			->join("trViolationSession", function($join) use($filter) {
-				$join->on("trViolationSession.id", "=", "trViolationLog.sessionId")
-					->where("trViolationSession.userKey", $filter['userKey']);
+				$join->on("trViolationSession.id", "=", "trViolationLog.sessionId");
+				if ($filter['userKey'] !== 'all') $join->where("trViolationSession.userKey", $filter['userKey']);
+				
 				if (!empty($filter['duration']) && $filter['duration'] > 0)
 				{
 					$duration = $filter['duration'];
@@ -92,8 +54,12 @@ class TargetedContentController extends BaseController
 						ViolationController::V_BAD_UA,
 						ViolationController::V_BROWSER_INTEGRITY,
 						ViolationController::V_KNOWN_VIOLATOR_AUTO_TOOL,
-					])
-					->where("trViolations.userKey", $filter['userKey']);
+					]);
+				if ($filter['userKey'] !== 'all') $join->where("trViolations.userKey", $filter['userKey']);
+			})
+			->join('userWebsites', function($join) {
+				$join->on('userWebsites.userKey', '=', 'trViolationSession.userKey')
+					->where('userWebsites.accountId', Config::get('user')->accountId);
 			})
 			->selectRaw("trViolationLog.url AS path, COUNT(*) AS noRequests")
 			->groupBy("trViolationLog.url")
@@ -121,12 +87,16 @@ class TargetedContentController extends BaseController
 
 		$responses = DB::table('trViolations')
 			->join('trViolationResponses', function($join) use($filter) {
-				$join->on('trViolationResponses.violationId', '=', 'trViolations.id')
-					->where('userKey', '=', $filter['userKey']);
-					if ($filter['duration'] > 0) {
-						$duration = $filter['duration'];
-						$join->where("trViolationResponses.createdOn", ">", gmdate("Y-m-d H:i:s", strtotime("$duration days ago")));
-					}
+				$join->on('trViolationResponses.violationId', '=', 'trViolations.id');
+				if ($filter['userKey'] !== 'all') $join->where('userKey', '=', $filter['userKey']);
+				if ($filter['duration'] > 0) {
+					$duration = $filter['duration'];
+					$join->where("trViolationResponses.createdOn", ">", gmdate("Y-m-d H:i:s", strtotime("$duration days ago")));
+				}
+			})
+			->join('userWebsites', function($join) {
+				$join->on('userWebsites.userKey', '=', 'trViolations.userKey')
+					->where('userWebsites.accountId', Config::get('user')->accountId);
 			})
 			->selectRaw("responseTaken, COUNT(*) AS total")
 			->groupBy("responseTaken")

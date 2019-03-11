@@ -6,6 +6,7 @@ use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Support\Facades\DB;
 use Request;
+use Config;
 
 use App\Http\Controllers\Adshield\Protection\DummyDataController;
 use App\Http\Controllers\Adshield\LogController;
@@ -47,32 +48,45 @@ class CaptchaRequestController extends BaseController
 		//get total trafic
 		$traffic = DB::table("trViolationLog")
 			->join("trViolationSession", function($join) use($filter) {
-				$join->on("trViolationSession.id", "=", "trViolationLog.sessionId")
-					->where("trViolationSession.userKey", $filter['userKey']);
+				$join->on("trViolationSession.id", "=", "trViolationLog.sessionId");
+				if ($filter['userKey'] !== 'all') $join->where("trViolationSession.userKey", $filter['userKey']);
 
 				if (!empty($filter['duration']) && $filter['duration'] > 0)
 				{
 					$duration = $filter['duration'];
 					$join->where("trViolationLog.createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
 				}
-			})
-			->count();
+			});
+
+		if ($filter['userKey'] == 'all') {
+			$traffic->join('userWebsites', function($join) {
+				$join->on('userWebsites.userKey', '=', 'trViolationSession.userKey')
+					->where('userWebsites.accountId', Config::get('user')->accountId);
+			});
+		}
+		$traffic = $traffic->count();
 
 		//get total captcha served
 
 		$captcha = DB::table('trViolations')
 			->join('trViolationResponses', function($join) use($filter) {
 				$join->on('trViolationResponses.violationId', '=', 'trViolations.id')
-					->where('userKey', '=', $filter['userKey'])
 					->where('trViolationResponses.responseTaken', '=', 'CAPTCHA');
+				if ($filter['userKey'] !== 'all') $join->where('userKey', '=', $filter['userKey']);
 
 				if (!empty($filter['duration']) && $filter['duration'] > 0)
 				{
 					$duration = $filter['duration'];
 					$join->where("trViolationResponses.createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
 				}
-			})
-			->count();
+			});
+		if ($filter['userKey'] == 'all') {
+			$captcha->join('userWebsites', function($join) {
+				$join->on('userWebsites.userKey', '=', 'trViolations.userKey')
+					->where('userWebsites.accountId', Config::get('user')->accountId);
+			});
+		}
+		$captcha = $captcha->count();
 
 
 		$data = [
@@ -87,8 +101,8 @@ class CaptchaRequestController extends BaseController
 	{
 		$records = DB::table("trCaptchaLog")
 			->join("trViolations", function($join) use($filter) {
-				$join->on("trViolations.id", "=", "trCaptchaLog.violationId")
-					->where("trViolations.userKey", $filter['userKey']);
+				$join->on("trViolations.id", "=", "trCaptchaLog.violationId");
+				if ($filter['userKey'] !== 'all') $join->where("trViolations.userKey", $filter['userKey']);
 				if (!empty($filter['duration']) && $filter['duration'] > 0)
 				{
 					$duration = $filter['duration'];
@@ -97,8 +111,15 @@ class CaptchaRequestController extends BaseController
 			})
 			->selectRaw("action, COUNT(*) AS total")
 			->whereIn("action", ['SUCCESS', 'FAILED'])
-			->groupBy("action")
-			->get();
+			->groupBy("action");
+
+		if ($filter['userKey'] == 'all') {
+			$records->join('userWebsites', function($join) {
+				$join->on('userWebsites.userKey', '=', 'trViolations.userKey')
+					->where('userWebsites.accountId', Config::get('user')->accountId);
+			});
+		}
+		$records = $records->get();
 
 
 		$label = [
@@ -135,10 +156,17 @@ class CaptchaRequestController extends BaseController
 		//get traffic count
 		$records['traffic'] = DB::table("trViolationLog")
 			->join("trViolationSession", function($join) use($filter, $duration) {
-				$join->on("trViolationSession.id", "=", "trViolationLog.sessionId")
-					->where("trViolationSession.userKey", $filter['userKey']);
+				$join->on("trViolationSession.id", "=", "trViolationLog.sessionId");
+				if ($filter['userKey'] !== 'all') $join->where("trViolationSession.userKey", $filter['userKey']);
 				if ($duration > 0) $join->where("trViolationLog.createdOn", ">", gmdate("Y-m-d H:i:s", strtotime("$duration DAYS AGO")));
 			});
+
+		if ($filter['userKey'] == 'all') {
+			$records['traffic']->join('userWebsites', function($join) {
+				$join->on('userWebsites.userKey', '=', 'trViolationSession.userKey')
+					->where('userWebsites.accountId', Config::get('user')->accountId);
+			});
+		}
 
 		if ($duration > 0) {
 			$records['traffic']->selectRaw("DATE(trViolationLog.createdOn) AS marker, COUNT(*) AS total");
@@ -151,10 +179,16 @@ class CaptchaRequestController extends BaseController
 		$records['captcha'] = DB::table('trViolations')
 			->join('trViolationResponses', function($join) use($filter, $duration) {
 				$join->on('trViolationResponses.violationId', '=', 'trViolations.id')
-					->where('userKey', '=', $filter['userKey'])
 					->where('trViolationResponses.responseTaken', '=', 'CAPTCHA');
+				if ($filter['userKey'] !== 'all') $join->where('userKey', '=', $filter['userKey']);
 				if ($duration > 0) $join->where("trViolationResponses.createdOn", ">", gmdate("Y-m-d H:i:s", strtotime("$duration DAYS AGO")));
 			});
+		if ($records['captcha'] == 'all') {
+			$traffic->join('userWebsites', function($join) {
+				$join->on('userWebsites.userKey', '=', 'trViolations.userKey')
+					->where('userWebsites.accountId', Config::get('user')->accountId);
+			});
+		}
 
 		if ($duration > 0) {
 			$records['captcha']->selectRaw("DATE(trViolations.createdOn) AS marker, COUNT(*) AS total");
@@ -175,7 +209,14 @@ class CaptchaRequestController extends BaseController
 		];
 		$defaultData = [];
 
-		$site = UserWebsite::where("userKey", $filter['userKey'])->first();
+		if ($filter['userKey'] !== 'all') {
+			$site = UserWebsite::where("userKey", $filter['userKey'])->first();
+		} else {
+			$site = DB::table("userWebsites")
+				->where("accountId", Config::get('user')->accountId)
+				->selectRaw("MIN(createdOn) AS createdOn")
+				->first();
+		}
 
 		if ($duration > 0) {
 			for($a = 0; $a < $duration; $a ++) {

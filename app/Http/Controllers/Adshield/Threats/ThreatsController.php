@@ -6,6 +6,7 @@ use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use DB;
 use Request;
+use Config;
 
 use App\Http\Controllers\Adshield\Protection\DummyDataController;
 
@@ -60,7 +61,6 @@ class ThreatsController extends BaseController
 		];
 
 		$data = DB::table('trViolations')
-			->where('userKey', $filter['userKey'])
 			->selectRaw("violation, COUNT(*) AS total")
 			->groupBy('violation')
 			->whereIn('violation', [
@@ -70,10 +70,19 @@ class ThreatsController extends BaseController
 				ViolationController::V_AGGREGATOR_UA
 			]);
 
+		if ($filter['userKey'] !== 'all') {
+			$data->where('userKey', $filter['userKey']);
+		} else {
+			$data->join('userWebsites', function($join) {
+				$join->on('userWebsites.userKey', '=', 'trViolations.userKey')
+					->where('userWebsites.accountId', Config::get('user')->accountId);
+			});
+		}
+
 		if (!empty($filter['duration']) && $filter['duration'] > 0)
 		{
 			$duration = $filter['duration'];
-			$data->where("createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
+			$data->where("trViolations.createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
 		}
 
 		$data = $data->get();
@@ -91,19 +100,26 @@ class ThreatsController extends BaseController
 	{
 		$data = DB::table("trViolations")
 			->join("trViolationInfo", function($join) use($filter) {
-				$join->on("trViolations.violationInfo", "=", "trViolationInfo.id")
-					->where("trViolations.userKey", $filter['userKey']);
+				$join->on("trViolations.violationInfo", "=", "trViolationInfo.id");
+				if ($filter['userKey'] !== 'all') $join->where("trViolations.userKey", $filter['userKey']);
 
 			})
 			->selectRaw("country, COUNT(*) AS total")
 			->groupBy("country")
 			->orderby("total", "DESC")
 			->take(5);
+
+		if ($filter['userKey'] == 'all') {
+			$data->join('userWebsites', function($join) {
+				$join->on('userWebsites.userKey', '=', 'trViolations.userKey')
+					->where('userWebsites.accountId', Config::get('user')->accountId);
+			});
+		}
 	
 		if (!empty($filter['duration']) && $filter['duration'] > 0)
 		{
 			$duration = $filter['duration'];
-			$data->where("createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
+			$data->where("trViolations.createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
 		}
 
 		$data = $data->get();
@@ -122,7 +138,6 @@ class ThreatsController extends BaseController
 
 		$data = DB::table('trViolations')
 			->join("trViolationResponses", "trViolationResponses.violationId", "=", "trViolations.id")
-			->where('userKey', $filter['userKey'])
 			->selectRaw("violation, COUNT(*) AS total")
 			->groupBy('violation')
 			->whereIn('violation', [
@@ -132,6 +147,15 @@ class ThreatsController extends BaseController
 				ViolationController::V_AGGREGATOR_UA,
 				ViolationController::V_KNOWN_VIOLATOR
 			]);
+
+		if ($filter['userKey'] !== 'all') {
+			$data->where('userKey', $filter['userKey']);
+		} else {
+			$data->join('userWebsites', function($join) {
+				$join->on('userWebsites.userKey', '=', 'trViolations.userKey')
+					->where('userWebsites.accountId', Config::get('user')->accountId);
+			});
+		}
 
 		if (!empty($filter['duration']) && $filter['duration'] > 0)
 		{
@@ -198,7 +222,6 @@ class ThreatsController extends BaseController
 		$data = DB::table('trViolations')
 			->join('trViolationAutoTraffic', function($join) use($filter) {
 				$join->on('trViolationAutoTraffic.violationId', '=', 'trViolations.id')
-					->where('userKey', '=', $filter['userKey'])
 					->whereIn('violation', [
 						ViolationController::V_UNCLASSIFIED_UA,
 						ViolationController::V_BAD_UA,
@@ -209,6 +232,15 @@ class ThreatsController extends BaseController
 			->selectRaw("trafficName AS name, violation AS classification, COUNT(*) AS pageRequests")
 			->groupBy('violation', 'trafficName')
 			->orderBy('trafficName');
+
+		if ($filter['userKey'] !== 'all') {
+			$data->where('userKey', $filter['userKey']);
+		} else {
+			$data->join('userWebsites', function($join) {
+				$join->on('userWebsites.userKey', '=', 'trViolations.userKey')
+					->where('userWebsites.accountId', Config::get('user')->accountId);
+			});
+		}
 
 		if (!empty($filter['duration']) && $filter['duration'] > 0)
 		{
@@ -229,7 +261,6 @@ class ThreatsController extends BaseController
 	{
 
 		$data = DB::table('trViolations')
-			->where('userKey', $filter['userKey'])
 			->selectRaw("violation, COUNT(*) AS total")
 			->groupBy('violation')
 			->whereIn('violation', [
@@ -240,10 +271,19 @@ class ThreatsController extends BaseController
 			])
 			->orderBy("total", "desc");
 
+		if ($filter['userKey'] !== 'all') {
+			$data->where('userKey', $filter['userKey']);
+		} else {
+			$data->join('userWebsites', function($join) {
+				$join->on('userWebsites.userKey', '=', 'trViolations.userKey')
+					->where('userWebsites.accountId', Config::get('user')->accountId);
+			});
+		}
+
 		if (!empty($filter['duration']) && $filter['duration'] > 0)
 		{
 			$duration = $filter['duration'];
-			$data->where("createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
+			$data->where("trViolations.createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
 		}
 
 		$data = $data->get();
@@ -280,10 +320,19 @@ class ThreatsController extends BaseController
 			->groupBy("trafficName")
 			->orderBy("total", "desc");
 
+		if ($filter['userKey'] !== 'all') {
+			$data->where('userKey', $filter['userKey']);
+		} else {
+			$data->join('userWebsites', function($join) {
+				$join->on('userWebsites.userKey', '=', 'trViolations.userKey')
+					->where('userWebsites.accountId', Config::get('user')->accountId);
+			});
+		}
+
 		if (!empty($filter['duration']) && $filter['duration'] > 0)
 		{
 			$duration = $filter['duration'];
-			$data->where("createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
+			$data->where("trViolations.createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
 		}
 
 		$data = $data->get();
@@ -310,12 +359,20 @@ class ThreatsController extends BaseController
 
 		$data = DB::table("trViolations")
 			->join("asIpCachedInfo", function($join) use($filter) {
-				$join->on("asIpCachedInfo.id", "=", "trViolations.ip")
-					->where("trViolations.userKey", "=", $filter['userKey']);
+				$join->on("asIpCachedInfo.id", "=", "trViolations.ip");
 			})
 			->selectRaw("org AS organization, COUNT(*) AS total, country")
 			->groupBy("org", "country")
 			->orderBy("org");
+
+		if ($filter['userKey'] !== 'all') {
+			$data->where('userKey', $filter['userKey']);
+		} else {
+			$data->join('userWebsites', function($join) {
+				$join->on('userWebsites.userKey', '=', 'trViolations.userKey')
+					->where('userWebsites.accountId', Config::get('user')->accountId);
+			});
+		}
 
 		$data = $data->paginate($limit);
 
@@ -347,8 +404,15 @@ class ThreatsController extends BaseController
 						ViolationController::V_KNOWN_VIOLATOR_UA,
 						ViolationController::V_AGGREGATOR_UA
 					]);
-				if (!empty($filter['userKey'])) $join->where("trViolations.userKey", "=", $filter['userKey']);
+				if ($filter['userKey'] !== 'all') $join->where("trViolations.userKey", "=", $filter['userKey']);
 			});
+
+		if ($filter['userKey'] == 'all') {
+			$data->join('userWebsites', function($join) {
+				$join->on('userWebsites.userKey', '=', 'trViolations.userKey')
+					->where('userWebsites.accountId', Config::get('user')->accountId);
+			});
+		}
 
 
 		if ($showTable == "false")

@@ -156,7 +156,7 @@ class ApiStatController extends BaseController
 			$data->whereBetween("date_added", $params);
 		}
 
-		if (!empty($userKey)) {
+		if (!empty($userKey) && $userKey !== 'all') {
 			$data->where("asStat.userKey", $userKey);
 		} else if (!empty($accountId)) {
 			$data->join("userWebsites", function($join) use($accountId) {
@@ -198,7 +198,6 @@ class ApiStatController extends BaseController
 		$accountId=0, $userKey=null, $timeElapsed="3 seconds ago", $returnData=false, $interval=2
 	)
 	{
-		date_default_timezone_set("UTC");
 		$params = [
 			gmdate("Y-m-d H:i:s", strtotime($timeElapsed)),
 			gmdate("Y-m-d H:i:s", time())
@@ -217,7 +216,7 @@ class ApiStatController extends BaseController
 				->groupBy(DB::RAW("d"));
 		}
 
-		if (!empty($userKey)) {
+		if (!empty($userKey) && $userKey !== 'all') {
 			$data->where("trViolationSession.userKey", $userKey);
 		} else if (!empty($accountId)) {
 			$data->join("userWebsites", function($join) use($accountId) {

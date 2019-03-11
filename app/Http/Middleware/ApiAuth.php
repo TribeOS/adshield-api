@@ -41,15 +41,6 @@ class ApiAuth
         }
 
         Config::set('user', $access);
-        // $key = $request->route('apikey');
-        // if (empty($key)) return redirect()->route('ApiError');
-
-        // $auth = DB::table("asConfig")->where("name", "main")->first();
-        // if (empty($auth)) return redirect()->route('ApiError');
-
-        // $auth = json_decode($auth->value);
-        // if ($key !== $auth->frontAccessKey) return redirect()->route('ApiError');
-        //we can validate "key"
 
         return $next($request)
             ->header('Access-Control-Allow-Origin', '*')

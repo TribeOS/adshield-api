@@ -7,6 +7,7 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 use App\Http\Controllers\Adshield\ApiStatController;
+use Config;
 
 date_default_timezone_set("America/New_York");
 
@@ -33,10 +34,17 @@ class IpAccessListController extends BaseController
 		$data = DB::table("trViolationLog")
 			->join("trViolationSession", function($join) use($filter) {
 				$join->on("trViolationLog.sessionId", "=", "trViolationSession.id");
-				if (!empty($filter['userKey'])) $join->where('trViolationSession.userKey', $filter['userKey']);
+				if ($filter['userKey'] !== 'all') $join->where('trViolationSession.userKey', $filter['userKey']);
 			})
 			->join("trViolationIps", "trViolationIps.id", "=", "trViolationSession.ip")
 			->selectRaw("ipStr, trViolationLog.createdOn, trViolationLog.url");
+
+		if ($filter['userKey'] == 'all') {
+			$data->join('userWebsites', function($join) {
+				$join->on('userWebsites.userKey', '=', 'trViolationSession.userKey')
+					->where('userWebsites.accountId', Config::get('user')->accountId);
+			});
+		}
 
 		if (!empty($filter['dateFrom']) && !empty($filter['dateTo']))
 		{

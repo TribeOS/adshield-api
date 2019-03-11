@@ -281,7 +281,7 @@ class AdshieldStatController extends BaseController
 			->select(DB::raw('COUNT(*) AS total'))
 			->where("click_date", ">=", $sinceWhen);
 
-		if (!empty($userKey)) {
+		if (!empty($userKey) && $userKey !== 'all') {
 			$clicks->where("asLogAdClick.userKey", $userKey);
 		} else if (!empty($accountId)) {
 			$clicks->join("userWebsites", function($join) use($accountId) {
