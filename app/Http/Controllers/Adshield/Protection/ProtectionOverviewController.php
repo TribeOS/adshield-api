@@ -43,7 +43,14 @@ class ProtectionOverviewController extends BaseController
 				ViolationController::V_KNOWN_DC
 			]);
 
-		if ($filter['userKey'] !== 'all') $data->where('userKey', $filter['userKey']);
+		if ($filter['userKey'] !== 'all') {
+			$data->where('userKey', $filter['userKey']);
+		} else {
+			$data->join('userWebsites', function($join) {
+				$join->on('userWebsites.userKey', '=', 'trViolations.userKey')
+					->where('userWebsites.accountId', Config::get('user')->accountId);
+			});
+		}
 
 		if (!empty($filter['duration']) && $filter['duration'] > 0)
 		{
