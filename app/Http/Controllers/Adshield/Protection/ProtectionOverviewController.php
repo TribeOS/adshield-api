@@ -48,7 +48,7 @@ class ProtectionOverviewController extends BaseController
 		if (!empty($filter['duration']) && $filter['duration'] > 0)
 		{
 			$duration = $filter['duration'];
-			$data->where("createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
+			$data->where("trViolations.createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
 		}
 
 		$data = $data->get();

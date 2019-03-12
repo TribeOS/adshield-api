@@ -141,9 +141,7 @@ class TrafficSummaryController extends BaseController
 					->on("trViolations.userKey", "=", "trViolationSession.userKey");
 			});
 
-		if ($filter['userKey'] !== 'all') {
-			$data->where('userKey', $filter['userKey']);
-		} else {
+		if ($filter['userKey'] == 'all') {
 			$data->join('userWebsites', function($join) {
 				$join->on('userWebsites.userKey', '=', 'trViolations.userKey')
 					->where('userWebsites.accountId', Config::get('user')->accountId);

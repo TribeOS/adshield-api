@@ -366,12 +366,18 @@ class ThreatsController extends BaseController
 			->orderBy("org");
 
 		if ($filter['userKey'] !== 'all') {
-			$data->where('userKey', $filter['userKey']);
+			$data->where('trViolations.userKey', $filter['userKey']);
 		} else {
 			$data->join('userWebsites', function($join) {
 				$join->on('userWebsites.userKey', '=', 'trViolations.userKey')
 					->where('userWebsites.accountId', Config::get('user')->accountId);
 			});
+		}
+
+		if (!empty($filter['duration']) && $filter['duration'] > 0)
+		{
+			$duration = $filter['duration'];
+			$data->where("trViolations.createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
 		}
 
 		$data = $data->paginate($limit);
@@ -412,6 +418,12 @@ class ThreatsController extends BaseController
 				$join->on('userWebsites.userKey', '=', 'trViolations.userKey')
 					->where('userWebsites.accountId', Config::get('user')->accountId);
 			});
+		}
+
+		if (!empty($filter['duration']) && $filter['duration'] > 0)
+		{
+			$duration = $filter['duration'];
+			$data->where("trViolations.createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
 		}
 
 

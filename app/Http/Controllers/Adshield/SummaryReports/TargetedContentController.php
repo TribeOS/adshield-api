@@ -63,7 +63,7 @@ class TargetedContentController extends BaseController
 		// 	->orderBy("trViolationLog.url");
 		
 		$data = DB::table("trViolations")
-			->join("trViolationInfo", function($join) {
+			->join("trViolationInfo", function($join) use($filter) {
 				$join->on("trViolationInfo.id", "=", "trViolations.violationInfo")
 					->whereIn("trViolations.violation", [
 						ViolationController::V_IS_BOT,
@@ -71,6 +71,11 @@ class TargetedContentController extends BaseController
 						ViolationController::V_BROWSER_INTEGRITY,
 						ViolationController::V_KNOWN_VIOLATOR_AUTO_TOOL,
 					]);
+				if (!empty($filter['duration']) && $filter['duration'] > 0)
+				{
+					$duration = $filter['duration'];
+					$join->where("trViolations.createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
+				}
 			})
 			->selectRaw("trViolationInfo.fullUrl AS path, COUNT(*) AS noRequests")
 			->groupBy("trViolationInfo.fullUrl")
