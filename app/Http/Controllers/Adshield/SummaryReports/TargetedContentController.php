@@ -35,54 +35,55 @@ class TargetedContentController extends BaseController
 		$page = Request::get("page", 0);
 		$limit = Request::get("limit", 10);
 
-		$data = DB::table("trViolationLog")
-			->join("trViolationSession", function($join) use($filter) {
-				$join->on("trViolationSession.id", "=", "trViolationLog.sessionId");
-				if ($filter['userKey'] !== 'all') $join->where("trViolationSession.userKey", $filter['userKey']);
+		// $data = DB::table("trViolationLog")
+		// 	->join("trViolationSession", function($join) use($filter) {
+		// 		$join->on("trViolationSession.id", "=", "trViolationLog.sessionId");
+		// 		if ($filter['userKey'] !== 'all') $join->where("trViolationSession.userKey", $filter['userKey']);
 				
-				if (!empty($filter['duration']) && $filter['duration'] > 0)
-				{
-					$duration = $filter['duration'];
-					$join->where("trViolationLog.createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
-				}
-			})
-			->join("trViolations", function($join) use($filter) {
-				$join->on("trViolations.ip", "=", "trViolationSession.ip")
-					// ->on("trViolationLog.infoId", "=", "trViolations.violationInfo")
-					->on("trViolations.createdOn", "=", "trViolationLog.createdOn")
-					->whereIn("trViolations.violation", [
-						ViolationController::V_IS_BOT,
-						ViolationController::V_BAD_UA,
-						ViolationController::V_BROWSER_INTEGRITY,
-						ViolationController::V_KNOWN_VIOLATOR_AUTO_TOOL,
-					]);
-				if ($filter['userKey'] !== 'all') $join->where("trViolations.userKey", $filter['userKey']);
-			})
-			->selectRaw("trViolationLog.url AS path, COUNT(*) AS noRequests")
-			->groupBy("trViolationLog.url")
-			->orderBy("trViolationLog.url");
-		
-		// $data = DB::table("trViolations")
-		// 	->join("trViolationInfo", function($join) {
-		// 		$join->on("trViolationInfo.id", "=", "trViolations.violationInfo")
+		// 		if (!empty($filter['duration']) && $filter['duration'] > 0)
+		// 		{
+		// 			$duration = $filter['duration'];
+		// 			$join->where("trViolationLog.createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
+		// 		}
+		// 	})
+		// 	->join("trViolations", function($join) use($filter) {
+		// 		$join->on("trViolations.ip", "=", "trViolationSession.ip")
+		// 			// ->on("trViolationLog.infoId", "=", "trViolations.violationInfo")
+		// 			->on("trViolations.createdOn", "=", "trViolationLog.createdOn")
 		// 			->whereIn("trViolations.violation", [
 		// 				ViolationController::V_IS_BOT,
 		// 				ViolationController::V_BAD_UA,
 		// 				ViolationController::V_BROWSER_INTEGRITY,
 		// 				ViolationController::V_KNOWN_VIOLATOR_AUTO_TOOL,
 		// 			]);
+		// 		if ($filter['userKey'] !== 'all') $join->where("trViolations.userKey", $filter['userKey']);
 		// 	})
-		// 	->selectRaw("trViolationInfo.fullUrl AS path, COUNT(*) AS noRequests")
-		// 	->groupBy("trViolationInfo.fullUrl")
-		// 	->orderBy("trViolationInfo.fullUrl");
+		// 	->selectRaw("trViolationLog.url AS path, COUNT(*) AS noRequests")
+		// 	->groupBy("trViolationLog.url")
+		// 	->orderBy("trViolationLog.url");
+		
+		$data = DB::table("trViolations")
+			->join("trViolationInfo", function($join) {
+				$join->on("trViolationInfo.id", "=", "trViolations.violationInfo")
+					->whereIn("trViolations.violation", [
+						ViolationController::V_IS_BOT,
+						ViolationController::V_BAD_UA,
+						ViolationController::V_BROWSER_INTEGRITY,
+						ViolationController::V_KNOWN_VIOLATOR_AUTO_TOOL,
+					]);
+			})
+			->selectRaw("trViolationInfo.fullUrl AS path, COUNT(*) AS noRequests")
+			->groupBy("trViolationInfo.fullUrl")
+			->orderBy("trViolationInfo.fullUrl");
 
-		if ($filter['userKey'] == 'all') {
+		if ($filter['userKey'] !== 'all') {
+			$data->where("trViolations.userKey", $filter['userKey']);
+		} else {
 			$data->join('userWebsites', function($join) {
 				$join->on('userWebsites.userKey', '=', 'trViolations.userKey')
 					->where('userWebsites.accountId', Config::get('user')->accountId);
 			});
 		} 
-		//389
 
 		$data = $data->paginate($limit);
 
