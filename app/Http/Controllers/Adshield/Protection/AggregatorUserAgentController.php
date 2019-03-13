@@ -80,6 +80,12 @@ class AggregatorUserAgentController extends BaseController
 			])
 			->groupBy("violation");
 
+		if (!empty($filter['duration']) && $filter['duration'] > 0)
+		{
+			$duration = $filter['duration'];
+			$violation->where("trViolations.createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
+		}
+
 		if ($filter['userKey'] !== 'all') {
 			$violation->where('userKey', $filter['userKey']);
 		} else {

@@ -6,6 +6,7 @@ use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
+use Config;
 
 use App\Http\Controllers\Adshield\Violations\ViolationController;
 use App\Http\Controllers\Adshield\LogController;
@@ -50,6 +51,12 @@ class ProtectionOverviewController extends BaseController
 				$join->on('userWebsites.userKey', '=', 'trViolations.userKey')
 					->where('userWebsites.accountId', Config::get('user')->accountId);
 			});
+		}
+
+		if (!empty($filter['duration']) && $filter['duration'] > 0)
+		{
+			$duration = $filter['duration'];
+			$data->where("trViolations.createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
 		}
 
 		if (!empty($filter['duration']) && $filter['duration'] > 0)

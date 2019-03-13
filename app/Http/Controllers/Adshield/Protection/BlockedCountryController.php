@@ -79,6 +79,7 @@ class BlockedCountryController extends BaseController
 				ViolationController::V_KNOWN_VIOLATOR_UA,
 			])
 			->groupBy("violation");
+
 		if ($filter['userKey'] !== 'all') {
 			$violation->where('userKey', $filter['userKey']);
 		} else {
@@ -86,6 +87,12 @@ class BlockedCountryController extends BaseController
 				$join->on('userWebsites.userKey', '=', 'trViolations.userKey')
 					->where('userWebsites.accountId', Config::get('user')->accountId);
 			});
+		}
+
+		if (!empty($filter['duration']) && $filter['duration'] > 0)
+		{
+			$duration = $filter['duration'];
+			$violation->where("trViolations.createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
 		}
 
 		$violation = $violation->get();

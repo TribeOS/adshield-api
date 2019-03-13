@@ -77,6 +77,7 @@ class KnownViolatorToolController extends BaseController
 				ViolationController::V_KNOWN_VIOLATOR_UA
 			])
 			->groupBy("violation");
+
 		if ($filter['userKey'] !== 'all') {
 			$violation->where('userKey', $filter['userKey']);
 		} else {
@@ -85,6 +86,13 @@ class KnownViolatorToolController extends BaseController
 					->where('userWebsites.accountId', Config::get('user')->accountId);
 			});
 		}
+
+		if (!empty($filter['duration']) && $filter['duration'] > 0)
+		{
+			$duration = $filter['duration'];
+			$violation->where("trViolations.createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
+		}
+
 		$violation = $violation->get();
 
 		$info = IpInfoController::GetIpInfo($ip);
