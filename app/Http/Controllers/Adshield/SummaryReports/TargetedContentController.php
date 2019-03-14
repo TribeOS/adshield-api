@@ -62,9 +62,14 @@ class TargetedContentController extends BaseController
 		// 	->groupBy("trViolationLog.url")
 		// 	->orderBy("trViolationLog.url");
 		
+
+		//get all violations filtered via selected types
+		//get corresponding session for that violation based on IP of the user
+		//get corresponding log for that session that matches the date/time of the violation
+		//So... we're getting log that matches the violation's user IP and date/time of the event.
 		$data = DB::table("trViolations")
-			->join("trViolationInfo", function($join) use($filter) {
-				$join->on("trViolationInfo.id", "=", "trViolations.violationInfo")
+			->join("trViolationSession", function($join) use($filter) {
+				$join->on("trViolationSession.ip", "=", "trViolations.ip")
 					->whereIn("trViolations.violation", [
 						ViolationController::V_IS_BOT,
 						ViolationController::V_BAD_UA,
@@ -77,9 +82,18 @@ class TargetedContentController extends BaseController
 					$join->where("trViolations.createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
 				}
 			})
-			->selectRaw("trViolationInfo.fullUrl AS path, COUNT(*) AS noRequests")
-			->groupBy("trViolationInfo.fullUrl")
-			->orderBy("trViolationInfo.fullUrl");
+			->join("trViolationLog", function($join) use ($filter) {
+				$join->on("trViolationLog.sessionId", "=", "trViolationSession.id")
+					->on("trViolationLog.createdOn", "=", "trViolations.createdOn");
+				if (!empty($filter['duration']) && $filter['duration'] > 0)
+				{
+					$duration = $filter['duration'];
+					$join->where("trViolationLog.createdOn", ">=", gmdate("Y-m-d 0:0:0", strtotime("$duration DAYS AGO")));
+				}	
+			})
+			->selectRaw("trViolationLog.url AS path, COUNT(*) AS noRequests")
+			->groupBy("trViolationLog.url")
+			->orderBy("trViolationLog.url");
 
 		if ($filter['userKey'] !== 'all') {
 			$data->where("trViolations.userKey", $filter['userKey']);

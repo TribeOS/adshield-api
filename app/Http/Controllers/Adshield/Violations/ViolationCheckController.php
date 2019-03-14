@@ -50,7 +50,7 @@ class ViolationCheckController extends ViolationController {
 		//start the session (this is used on pages per minute and pages per session functions/checks and logs)
 		ViolationPagesPerSessionController::StartSession($ip['binary'], $ip['string'], $userKey, $this->config);
 		//try to Log traffic here as well for monitoring pages per minute and pages per session?
-		$this->LogRequest($ip['binary'], $ip['string'], $userKey, $info);
+		$log = $this->LogRequest($ip['binary'], $ip['string'], $userKey, $info);
 		//=======================
 
 		$violations = [];
@@ -62,6 +62,9 @@ class ViolationCheckController extends ViolationController {
 			echo $e->getMessage();
 			die();
 		}
+
+		//map violations to the current log
+		// $this->mapViolationToLog($violations, $log);
 
 		return $this->Response($userKey, $violations, $info);
 

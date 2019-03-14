@@ -343,17 +343,22 @@ class ViolationController extends BaseController {
 		if (empty($website)) die($msg);
 	}
 
+	/**
+	 * creates a new request/traffic Log record
+	 * @return ViolationRequestLog object
+	 */
 	protected function LogRequest($ipBinary, $ipStr, $userKey, $data)
 	{
 		$infoId = $this->getInfoId($data);
 		$log = new ViolationRequestLog();
-		$log->createdOn = gmdate("Y-m-d H:i:s");
+		$log->createdOn = $this->currentTime;
 		$log->sessionId = self::GetSession();
 		$log->infoId = $infoId;
 		$log->url = isset($data['visitUrl']) ? $data['visitUrl'] : '';
 		$log->save();
 		//trigger new logged data
 		VisualizerController::BroadcastStats($userKey, $log->createdOn);
+		return $log;
 	}
 
 	/**
@@ -374,7 +379,13 @@ class ViolationController extends BaseController {
 		return session(self::SESSION_ID_NAME);
 	}
 
+	/**
+	 * creates a mapping of id's for Violations with their corresponding Request record
+	 */
+	// protected function mapViolationToLog($log, $violations)
+	// {
 
+	// }
 	
 
 }
