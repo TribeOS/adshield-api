@@ -97,6 +97,12 @@ class TargetedContentController extends BaseController
 				$join->on('userWebsites.userKey', '=', 'trViolations.userKey')
 					->where('userWebsites.accountId', Config::get('user')->accountId);
 			});
+			// $webs = [];
+			// $websites = DB::table("userWebsites")
+			// 	->selectRaw("userKey")->where("accountId", Config::get('user')->accountId)
+			// 	->Get();
+			// foreach($websites as $w) $webs[] = $w->userKey;
+			// $data->whereIn("trViolations.userKey", $webs);
 		} 
 
 		$data = $data->paginate($limit);
