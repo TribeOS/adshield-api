@@ -382,10 +382,19 @@ class ViolationController extends BaseController {
 	/**
 	 * creates a mapping of id's for Violations with their corresponding Request record
 	 */
-	// protected function mapViolationToLog($log, $violations)
-	// {
-
-	// }
+	protected function mapViolationToLog($violations, $log)
+	{
+		$insert = [];
+		foreach($violations as $v)
+		{
+			$insert[] = [
+				'violationId' => $v,
+				'logId' => $log->id,
+			];	
+		}
+		DB::table("trMapViolationToLog")
+			->insert($insert);
+	}
 	
 
 }

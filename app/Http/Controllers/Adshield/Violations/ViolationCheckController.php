@@ -64,7 +64,7 @@ class ViolationCheckController extends ViolationController {
 		}
 
 		//map violations to the current log
-		// $this->mapViolationToLog($violations, $log);
+		$this->mapViolationToLog($violations, $log);
 
 		return $this->Response($userKey, $violations, $info);
 
