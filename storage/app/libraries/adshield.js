@@ -687,17 +687,18 @@ AdShield = function()
                     script.setAttribute(scripts[i].attributes[n].name, scripts[i].attributes[n].value);
                 }
                 script.innerHTML = scripts[i].innerHTML;
-                try {
-                    if (intoContainer) {
-                        document.getElementById(container).appendChild(script);
-                    } else {
-                        document.body.appendChild(script);
-                    }
-                } catch (e) {
-                    console.log(e);
-                }
             } else {
-                document.body.appendChild(scripts[i]);
+                script = scripts[i];
+            }
+
+            try {
+                if (intoContainer) {
+                    document.getElementById(container).appendChild(script);
+                } else {
+                    document.body.appendChild(script);
+                }
+            } catch (e) {
+                console.log(e);
             }
         }
     }
