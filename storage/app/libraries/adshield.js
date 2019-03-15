@@ -677,23 +677,27 @@ AdShield = function()
         //otherwise, if "src" is included the code doesn't run.
         var h = document.createElement("div");
         h.innerHTML = code;
-        var scripts = h.getElementsByTagName("script");
+        var scripts = h.getElementsByTagName("*");
         for(var i = 0; i < scripts.length; i++)
         {
-            var script = document.createElement("script");
-            //set attributes
-            for(var n =0; n < scripts[i].attributes.length; n ++) {
-                script.setAttribute(scripts[i].attributes[n].name, scripts[i].attributes[n].value);
-            }
-            script.innerHTML = scripts[i].innerHTML;
-            try {
-                if (intoContainer) {
-                    document.getElementById(container).appendChild(script);
-                } else {
-                    document.body.appendChild(script);
+            if (scripts[i].tagName == "SCRIPT") {
+                var script = document.createElement("script");
+                //set attributes
+                for(var n =0; n < scripts[i].attributes.length; n ++) {
+                    script.setAttribute(scripts[i].attributes[n].name, scripts[i].attributes[n].value);
                 }
-            } catch (e) {
-                console.log(e);
+                script.innerHTML = scripts[i].innerHTML;
+                try {
+                    if (intoContainer) {
+                        document.getElementById(container).appendChild(script);
+                    } else {
+                        document.body.appendChild(script);
+                    }
+                } catch (e) {
+                    console.log(e);
+                }
+            } else {
+                document.body.appendChild(scripts[i]);
             }
         }
     }
