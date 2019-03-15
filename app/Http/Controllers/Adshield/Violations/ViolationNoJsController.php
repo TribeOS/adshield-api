@@ -33,12 +33,14 @@ class ViolationNoJsController extends ViolationController {
 		}
 
 		ViolationPagesPerSessionController::StartSession($ip['binary'], $ip['string'], $userKey, $this->config);
-		$this->LogRequest($ip['binary'], $ip['string'], $userKey, $info);
+		$log = $this->LogRequest($ip['binary'], $ip['string'], $userKey, $info);
 
 		//save user info and violation
 		try {
-			$this->logViolation($userKey, $ip['binary'], $ip['string'], ViolationController::V_NO_JS, $info);
+			$vilations = $this->logViolation($userKey, $ip['binary'], $ip['string'], ViolationController::V_NO_JS, $info);
 		} catch (\Exception $e) { }
+
+		$this->mapViolationToLog($violations, $log);
 
 		return response('', 200)
 			->header('Cache-Control', 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0');
