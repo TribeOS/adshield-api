@@ -20,7 +20,7 @@ class AdshieldController extends BaseController
 	 */
 	public function ImportAdshield()
 	{
-		header("Content-Type: application/javascript");
+		// header("Content-Type: application/javascript");
 		$shieldType = 3; //default to use the "guess estimate" function to capture clicks on ad
 
 		$jsContent = Storage::get('libraries/adshield.min.js');
@@ -36,7 +36,7 @@ class AdshieldController extends BaseController
 		$jsContent .= "\nAdShield.urls = " . json_encode($urls) . ';';
 		$jsContent .= "AdShield.Init();";
 		
-		return $jsContent;
+		return response($jsContent)->header("Content-Type", "application/javascript");
 	}
 
 }
