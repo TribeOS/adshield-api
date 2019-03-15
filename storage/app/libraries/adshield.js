@@ -680,8 +680,9 @@ AdShield = function()
         var scripts = h.getElementsByTagName("*");
         for(var i = 0; i < scripts.length; i++)
         {
+            var script = "";
             if (scripts[i].tagName == "SCRIPT") {
-                var script = document.createElement("script");
+                script = document.createElement("script");
                 //set attributes
                 for(var n =0; n < scripts[i].attributes.length; n ++) {
                     script.setAttribute(scripts[i].attributes[n].name, scripts[i].attributes[n].value);
