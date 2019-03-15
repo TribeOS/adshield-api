@@ -588,7 +588,7 @@ AdShield = function()
         } catch (e) {}
 
         self.httpPost(self.urls.vlog + "/" + self.UserKey, arg, function(response) {
-            if (typeof response.disabled) {
+            if (typeof response.disabled !== "undefined") {
                 console.log("User website has been disabled from AdShield. Plese contact your admin for more information.");
                 return false;
             }
