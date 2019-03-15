@@ -730,6 +730,12 @@ AdShield = function()
         f.style.padding = "20px";
         document.body.appendChild(f);
 
+        //title
+        var title = document.createElement("p");
+        title.innerHTML = "Please complete the captcha below to access this page.";
+        title.style.fontFamily = "Arial";
+        f.appendChild(title);
+
         //captcha holder
         var ch = document.createElement("div");
         f.appendChild(ch);
