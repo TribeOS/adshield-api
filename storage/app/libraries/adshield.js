@@ -680,17 +680,12 @@ AdShield = function()
         var scripts = h.getElementsByTagName("*");
         for(var i = 0; i < scripts.length; i++)
         {
-            var script = "";
-            if (scripts[i].tagName == "SCRIPT") {
-                script = document.createElement("script");
-                //set attributes
-                for(var n =0; n < scripts[i].attributes.length; n ++) {
-                    script.setAttribute(scripts[i].attributes[n].name, scripts[i].attributes[n].value);
-                }
-                script.innerHTML = scripts[i].innerHTML;
-            } else {
-                script = scripts[i];
+            var script = document.createElement(scripts[i].tagName);
+            //set attributes
+            for(var n =0; n < scripts[i].attributes.length; n ++) {
+                script.setAttribute(scripts[i].attributes[n].name, scripts[i].attributes[n].value);
             }
+            script.innerHTML = scripts[i].innerHTML;
 
             try {
                 if (intoContainer) {
