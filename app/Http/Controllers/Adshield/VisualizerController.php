@@ -156,8 +156,7 @@ class VisualizerController extends BaseController
 	{
 		$data = ['userKey' => $userKey, 'accountId' => $accountId];
 
-		$dateTime = new DateTime($time);
-		$dateTime = $dateTime->format("Y-m-d H:i:s");
+		$dateTime = $time;
 		$data['stat'] = $this->GetStats($accountId, $userKey, $dateTime, $dateTime);
 		$data['transactions'] = [
 			'today' => 1, 'week' => 1, 'month' => 1
