@@ -83,9 +83,9 @@ class VisualizerController extends BaseController
 			gmdate("Y-m-d H:i:s"));
 
 		$data['transactions'] = [
-			'today' => $this->GetAdshieldTransactionSince($accountId, $userKey, gmdate("Y-m-d H:i:s", strtotime('midnight today'))),
-			'week' => $this->GetAdshieldTransactionSince($accountId, $userKey, gmdate("Y-m-d H:i:s", strtotime('midnight this week'))),
-			'month' => $this->GetAdshieldTransactionSince($accountId, $userKey, gmdate("Y-m-1 H:i:s", strtotime('midnight this month'))),
+			'today' => $this->GetAdshieldTransactionSince($accountId, $userKey, gmdate("Y-m-d 00:00:00", strtotime('midnight today'))),
+			'week' => $this->GetAdshieldTransactionSince($accountId, $userKey, gmdate("Y-m-d 00:00:00", strtotime('midnight this week'))),
+			'month' => $this->GetAdshieldTransactionSince($accountId, $userKey, gmdate("Y-m-1 00:00:00", strtotime("this month"))),
 		];
 
 		//use transactions.month as "directAccess value"

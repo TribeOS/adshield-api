@@ -160,8 +160,8 @@ class ApiStatController extends BaseController
 			$data->where("asStat.userKey", $userKey);
 		} else if (!empty($accountId)) {
 			$data->join("userWebsites", function($join) use($accountId) {
-				$join->where("userWebsites.accountId", "=", $accountId)
-					->on("userWebsites.userKey", "=", "asStat.userKey");
+				$join->on("userWebsites.userKey", "=", "asStat.userKey")
+					->where("userWebsites.accountId", "=", $accountId);
 			});
 		}
 
