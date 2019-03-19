@@ -158,6 +158,13 @@ class VisualizerController extends BaseController
 
 		$dateTime = $time;
 		$data['stat'] = $this->GetStats($accountId, $userKey, $dateTime, $dateTime);
+		$data['stat'][4]['count'] = 1;
+		for($a = 0; $a < count($data['stat']) - 2; $a ++)
+		{
+			$data['stat'][4]['count'] -= $data['stat'][$a]['count'];
+			if ($data['stat'][4]['count'] < 0) $data['stat'][4]['count'] = 0;
+		}
+
 		$data['transactions'] = [
 			'today' => 1, 'week' => 1, 'month' => 1
 		];
