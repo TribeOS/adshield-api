@@ -75,6 +75,8 @@ class VisualizerController extends BaseController
 	private function GetAllStatsVisualizer($accountId, $userKey=null, $time, $initCall=false)
 	{
 
+		if (!$initCall) return $this->getStatsSince($accountId, $userKey, $time);
+
 		$data = ['userKey' => $userKey, 'accountId' => $accountId];
 		$data['stat'] = $this->GetStats($accountId, $userKey,
 			gmdate("Y-m-1 H:i:s", strtotime("midnight this month")),
@@ -143,6 +145,29 @@ class VisualizerController extends BaseController
 	{
 		$stats = AdshieldStatController::GetPreviousTicks($userKey);
 		return $stats;
+	}
+
+
+
+	/**
+	 * fetch all live stats
+	 */
+	private function getStatsSince($accountId, $userKey, $time)
+	{
+		$data = ['userKey' => $userKey, 'accountId' => $accountId];
+
+		$dateTime = new DateTime($time);
+		$dateTime = $dateTime->format("Y-m-d H:i:s");
+		$data['stat'] = $this->GetStats($accountId, $userKey, $dateTime, $dateTime);
+		$data['transactions'] = [
+			'today' => 1, 'week' => 1, 'month' => 1
+		];
+		$data['transactionsInterval'] = 1; //$this->GetAdshieldTransactionForPastTime($accountId, $userKey, 
+		$click = $this->GetTotalAdClicks($accountId, $userKey, $dateTime);
+		$data['adClicks'] = [
+			'today' => $click, 'week' => $click, 'month' => $click
+		];
+		return $data;
 	}
 
 }
