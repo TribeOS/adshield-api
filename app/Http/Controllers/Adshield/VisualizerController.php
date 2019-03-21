@@ -166,7 +166,14 @@ class VisualizerController extends BaseController
 		///only click happened. no other transactions/requests
 		if ($justClick)
 		{
-			$data['stat'] = [];
+			//just pass 0 value data structure so frontend won't break
+			$data['stat'] = [
+				['status' => 0, 'title' => 'Unsafe', 'count' => 0], //unsafe
+				['status' => 1, 'title' => 'Safe', 'count' => 0], //safe
+				['status' => 5, 'title' => 'IFramed', 'count' => 0],	//iframe
+				['status' => 6, 'title' => 'Bot', 'count' => 0],	//bot
+				['status' => 7, 'title' => 'Direct Access', 'count' => 0]  //direct access (no referrer)
+			];
 			$click = $this->GetTotalAdClicks($accountId, $userKey, $dateTime);
 			$data['transactionsInterval'] = 0;
 			$data['transactions'] = [
