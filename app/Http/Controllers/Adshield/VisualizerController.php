@@ -49,6 +49,12 @@ class VisualizerController extends BaseController
 			->header('Content-Type', 'application/vnd.api+json');
 	}
 
+
+	/**
+	 * @param String $userKey UserKey of the requested website
+	 * @param Date/Time $time Timestamp of the event
+	 * @param Boolean $justClick Indicate if this event occured due to ad click only.
+	 */
 	public static function BroadcastStats($userKey, $time, $justClick=false)
 	{
 		$account = UserWebsite::where('userKey', $userKey)->first();
@@ -182,7 +188,7 @@ class VisualizerController extends BaseController
 
 			$click = 0;
 		}
-		
+
 		$data['adClicks'] = [
 			'today' => $click, 'week' => $click, 'month' => $click
 		];

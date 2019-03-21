@@ -38,7 +38,7 @@ class AdshieldStatController extends BaseController
 			$result = $this->AddClickLog($user_agent, $referrer_url, $target_url, $sub_source, $ad_type, $status, $userKey);
 
 			//trigger adshield stat event ($reslut[2] contains the date/time of the click record)
-			VisualizerController::BroadcastStats($userKey, $result[2]);
+			VisualizerController::BroadcastStats($userKey, $result[2], true);
 
 			return response()->json(['id'=>$result[0], 'status'=>$result[1]]);
 		}
