@@ -10,6 +10,8 @@ use Config;
 
 use App\Http\Controllers\Adshield\Violations\ViolationController;
 use App\Http\Controllers\Adshield\LogController;
+use App\Http\Controllers\Adshield\Settings\UserWebsitesController;
+
 
 
 class KnownViolatorUserAgentController extends BaseController
@@ -37,6 +39,7 @@ class KnownViolatorUserAgentController extends BaseController
 		} else {
 			$data->join('userWebsites', function($join) {
 				$join->on('userWebsites.userKey', '=', 'trViolations.userKey')
+					->where("userWebsites.status", UserWebsitesController::ST_ACTIVE)
 					->where('userWebsites.accountId', Config::get('user')->accountId);
 			});
 		}
@@ -82,6 +85,7 @@ class KnownViolatorUserAgentController extends BaseController
 		} else {
 			$violation->join('userWebsites', function($join) {
 				$join->on('userWebsites.userKey', '=', 'trViolations.userKey')
+					->where("userWebsites.status", UserWebsitesController::ST_ACTIVE)
 					->where('userWebsites.accountId', Config::get('user')->accountId);
 			});
 		}

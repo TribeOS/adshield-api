@@ -161,6 +161,7 @@ class ApiStatController extends BaseController
 		} else if (!empty($accountId)) {
 			$data->join("userWebsites", function($join) use($accountId) {
 				$join->on("userWebsites.userKey", "=", "asStat.userKey")
+					->where("userWebsites.status", UserWebsitesController::ST_ACTIVE)
 					->where("userWebsites.accountId", "=", $accountId);
 			});
 		}
@@ -221,6 +222,7 @@ class ApiStatController extends BaseController
 		} else if (!empty($accountId)) {
 			$data->join("userWebsites", function($join) use($accountId) {
 				$join->on("trViolationSession.userKey", "=", "userWebsites.userKey")
+					->where("userWebsites.status", UserWebsitesController::ST_ACTIVE)
 					->where("userWebsites.accountId", "=", $accountId);
 			});
 		}
@@ -271,6 +273,7 @@ class ApiStatController extends BaseController
 		if (!empty($accountId)) {
 			$data->join("userWebsites", function($join) use($accountId) {
 				$join->on("trViolationSession.userKey", "=", "userWebsites.userKey")
+					->where("userWebsites.status", UserWebsitesController::ST_ACTIVE)
 					->where("userWebsites.accountId", "=", $accountId);
 			});
 		}

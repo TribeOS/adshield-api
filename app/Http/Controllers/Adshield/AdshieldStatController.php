@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 
+use App\Http\Controllers\Adshield\Settings\UserWebsitesController;
+
 /**
  * handles importing of installing/inserting of Adshield(TribeOS)
  * to third party websites
@@ -286,6 +288,7 @@ class AdshieldStatController extends BaseController
 		} else if (!empty($accountId)) {
 			$clicks->join("userWebsites", function($join) use($accountId) {
 				$join->on("asLogAdClick.userKey", "=", "userWebsites.userKey")
+					->where("userWebsites.status", UserWebsitesController::ST_ACTIVE)
 					->where("userWebsites.accountId", "=", $accountId);
 			});
 		}

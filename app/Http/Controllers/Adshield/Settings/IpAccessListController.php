@@ -8,8 +8,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 use App\Http\Controllers\Adshield\ApiStatController;
 use Config;
-
-date_default_timezone_set("America/New_York");
+use App\Http\Controllers\Adshield\Settings\UserWebsitesController;
+use App\Http\Controllers\Adshield\Settings\UserWebsitesController;
 
 
 class IpAccessListController extends BaseController
@@ -42,6 +42,7 @@ class IpAccessListController extends BaseController
 		if ($filter['userKey'] == 'all') {
 			$data->join('userWebsites', function($join) {
 				$join->on('userWebsites.userKey', '=', 'trViolationSession.userKey')
+					->where("userWebsites.status", UserWebsitesController::ST_ACTIVE)
 					->where('userWebsites.accountId', Config::get('user')->accountId);
 			});
 		}
@@ -51,7 +52,7 @@ class IpAccessListController extends BaseController
 			// $data->whereBetween("asStat.date_added", [
 			$data->whereBetween("trViolationLog.createdOn", [
 				gmdate("Y-m-d 00:00:00", strtotime($filter['dateFrom'])), 
-				date("Y-m-d 23:59:59", strtotime($filter['dateTo']))
+				gmdate("Y-m-d 23:59:59", strtotime($filter['dateTo']))
 			]);
 		}
 

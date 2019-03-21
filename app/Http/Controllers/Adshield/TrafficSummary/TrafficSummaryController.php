@@ -12,6 +12,7 @@ use App\Http\Controllers\Adshield\Protection\DummyDataController;
 use App\Model\UserWebsite;
 use App\Http\Controllers\Adshield\Violations\ViolationController;
 use App\Http\Controllers\Adshield\Violations\ResponseController;
+use App\Http\Controllers\Adshield\Settings\UserWebsitesController;
 
 /**
  * handle the backend for the page "traffic-summary"
@@ -67,6 +68,7 @@ class TrafficSummaryController extends BaseController
 		} else {
 			$data->join('userWebsites', function($join) {
 				$join->on('userWebsites.userKey', '=', 'trViolations.userKey')
+					->where("userWebsites.status", UserWebsitesController::ST_ACTIVE)
 					->where('userWebsites.accountId', Config::get('user')->accountId);
 			});
 		}
@@ -104,6 +106,7 @@ class TrafficSummaryController extends BaseController
 		} else {
 			$data->join('userWebsites', function($join) {
 				$join->on('userWebsites.userKey', '=', 'trViolations.userKey')
+					->where("userWebsites.status", UserWebsitesController::ST_ACTIVE)
 					->where('userWebsites.accountId', Config::get('user')->accountId);
 			});
 		}
@@ -144,6 +147,7 @@ class TrafficSummaryController extends BaseController
 		if ($filter['userKey'] == 'all') {
 			$data->join('userWebsites', function($join) {
 				$join->on('userWebsites.userKey', '=', 'trViolations.userKey')
+					->where("userWebsites.status", UserWebsitesController::ST_ACTIVE)
 					->where('userWebsites.accountId', Config::get('user')->accountId);
 			});
 		}

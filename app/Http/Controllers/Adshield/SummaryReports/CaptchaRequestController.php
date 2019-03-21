@@ -12,6 +12,8 @@ use App\Http\Controllers\Adshield\Protection\DummyDataController;
 use App\Http\Controllers\Adshield\LogController;
 
 use App\Model\UserWebsite;
+use App\Http\Controllers\Adshield\Settings\UserWebsitesController;
+
 
 
 class CaptchaRequestController extends BaseController
@@ -61,6 +63,7 @@ class CaptchaRequestController extends BaseController
 		if ($filter['userKey'] == 'all') {
 			$traffic->join('userWebsites', function($join) {
 				$join->on('userWebsites.userKey', '=', 'trViolationSession.userKey')
+					->where("userWebsites.status", UserWebsitesController::ST_ACTIVE)
 					->where('userWebsites.accountId', Config::get('user')->accountId);
 			});
 		}
@@ -83,6 +86,7 @@ class CaptchaRequestController extends BaseController
 		if ($filter['userKey'] == 'all') {
 			$captcha->join('userWebsites', function($join) {
 				$join->on('userWebsites.userKey', '=', 'trViolations.userKey')
+					->where("userWebsites.status", UserWebsitesController::ST_ACTIVE)
 					->where('userWebsites.accountId', Config::get('user')->accountId);
 			});
 		}
@@ -116,6 +120,7 @@ class CaptchaRequestController extends BaseController
 		if ($filter['userKey'] == 'all') {
 			$records->join('userWebsites', function($join) {
 				$join->on('userWebsites.userKey', '=', 'trViolations.userKey')
+					->where("userWebsites.status", UserWebsitesController::ST_ACTIVE)
 					->where('userWebsites.accountId', Config::get('user')->accountId);
 			});
 		}
@@ -164,6 +169,7 @@ class CaptchaRequestController extends BaseController
 		if ($filter['userKey'] == 'all') {
 			$records['traffic']->join('userWebsites', function($join) {
 				$join->on('userWebsites.userKey', '=', 'trViolationSession.userKey')
+					->where("userWebsites.status", UserWebsitesController::ST_ACTIVE)
 					->where('userWebsites.accountId', Config::get('user')->accountId);
 			});
 		}
@@ -186,6 +192,7 @@ class CaptchaRequestController extends BaseController
 		if ($records['captcha'] == 'all') {
 			$traffic->join('userWebsites', function($join) {
 				$join->on('userWebsites.userKey', '=', 'trViolations.userKey')
+					->where("userWebsites.status", UserWebsitesController::ST_ACTIVE)
 					->where('userWebsites.accountId', Config::get('user')->accountId);
 			});
 		}
