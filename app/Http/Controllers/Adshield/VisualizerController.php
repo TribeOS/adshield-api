@@ -170,17 +170,7 @@ class VisualizerController extends BaseController
 		];
 		$data['transactionsInterval'] = 1; //$this->GetAdshieldTransactionForPastTime($accountId, $userKey, 
 
-		//get lastDateTime of log so we can have a reference of the last time we updated the ad clicks values
-		$session = DB::table("trViolationSession")
-			->join("userWebsites", function($join) use($accountId) {
-				$join->on("trViolationSession.userKey", "=", "userWebsites.userKey")
-					->where("userWebsites.accountId", $accountId);
-			})
-			->selectRaw("MAX(updatedOn AS lastDate")
-			->first();
-		$lastDateTime = $dateTime;
-		if (!empty($session)) $lastDateTime = $session->lastDate;
-		$click = $this->GetTotalAdClicks($accountId, $userKey, $lastDateTime);
+		$click = $this->GetTotalAdClicks($accountId, $userKey, $dateTime);
 		$data['adClicks'] = [
 			'today' => $click, 'week' => $click, 'month' => $click
 		];

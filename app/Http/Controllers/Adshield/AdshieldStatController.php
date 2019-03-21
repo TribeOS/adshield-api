@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 
 use App\Http\Controllers\Adshield\Settings\UserWebsitesController;
+use App\Http\Controllers\Adshield\VisualizerController;
 
 /**
  * handles importing of installing/inserting of Adshield(TribeOS)
@@ -35,6 +36,10 @@ class AdshieldStatController extends BaseController
         	$status = Input::get('status', 0);
         	$userKey = Input::get('key', '');
 			$result = $this->AddClickLog($user_agent, $referrer_url, $target_url, $sub_source, $ad_type, $status, $userKey);
+
+			//trigger adshield stat event ($reslut[2] contains the date/time of the click record)
+			VisualizerController::BroadcastStats($userKey, $result[2]);
+
 			return response()->json(['id'=>$result[0], 'status'=>$result[1]]);
 		}
 		else if (Input::has('lgadclk_up'))
@@ -102,6 +107,7 @@ class AdshieldStatController extends BaseController
 		$sub_source='', $ad_type=null, $status=0, $userKey=''
 	)
 	{
+		$now = gmdate("Y-m-d H:i:s");
 		$ip = ApiStatController::GetIPBinary();
 		$id = DB::table('asLogAdClick')->insertGetId([
 			'ip' => $ip,
@@ -111,7 +117,8 @@ class AdshieldStatController extends BaseController
 			'sub_source' => $sub_source,
 			'status' => $status,
 			'ad_type' => $ad_type,
-			'userKey' => $userKey
+			'userKey' => $userKey,
+			'click_date' => $now,
 		]);
 
 		if ($ad_type != null)
@@ -130,7 +137,7 @@ class AdshieldStatController extends BaseController
 			$status = $this->UpdateListIp($ip);
 		}
 
-		return [$id, $status];
+		return [$id, $status, $now];
 	}
 
 	private function successAdClickLog($id)
