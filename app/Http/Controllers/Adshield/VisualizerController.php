@@ -49,7 +49,7 @@ class VisualizerController extends BaseController
 			->header('Content-Type', 'application/vnd.api+json');
 	}
 
-	public static function BroadcastStats($userKey, $time)
+	public static function BroadcastStats($userKey, $time, $justClick=false)
 	{
 		$account = UserWebsite::where('userKey', $userKey)->first();
 
@@ -64,7 +64,7 @@ class VisualizerController extends BaseController
 		$result = [
 			'adshieldstats' => [
 				'id' => 0,
-				'stat' => $self->GetAllStatsVisualizer($accountId, $userKey, $time),
+				'stat' => $self->GetAllStatsVisualizer($accountId, $userKey, $time, false, $justClick),
 				'meta' => 'general data for stats.',
 				'token' => $token
 			]
@@ -72,10 +72,10 @@ class VisualizerController extends BaseController
 		event(new AdShieldUpdated($result));
 	}
 
-	private function GetAllStatsVisualizer($accountId, $userKey=null, $time, $initCall=false)
+	private function GetAllStatsVisualizer($accountId, $userKey=null, $time, $initCall=false, $justClick=false)
 	{
 
-		if (!$initCall) return $this->getStatsSince($accountId, $userKey, $time);
+		if (!$initCall) return $this->getStatsSince($accountId, $userKey, $time, $justClick);
 
 		$data = ['userKey' => $userKey, 'accountId' => $accountId];
 		$data['stat'] = $this->GetStats($accountId, $userKey,
@@ -152,28 +152,41 @@ class VisualizerController extends BaseController
 	/**
 	 * fetch all live stats
 	 */
-	private function getStatsSince($accountId, $userKey, $time)
+	private function getStatsSince($accountId, $userKey, $time, $justClick = false)
 	{
 		$data = ['userKey' => $userKey, 'accountId' => $accountId];
-
 		$dateTime = $time;
-		$data['stat'] = $this->GetStats($accountId, $userKey, $dateTime, $dateTime);
-		$data['stat'][4]['count'] = 1;
-		for($a = 0; $a < count($data['stat']) - 2; $a ++)
+
+		///only click happened. no other transactions/requests
+		if ($justClick)
 		{
-			$data['stat'][4]['count'] -= $data['stat'][$a]['count'];
-			if ($data['stat'][4]['count'] < 0) $data['stat'][4]['count'] = 0;
+			$data['stat'] = [];
+			$click = $this->GetTotalAdClicks($accountId, $userKey, $dateTime);
+			$data['transactionsInterval'] = 0;
 		}
+		else
+		{
+			///a request has been made
+			$data['stat'] = $this->GetStats($accountId, $userKey, $dateTime, $dateTime);
+			$data['stat'][4]['count'] = 1;
+			for($a = 0; $a < count($data['stat']) - 2; $a ++)
+			{
+				$data['stat'][4]['count'] -= $data['stat'][$a]['count'];
+				if ($data['stat'][4]['count'] < 0) $data['stat'][4]['count'] = 0;
+			}
 
-		$data['transactions'] = [
-			'today' => 1, 'week' => 1, 'month' => 1
-		];
-		$data['transactionsInterval'] = 1; //$this->GetAdshieldTransactionForPastTime($accountId, $userKey, 
+			$data['transactions'] = [
+				'today' => 1, 'week' => 1, 'month' => 1
+			];
+			$data['transactionsInterval'] = 1; //$this->GetAdshieldTransactionForPastTime($accountId, $userKey, 
 
-		$click = $this->GetTotalAdClicks($accountId, $userKey, $dateTime);
+			$click = 0;
+		}
+		
 		$data['adClicks'] = [
 			'today' => $click, 'week' => $click, 'month' => $click
 		];
+
 		return $data;
 	}
 
