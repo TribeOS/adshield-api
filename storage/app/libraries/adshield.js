@@ -178,7 +178,11 @@ AdShield = function()
 
     /**
      * ADSHIELD
-     * for performing IP check and start adshield
+     * will check user's IP against our logs of blocked, whitelisted, graylisted IP's
+     * depending on shieldType we can :
+     * 1 : cover ads with DIVS detect clicks on the overlay
+     * 2 : cover entire page with DIV and detect click on that overlay
+     * 3 : activate guess estimate clicks on ads by monitoring mouse over's and when a tab has been opened (indicating a possible ad click occured)
      * @type {Number}
      */
     var grecaptchaId = null;
@@ -242,7 +246,7 @@ AdShield = function()
         //when user clicks blocker, launch captcha
         self.SetAdshieldOnClick(adShieldID, shield_type);
 
-        //perform ip check
+        //perform ip check (check if IP is blocked(0), safe(1), grayed(2))
         self.httpPost(self.urls.adShieldHandler, { checkip : 1, key : self.UserKey }, function(d)
         {
             switch(d.status)
@@ -427,7 +431,6 @@ AdShield = function()
             var self = this;
             if (typeof options.selectors != 'undefined') self.selectors = options.selectors;
             if (typeof options.onClick != 'undefined') self.onClick = options.onClick;
-
             document.querySelectorAll(self.selectors).forEach(function(elem) {
                 elem.onmouseover = function() {
                     if (self.overAnAd) return;
@@ -661,6 +664,12 @@ AdShield = function()
             var code = jsCode[i];
             self.insertRawJs(code.code, code.container, code.intoContainer);
         }
+
+        ///start adshield frontend ad protection via JS 1 sec after inserting js ad codes
+        ///1 sec is for allowing the ads to load/construct their DOM's
+        setTimeout(function() {
+            self.StartAdShield();
+        }, 1000);
     }   
 
     /**
@@ -867,8 +876,8 @@ AdShield = function()
         self.AdShieldType = 3; //not used yet
         self.CheckIframed(); //check if website is inside an iframe or not
         self.CheckReferrerUrl(); //check the referrer of the request (bad or good referrer url)
-        // self.StartAdShield(); //(try to) place div overlays on known ads
         self.CheckViolations(); //main violation/threat checker
+        // self.StartAdShield(); //(try to) place div overlays on known ads
 
     }
 
