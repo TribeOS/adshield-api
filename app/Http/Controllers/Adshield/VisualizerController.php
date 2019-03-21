@@ -169,6 +169,9 @@ class VisualizerController extends BaseController
 			$data['stat'] = [];
 			$click = $this->GetTotalAdClicks($accountId, $userKey, $dateTime);
 			$data['transactionsInterval'] = 0;
+			$data['transactions'] = [
+				'today' => 0, 'week' => 0, 'month' => 0
+			];
 		}
 		else
 		{
