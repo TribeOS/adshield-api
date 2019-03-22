@@ -40,6 +40,7 @@ class ApiAuth
                 ->header('Access-Control-Allow-Headers', 'Authorization');
         }
 
+        $access->options = json_decode($access->options);
         Config::set('user', $access);
 
         return $next($request)
