@@ -55,7 +55,11 @@ class LoginController extends Controller
         $response['accountId'] = $user->accountId;
         $response['channelId'] = sha1($user->accountId); //create identifier for the channel
         $response['permission'] = (int)$user->permission->permission;
-        $this->saveToken($token, $user);
+
+        $options = [];
+        $options['timezoneOffset'] = Input::get('offset', 0); //if user passes an offset value use it otherwise default to UTC
+
+        $this->saveToken($token, $user, $options);
 
         $response['websites'] = UserWebsitesController::getUserWebsites($user->acountId);
 
@@ -66,7 +70,7 @@ class LoginController extends Controller
     }
 
 
-    private function saveToken($token, $user)
+    private function saveToken($token, $user, $options=[])
     {
         DB::table("accessTokens")
             ->where("expiresOn", "<", gmdate("Y-m-d H:i:s"))
@@ -78,7 +82,8 @@ class LoginController extends Controller
                 'accountId' => $user->accountId,
                 'userId' => $user->id,
                 'expiresOn' => gmdate("Y-m-d H:i:s", strtotime("+24 hours")),
-                'createdOn' => gmdate("Y-m-d H:i:s")
+                'createdOn' => gmdate("Y-m-d H:i:s"),
+                'options' => json_encode($options),
             ]);
     }
 
