@@ -113,6 +113,7 @@ class UserController extends BaseController {
 	    	$user->username = $data['username'];
 	    	$user->password = Hash::make($data['password']);
 	    	$user->accountId = $accountId;
+            $user->timeZone = $data['timeZone'];
 	    	$user->save();
 	    	$usersPermission = new UserPermission();
 	    	$usersPermission->userId = $user->id;
@@ -154,6 +155,7 @@ class UserController extends BaseController {
     	$user->lastname = $data['lastname'];
     	$user->username = $data['username'];
     	$user->email = $data['email'];
+        $user->timeZone = $data['timeZone'];
     	$user->save();
     	$usersPermission = UserPermission::where('userId', $user->id)->first();
     	$usersPermission->permission = $data['permission'];

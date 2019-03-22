@@ -56,10 +56,7 @@ class LoginController extends Controller
         $response['channelId'] = sha1($user->accountId); //create identifier for the channel
         $response['permission'] = (int)$user->permission->permission;
 
-        $options = [];
-        $options['timezoneOffset'] = Input::get('offset', 0); //if user passes an offset value use it otherwise default to UTC
-
-        $this->saveToken($token, $user, $options);
+        $this->saveToken($token, $user);
 
         $response['websites'] = UserWebsitesController::getUserWebsites($user->acountId);
 
@@ -70,7 +67,7 @@ class LoginController extends Controller
     }
 
 
-    private function saveToken($token, $user, $options=[])
+    private function saveToken($token, $user)
     {
         DB::table("accessTokens")
             ->where("expiresOn", "<", gmdate("Y-m-d H:i:s"))
@@ -83,7 +80,6 @@ class LoginController extends Controller
                 'userId' => $user->id,
                 'expiresOn' => gmdate("Y-m-d H:i:s", strtotime("+24 hours")),
                 'createdOn' => gmdate("Y-m-d H:i:s"),
-                'options' => json_encode($options),
             ]);
     }
 
@@ -157,5 +153,6 @@ class LoginController extends Controller
         return response()->json(['id' => 0, 'valid' => $valid])
             ->header('Content-Type', 'application/vnd.api+json');
     }
+
 
 }
