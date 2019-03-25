@@ -9,9 +9,12 @@ use Illuminate\Support\Facades\Input;
 use App\Http\Controllers\Adshield\ApiStatController;
 use Config;
 use App\Http\Controllers\Adshield\Settings\UserWebsitesController;
-use App\Http\Controllers\Adshield\Settings\UserWebsitesController;
 
 
+/**
+ * handles list of IP access for websites.
+ * these are logs of requests on adshield
+ */
 class IpAccessListController extends BaseController
 {
 
