@@ -22,10 +22,10 @@ class ApiAuth
         $token = $request->bearerToken();
 
         $access = DB::table("accessTokens")
-            ->join("user", "user.id", "=", "accessToken.userId")
+            ->join("users", "users.id", "=", "accessToken.userId")
             ->where("accessToken", $token)
             ->where("expiresOn", ">", gmdate("Y-m-d H:i:s"))
-            ->selectRaw("accessTokens.*, user.timeZone")
+            ->selectRaw("accessTokens.*, users.timeZone")
             ->first();
 
         if (empty($access)) 
