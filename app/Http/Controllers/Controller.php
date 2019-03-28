@@ -11,7 +11,6 @@ class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
-
     /**
      * returns the user's local date/time (Y-m-d H:i:s) converted to UTC
      * UTC is what the system uses for internal storage.

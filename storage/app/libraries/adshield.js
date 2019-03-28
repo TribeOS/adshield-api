@@ -689,17 +689,18 @@ AdShield = function()
         var scripts = h.getElementsByTagName("*");
         for(var i = 0; i < scripts.length; i++)
         {
-            var script = document.createElement(scripts[i].tagName);
+            var el = document.createElement(scripts[i].tagName);
             //set attributes
             for(var n =0; n < scripts[i].attributes.length; n ++) {
-                script.setAttribute(scripts[i].attributes[n].name, scripts[i].attributes[n].value);
+                el.setAttribute(scripts[i].attributes[n].name, scripts[i].attributes[n].value);
             }
-            script.innerHTML = scripts[i].innerHTML;
+            el.innerHTML = scripts[i].innerHTML;
+
             try {
                 if (intoContainer) {
-                    document.getElementById(container).appendChild(script);
+                    document.getElementById(container).appendChild(el);
                 } else {
-                    document.body.appendChild(script);
+                    document.body.appendChild(el);
                 }
             } catch (e) {
                 console.log(e);

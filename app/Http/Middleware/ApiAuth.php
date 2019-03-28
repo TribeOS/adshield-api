@@ -22,8 +22,10 @@ class ApiAuth
         $token = $request->bearerToken();
 
         $access = DB::table("accessTokens")
+            ->join("user", "user.id", "=", "accessToken.userId")
             ->where("accessToken", $token)
             ->where("expiresOn", ">", gmdate("Y-m-d H:i:s"))
+            ->selectRaw("accessTokens.*, user.timeZone")
             ->first();
 
         if (empty($access)) 
@@ -39,6 +41,7 @@ class ApiAuth
                 ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
                 ->header('Access-Control-Allow-Headers', 'Authorization');
         }
+
 
         Config::set('user', $access);
 
