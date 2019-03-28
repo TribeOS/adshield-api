@@ -6,6 +6,7 @@ use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Config;
 
 class Controller extends BaseController
 {
@@ -20,7 +21,7 @@ class Controller extends BaseController
      */
    	protected function getUtc($format, $timestamp="now") 
    	{	
-   		$user = User::where('id', Config::get('user')['userId'])->first();
+   		$user = Config::get('user');
    		$localOffset = empty($user->timeZone) ? 0 : $user->timeZone; //est. we'll get this value from the request (to be added on each request)
    		$localTimezone = new DateTimeZone($localOffset);
    		$dateTime = new DateTime($timestamp, $localTimezone);
