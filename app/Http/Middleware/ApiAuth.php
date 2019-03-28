@@ -22,7 +22,7 @@ class ApiAuth
         $token = $request->bearerToken();
 
         $access = DB::table("accessTokens")
-            ->join("users", "users.id", "=", "accessToken.userId")
+            ->join("users", "users.id", "=", "accessTokens.userId")
             ->where("accessToken", $token)
             ->where("expiresOn", ">", gmdate("Y-m-d H:i:s"))
             ->selectRaw("accessTokens.*, users.timeZone")
