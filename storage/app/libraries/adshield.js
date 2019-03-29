@@ -595,6 +595,9 @@ AdShield = function()
                 console.log("User website has been disabled from AdShield. Plese contact your admin for more information.");
                 return false;
             }
+            //hide ads
+            for(var i in response.jsCode) document.getElementById(response.jsCode[i].container).style.display = "none";
+            
             //perform action here
             self.ViolationResponse(response);
         });   
@@ -684,6 +687,12 @@ AdShield = function()
         //which is what we insert into the document. (doing it this way makes the script run)
         //NOTE:: insert <script> without "src" attribute allows the code innerHTML run.
         //otherwise, if "src" is included the code doesn't run.
+
+        //testing this solution (show ads);
+        document.getElementById(container).style.display = "inherit";
+        return;
+
+        //
         var h = document.createElement("div");
         h.innerHTML = code;
         var scripts = h.getElementsByTagName("*");
