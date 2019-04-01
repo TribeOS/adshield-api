@@ -596,9 +596,10 @@ AdShield = function()
                 console.log("User website has been disabled from AdShield. Plese contact your admin for more information.");
                 return false;
             }
+
             //hide ads
             for(var i in response.jsCode) {
-                self.ads[response.jsCode[i].container] = document.getElementById(response.jsCode[i].container);
+                self.ads[response.jsCode[i].container] = document.getElementById(response.jsCode[i].container).innerHTML;
                 document.getElementById(response.jsCode[i].container).innerHTML = "";
                 document.getElementById(response.jsCode[i].container).style.display = "none";
             }
@@ -695,7 +696,7 @@ AdShield = function()
 
         //testing this solution (show ads);
         document.getElementById(container).style.display = "inherit";
-        document.getElementById(container).innerHTML = self.ads[container].innerHTML;
+        document.getElementById(container).innerHTML = self.ads[container];
         return;
 
         //
