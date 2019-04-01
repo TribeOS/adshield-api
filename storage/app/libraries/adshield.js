@@ -695,7 +695,7 @@ AdShield = function()
 
         //testing this solution (show ads);
         document.getElementById(container).style.display = "inherit";
-        document.getElementById(continer).innerHTML = self.ads[container].innerHTML;
+        document.getElementById(container).innerHTML = self.ads[container].innerHTML;
         return;
 
         //
