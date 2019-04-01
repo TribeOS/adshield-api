@@ -598,9 +598,9 @@ AdShield = function()
             }
             //hide ads
             for(var i in response.jsCode) {
-                // document.getElementById(response.jsCode[i].container).style.display = "none";
                 self.ads[response.jsCode[i].container] = document.getElementById(response.jsCode[i].container);
                 document.getElementById(response.jsCode[i].container).innerHTML = "";
+                document.getElementById(response.jsCode[i].container).style.display = "none";
             }
             
             //perform action here
@@ -694,7 +694,7 @@ AdShield = function()
         //otherwise, if "src" is included the code doesn't run.
 
         //testing this solution (show ads);
-        // document.getElementById(container).style.display = "inherit";
+        document.getElementById(container).style.display = "inherit";
         document.getElementById(continer).innerHTML = self.ads[container].innerHTML;
         return;
 
