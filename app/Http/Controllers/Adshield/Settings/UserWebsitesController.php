@@ -71,6 +71,7 @@ class UserWebsitesController extends Controller
     {
         $websites = UserWebsite::where("accountId", $accountId)
             ->where("status", self::ST_ACTIVE)
+            ->orderBy("domain")
             ->get();
         return $websites;
     }
