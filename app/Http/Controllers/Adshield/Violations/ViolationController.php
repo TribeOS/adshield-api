@@ -73,6 +73,12 @@ class ViolationController extends BaseController {
 	//current user agent classification based on ongoing checks. (used by checker for unclassifiedUserAgent: see logViolation() code
 	private $userAgentClassification = null;
 
+	//infoID found/created. we're saving the id as a variable to avoid rerunning the whole query again.
+	private $infoIdFound = 0;
+
+	//store initial ID of IP query to avoid running the same query again
+	private $ipIdFound = 0;
+
 
 	function __construct() {
 		//used for testing data
@@ -142,7 +148,7 @@ class ViolationController extends BaseController {
 
 		//check if useragent has an existing violation
 		if ($trafficName = ViolationUserAgentController::hasViolation(
-				isset($data['userAgent']) ? $data['userAgent'] : '', $newViolationId)
+				isset($data['userAgentClassification']) ? $data['userAgent'] : '', $newViolationId)
 			) 
 		{
 			$id = $this->doLog($userKey, $ip, $ipStr, self::V_KNOWN_VIOLATOR_UA, $data);
@@ -214,7 +220,7 @@ class ViolationController extends BaseController {
 		}
 
 		//check if bad user agent
-		if ($botName = ViolationBadAgentController::hasViolation($data)) 
+		if ($botName = ViolationBadAgentController::hasViolation()) 
 		{
 			$id = $this->doLog($userKey, $ip, $ipStr, self::V_BAD_UA, $data);
 			$violations[self::V_BAD_UA] = $id;
@@ -273,6 +279,8 @@ class ViolationController extends BaseController {
 	 */
 	private function getInfoId($data)
 	{
+		if ($this->infoIdFound > 0) return $this->infoIdFound;
+
 		$info = DB::table("trViolationInfo")
 			->where([
 				'userAgent' => !empty($data['userAgent']) ? $data['userAgent'] : '',
@@ -292,6 +300,8 @@ class ViolationController extends BaseController {
 			$info->save();
 			$this->newViolationInfoRecord = true;
 		}
+
+		$this->infoIdFound = $info->id;
 		return $info->id;
 	}
 
@@ -309,20 +319,28 @@ class ViolationController extends BaseController {
 		$infoId = $this->getInfoId($data);
 
 		//store violation ip if non-existent
-		$violationIp = ViolationIp::where('ip', $ip)->first();
-		if (empty($violationIp))
+		if ($this->ipIdFound == 0)
 		{
-			$violationIp = new ViolationIp();
-			$violationIp->ip = $ip;
-			$violationIp->ipStr = $ipStr;
-			$violationIp->save();
-			$this->newViolationIp = true;
+			$violationIp = ViolationIp::where('ip', $ip)->first();
+			if (empty($violationIp))
+			{
+				$violationIp = new ViolationIp();
+				$violationIp->ip = $ip;
+				$violationIp->ipStr = $ipStr;
+				$violationIp->save();
+				$this->newViolationIp = true;
+				$this->ipIdFound = $violationIp->id;
+			}
+			else
+			{
+				$this->ipIdFound = $violationIp->id;
+			}
 		}
 
 		//create new violation record
 		$violation = new Violation();
 		$violation->createdOn = $this->currentTime;
-		$violation->ip = $violationIp->id;
+		$violation->ip = $this->ipIdFound;
 		$violation->violation = $violationType;
 		$violation->violationInfo = $infoId;
 		$violation->userKey = $userKey;
