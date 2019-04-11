@@ -11,8 +11,6 @@ use Illuminate\Http\Request;
 
 use App\Model\UserWebsite;
 
-date_default_timezone_set("America/New_York");
-
 
 class VisualizerController extends BaseController
 {
