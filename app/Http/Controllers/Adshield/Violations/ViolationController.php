@@ -145,7 +145,6 @@ class ViolationController extends BaseController {
 			$violations[self::V_KNOWN_VIOLATOR] = $newViolationId;
 		}
 
-
 		//check if useragent has an existing violation
 		if ($trafficName = ViolationUserAgentController::hasViolation(
 				isset($data['userAgentClassification']) ? $data['userAgent'] : '', $newViolationId)

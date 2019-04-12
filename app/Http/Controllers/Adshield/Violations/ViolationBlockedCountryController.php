@@ -24,6 +24,7 @@ class ViolationBlockedCountryController extends ViolationController {
 					->whereRaw('UCASE(countries.countryName) = ?', [strtoupper($country)])
 					->where('asBlockedCountries.userKey', '=', $userKey);
 			})
+			->selectRaw("countries.id")
 			->first();
 
 		return !empty($violation);

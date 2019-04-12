@@ -13,8 +13,9 @@ use Request;
 class ViolationSuspiciousUAController extends ViolationController {
 
 	/**
-	 * checks if IP is a data center's IP
-	 * @param  string  $ip raw IP. ready to be compared to binary IP in database
+	 * checks if useragent exists. 
+	 * TODO:: should add more checks for suspicious requests
+	 * @param	String	useragent of available
 	 * @return boolean     [description]
 	 */
 	public static function hasViolation($userAgent)

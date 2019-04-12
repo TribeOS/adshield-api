@@ -21,6 +21,7 @@ class ViolationDataCenterController extends ViolationController {
 		$violation = DB::table('dataCenters')
 			->where('ipFrom', '<=', $ip)
 			->where('ipTo', '>=', $ip)
+			->selectRaw("id")
 			->first();
 
 		return !empty($violation);

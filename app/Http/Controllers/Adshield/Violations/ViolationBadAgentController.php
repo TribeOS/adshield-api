@@ -19,6 +19,9 @@ class ViolationBadAgentController extends ViolationController {
 	public static function hasViolation()
 	{
 		$userAgent = Request::header('user-agent', '');
+
+		//TODO: check if useragent has been marked as badagent before (under violations) if so skip test and return TRUE;
+
 		$botName = self::isBadUserAgent($userAgent);
 		if ($botName !== false) return $botName;
 		return false;
@@ -33,14 +36,15 @@ class ViolationBadAgentController extends ViolationController {
 	private static function isBadUserAgent($userAgent)
 	{
 		$badAgent = DB::table('badAgents')
-			->select("phrase")
+			->selectRaw("phrase")
 			->whereRaw("? LIKE CONCAT('%', phrase, '%')", [$userAgent])
 			->first();
 		if (!empty($badAgent)) return $badAgent->phrase;
 
 		$knownAgent = DB::table("knownAgents")
-			->select("uaString")
-			->where("uaString", "like", '%' . trim($userAgent) . '%')
+			->selectRaw("uaString")
+			// ->where("uaString", "like", '%' . trim($userAgent) . '%')
+			->whereRaw("? LIKE CONCAT('%', uaString, '%')", [trim($userAgent)])
 			->where(function($query) {
 				$query->where('type', 'like', '%S%')
 					->orWhere('type', 'like', '%R%');

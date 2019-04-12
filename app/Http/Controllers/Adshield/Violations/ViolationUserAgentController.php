@@ -41,6 +41,7 @@ class ViolationUserAgentController extends ViolationController {
 		{
 			$trafficName = DB::table("trViolationAutoTraffic")
 				->where("violationId", $violation->id)
+				->selectRaw("trafficName")
 				->first();
 			if (empty($trafficName)) return "n/a";
 			return $trafficName->trafficName;

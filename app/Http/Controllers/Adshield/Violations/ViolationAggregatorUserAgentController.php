@@ -17,6 +17,8 @@ class ViolationAggregatorUserAgentController extends ViolationController {
 	 */
 	public static function hasViolation($data)
 	{	
+		//TODO: check if useragent has already been detected as aggregator agent before. if so skip this test and return TRUE
+
 		$botname = self::isRobot(isset($data['userAgent']) ? $data['userAgent'] : "");
 		if ($botname !== false) return $botname;
 		return false;
@@ -30,8 +32,9 @@ class ViolationAggregatorUserAgentController extends ViolationController {
 	private static function isRobot($userAgent)
 	{
 		$knownAgent = DB::table("knownAgents")
-			->select("description")
-			->where("uaString", "like", '%' . trim($userAgent) . '%')
+			->selectRaw("description")
+			// ->where("uaString", "like", '%' . trim($userAgent) . '%')
+			->whereRaw("? LIKE CONCAT('%', uaString, '%')", [trim($userAgent)])
 			->where('type', 'like', '%R%')
 			->first();
 

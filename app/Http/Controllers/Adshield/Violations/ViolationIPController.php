@@ -27,6 +27,7 @@ class ViolationIPController extends ViolationController {
 						self::V_JS_CHECK_FAILED
 					]);
 			})
+			->selectRaw("trViolationIps.ip")
 			->first();
 		//check agains blacklist IP's as well
 		return !empty($violation);
