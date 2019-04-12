@@ -42,7 +42,7 @@ class ViolationBadAgentController extends ViolationController {
 		if (!empty($badAgent)) return $badAgent->phrase;
 
 		$knownAgent = DB::table("knownAgents")
-			->selectRaw("uaString")
+			->selectRaw("description")
 			// ->where("uaString", "like", '%' . trim($userAgent) . '%')
 			->whereRaw("? LIKE CONCAT('%', uaString, '%')", [trim($userAgent)])
 			->where(function($query) {
